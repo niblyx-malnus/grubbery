@@ -1,6 +1,9 @@
 /-  s=signals
-/+  *signalsio
+/+  signalsio
 |%
+:: TODO: /per for permissions
+:: TODO: /san for sandboxing
+::
 ++  slip
   |=  [vax=vase gen=hoon]
   ^-  vase
@@ -12,32 +15,15 @@
   ++  stem
     ^-  stem:s
     |=  =bowl:stem:s
-    ^-  (quip card:s vase)
+    ^-  (quip dart:s vase)
     ?>  ?=([%bin *] here.bowl)
     =/  file=vase  (~(got by deps.bowl) (welp /fil t.here.bowl))
     =+  !<([@t deps=(list (pair term path)) =hoon] file)
     ?>  .=  ~(key by deps.bowl)
         (~(put in (sy (turn deps tail))) (welp /fil t.here.bowl))
     =;  vax=(list vase)
-      =.  vax  (snoc vax (slop !>(s=s) !>(..zuse)))
-      [~ (slip (reel vax slop) hoon)]
-    %+  turn  deps
-    |=  [fac=term dep=path]
-    =/  =vase  (~(got by deps.bowl) dep)
-    vase(p [%face fac p.vase])
-  ::
-  ++  stem-2
-    ^-  stem-2:s
-    |=  =bowl:stem:s
-    ^-  (quip card-2:s vase)
-    ?>  ?=([%bin *] here.bowl)
-    =/  file=vase  (~(got by deps.bowl) (welp /fil t.here.bowl))
-    =+  !<([@t deps=(list (pair term path)) =hoon] file)
-    ?>  .=  ~(key by deps.bowl)
-        (~(put in (sy (turn deps tail))) (welp /fil t.here.bowl))
-    =;  vax=(list vase)
-      =.  vax  (snoc vax (slop !>(s=s) !>(..zuse)))
-      [~ (slip (reel vax slop) hoon)]
+      =.  vax  (snoc vax :(slop !>(signalsio=signalsio) !>(s=s) !>(..zuse)))
+      [~ (slap (reel vax slop) hoon)]
     %+  turn  deps
     |=  [fac=term dep=path]
     =/  =vase  (~(got by deps.bowl) dep)
@@ -46,52 +32,27 @@
 ::
 ++  fil
   |%
-  ++  root-2
-    ^-  root:proc:s
-    |=  [=bowl:proc:s =stud:s =vase]
-    =/  m  (charm:proc:s ,pail:s)
+  ++  root
+    =,  signalsio
+    ^-  root:s
+    |=  [=bowl:root:s =stud:s =vase]
+    =/  m  (charm:root:s ,pail:s)
     ^-  form:m
-    ~&  >>  %test
     ?+    stud  !!
-        [%step ~]
-      ~&  >>  %step
-      =/  =@t  !<(@t vase)
-      ;<  ~    bind:m  (replace !>([t (build t)]))
-      give-sig
-      ::
         [%init ~]
       ~&  >>  %initing
       ;<  =@t  bind:m  (get-state-as @t)
-      ~&  >>  %initing-a
       =/  [pax=(list (pair term path)) =hoon]  (build t)
-      ~&  >>  %initing-b
-      ;<  ~    bind:m  (replace !>([t pax hoon]))
-      ~&  >>  %initing-c
+      ;<  ~  bind:m  (replace !>([t pax hoon]))
       ?>  ?=([%fil *] here.bowl)
-      ~&  >>  %initing-d
       =/  dest=path  (welp /bin t.here.bowl)
-      ~&  >>  %initing-e
-      =/  sour=(set path)  (sy (turn pax tail))
-      ~&  >>  %initing-f
+      =/  sour=(set path)
+        (~(put in (sy (turn pax tail))) here.bowl)
       ;<  ~  bind:m
-        (gall-poke [our.bowl %signals] make-stem-2+!>([dest /bin sour]))
-      ~&  >>  %initing-g
-      give-sig
-    ==
-  ::
-  ++  root
-    ^-  root:s
-    |=  [=bowl:root:s data=vase =stud:s =vase]
-    ?>  ?=([%fil *] here.bowl)
-    :-  ~
-    ?+    stud  !!
-        [%init ~]
-      =+  !<(=@t data)
-      !>([t (build t)])
-      ::
-        [%put ~]
-      =+  !<(=@t vase)
-      !>([t (build t)])
+        %+  gall-poke  [our.bowl %signals]
+        make-stem+!>([dest /bin sour])
+      ~&  >  %finished-initing
+      done
     ==
   :: TODO: allow optionally setting a path prefix
   ::
@@ -108,48 +69,51 @@
   --
 ::
 ++  counter
-  '''
-  |=  [=bowl:proc:s:a =stud:s:a =vase]
-  =/  m  (charm:proc:s:a ,pail:s:a)
+  %-  crip
+  """
+  /-  t  /add/two
+  =,  signalsio
+  |=  [=bowl:root:s =stud:s =vase]
+  =/  m  (charm:root:s ,pail:s)
   ^-  form:m
   ?+    stud  !!
-      [%init ~]
-    give-sig
+    [%init ~]  done
     ::
       [%inc ~]
     ;<  a=@ud  bind:m  (get-state-as @ud)
-    ;<  ~      bind:m  (replace !>(+(a)))
-    give-sig
+    (pour !>(+(a)))
     ::
       [%two ~]
     ;<  a=@ud  bind:m  (get-state-as @ud)
-    ;<  ~      bind:m  (replace !>(+(a)))
-    give-sig
+    (pour !>((two:t a)))
   ==
-  '''
+  """
 ::
 ++  is-even
-  '''
-  |=  =bowl:stem-2:s
+  %-  crip
+  """
+  |=  =bowl:stem:s
   :-  ~
   =+  !<(=@ud (~(got by deps.bowl) /counter))
   !>((mod ud 2))
-  '''
+  """
 ::
 ++  parity
-  '''
-  |=  =bowl:stem-2:s
+  %-  crip
+  """
+  |=  =bowl:stem:s
   :-  ~
   !>
   ?:  =(0 !<(@ud (~(got by deps.bowl) /is-even)))
     'true'
   'false'
-  '''
+  """
 ::
 ++  add-two
-  '''
+  %-  crip
+  """
   |%
-  ++  add-two  |=(a=@ud (add a 2))
+  ++  two  |=(a=@ud (add 2 a))
   --
-  '''
+  """
 --

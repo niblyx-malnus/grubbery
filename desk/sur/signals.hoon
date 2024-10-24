@@ -6,7 +6,9 @@
 ::   $%  [%root =path =pail]
 ::       [%stem =path sour=(set path)]
 ::   ==
-+$  card-2
+:: effects that a root can emit
+::
++$  dart
   $%  [%poke =wire =path =pail]
       [%bump =wire =path =pail]
       [%peek =wire =path]
@@ -16,6 +18,8 @@
       [%sysc =card:agent:gall]
   ==
 ::
++$  bolt  (pair path dart)
+::
 :: perms $-(ship ?) crash is no, bubbles down
 ::                  catches incoming reads and pokes
 ::                  goes down, keeps checking until a yes
@@ -24,8 +28,7 @@
 ::                  goes up, keeps checking until a no
 ::
 +$  kind
-  $%  [%root ~]
-      [%root-2 proc=(unit proc:proc)]
+  $%  [%root proc=(unit proc:root)]
       [%stem tidy=[flag=? boom=(unit tang)] sour=(map path @da)]
   ==
 ::
@@ -44,30 +47,17 @@
 ++  root
   =<  root
   |%
-  +$  root  $-([bowl vase pail] (quip card vase))
   +$  bowl
     $:  now=@da   :: time
         our=@p    :: host
-        src=@p    :: guest
         eny=@uvJ  :: entropy
-        here=path :: our address
-        =land     :: subtree
-    ==
-  --
-::
-++  proc
-  |%
-  +$  card  card-2
-  +$  bowl
-    $:  now=@da   :: time
-        our=@p    :: host
-        src=@p    :: guest
-        eny=@uvJ  :: entropy
-        sap=path  :: provenance
+        :: wex= TODO
+        :: sup= TODO
+        from=path :: provenance TODO: make sure this is accurate
         here=path :: our address
     ==
   ::
-  +$  sign-root
+  +$  sign
     $%  [%poke p=(each pail goof)]
         [%bump p=(unit tang)]
     ==
@@ -75,7 +65,7 @@
   +$  intake
     $%  [%bump =pail]
         [%peek =wire =path =land] :: local read
-        [%root =wire sign=sign-root]
+        [%root =wire =sign]
         :: responses to / expectation of syscalls
         :: we should make sure these get back to
         :: the process that started them and not
@@ -92,7 +82,7 @@
   ++  output-raw
     |*  value=mold
     $~  [~ !>(~) %done *value]
-    $:  cards=(list card)
+    $:  darts=(list dart)
         state=vase
         $=  next
         $%  [%wait ~]
@@ -135,7 +125,7 @@
       |=  =input
       =/  b-res=(output-raw b)  (m-b input)
       ^-  output
-      :-  cards.b-res
+      :-  darts.b-res
       :-  state.b-res
       ?-    -.next.b-res
         %wait  [%wait ~]
@@ -154,18 +144,18 @@
         ==
       ::
       ++  take
-        =|  cards=(list card)
+        =|  darts=(list dart)
         |=  [=form =input]
-        ^-  [[(list card) vase result] _form]
+        ^-  [[(list dart) vase result] _form]
         =/  =output  (form input)
-        =.  cards  (weld cards cards.output)
+        =.  darts  (weld darts darts.output)
         ?:  ?=(%cont -.next.output)
           %=  $
             form   self.next.output
             input  [bowl.input state.output ~]
           ==
         :_  form
-        :-  cards
+        :-  darts
         :-  state.output
         ?-  -.next.output
             %wait  [%next ~]
@@ -179,7 +169,7 @@
   ++  ingest
     |=  [=proc =bowl state=vase in=(unit intake)]
     =/  m  (charm ,pail)
-    ^-  [[(list card) vase result:eval:m] ^proc]
+    ^-  [[(list dart) vase result:eval:m] ^proc]
     =/  res  (mule |.((take:eval:m proc bowl state in)))
     ?-  -.res
       %&  p.res
@@ -190,20 +180,7 @@
 ++  stem
   =<  stem
   |%
-  +$  stem  $-(bowl (quip card vase))
-  +$  bowl
-    $:  now=@da              :: time
-        our=@p               :: host
-        eny=@uvJ             :: entropy
-        here=path            :: our address
-        deps=(map path vase) :: dependencies
-    ==
-  --
-::
-++  stem-2
-  =<  stem
-  |%
-  +$  stem  $-(bowl (quip card-2 vase))
+  +$  stem  $-(bowl (quip dart vase))
   +$  bowl
     $:  now=@da              :: time
         our=@p               :: host

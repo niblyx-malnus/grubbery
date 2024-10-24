@@ -1,18 +1,18 @@
 /-  *signals
-=,  proc
+=,  root
 |%
-++  send-raw-cards
-  |=  cards=(list =card)
+++  send-raw-darts
+  |=  darts=(list =dart)
   =/  m  (charm ,~)
   ^-  form:m
   |=  input
-  [cards state %done ~]
+  [darts state %done ~]
 ::
-++  send-raw-card
-  |=  =card
+++  send-raw-dart
+  |=  =dart
   =/  m  (charm ,~)
   ^-  form:m
-  (send-raw-cards card ~)
+  (send-raw-darts dart ~)
 ::
 ++  ignore
   |=  input
@@ -41,6 +41,18 @@
   ^-  form:m
   |=  input
   [~ state %done eny.bowl]
+::
+++  get-from
+  =/  m  (charm ,path)
+  ^-  form:m
+  |=  input
+  [~ state %done from.bowl]
+::
+++  get-here
+  =/  m  (charm ,path)
+  ^-  form:m
+  |=  input
+  [~ state %done here.bowl]
 ::
 ++  get-state
   =/  m  (charm ,vase)
@@ -75,13 +87,26 @@
   |=  input
   ^-  output:m
   [~ new %done ~]
+:: do nothing and give a sig
+::
+++  done
+  =/  m  (charm ,pail)
+  (pure:m /sig !>(~))
+:: replace with value and give a sig
+::
+++  pour
+  |=  new=vase
+  =/  m  (charm ,pail)
+  ;<  ~  bind:m  (replace new)
+  done
 ::
 ++  gall-poke
   |=  [=dock =cage]
   =/  m  (charm ,~)
   ^-  form:m
-  =/  =card  [%sysc %pass /poke %agent dock %poke cage]
-  ;<  ~  bind:m  (send-raw-card card)
+  =/  =dart  [%sysc %pass /poke %agent dock %poke cage]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  ~&  %sent-dart
   (take-poke-ack /poke)
 ::
 ++  take-poke-ack
@@ -99,8 +124,4 @@
       [%done ~]
     [%fail %poke-fail u.p.sign.u.in]
   ==
-::
-++  give-sig
-  =/  m  (charm ,pail)
-  (pure:m /sig !>(~))
 --
