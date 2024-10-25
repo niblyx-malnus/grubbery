@@ -2,30 +2,34 @@
 +$  stud  path
 +$  pail  (pair stud vase)
 +$  card  card:agent:gall
-:: +$  make
-::   $%  [%root =path =pail]
-::       [%stem =path sour=(set path)]
-::   ==
++$  make
+  $%  [%root =pail]
+      [%stem =stud sour=(set path)]
+  ==
+::
++$  deed  ?(%poke %bump %peek %make %oust %kill %tidy)
+::
++$  sand  $-((unit [path deed]) ?) :: constrains outgoing darts
++$  acol  $-([ship deed] ?)        :: constrains incoming pokes
 :: effects that a root can emit
 ::
 +$  dart
-  $%  [%poke =wire =path =pail]
-      [%bump =wire =path =pail]
-      [%peek =wire =path]
-      :: [%make =wire =make]
-      :: [%kill =wire =path]
-      :: [%tidy =wire =path]
+  $%  [%node =wire =path =load]
       [%sysc =card:agent:gall]
   ==
 ::
 +$  bolt  (pair path dart)
+:: dart payload
 ::
-:: perms $-(ship ?) crash is no, bubbles down
-::                  catches incoming reads and pokes
-::                  goes down, keeps checking until a yes
-:: sandbox $-((unit path) ?) crash is no, bubbles up
-::                  catches outgoing effects
-::                  goes up, keeps checking until a no
++$  load
+  $%  [%poke =pail]
+      [%bump =pail]
+      [%peek ~]
+      [%make =make]
+      [%oust ~]
+      [%kill ~]
+      [%tidy ~]
+  ==
 ::
 +$  kind
   $%  [%root proc=(unit proc:root)]
@@ -37,24 +41,41 @@
 +$  give  [from=path =wire]
 +$  poke  [=give =pail]
 +$  tack
-  $:  last=@da
+  $:  last=[step=@da poke=@da]
       sinx=(set path)
-      give=(unit give) :: add some identifier here
+      give=(unit give)
       line=(qeu poke)
+      eyre=(unit @ta)
   ==
 +$  trac  (axal tack)
+::
++$  bindings  (map (list @t) path)
++$  http-response  (pair response-header:http (unit octs))
+::
+++  stem
+  =<  stem
+  |%
+  +$  stem  $-(bowl (quip dart vase))
+  +$  bowl
+    $:  now=@da              :: time
+        our=@p               :: host
+        eny=@uvJ             :: entropy
+        here=path            :: our address
+        deps=(map path vase) :: dependencies
+    ==
+  --
 ::
 ++  root
   =<  root
   |%
   +$  bowl
-    $:  now=@da   :: time
-        our=@p    :: host
-        eny=@uvJ  :: entropy
-        :: wex= TODO
-        :: sup= TODO
-        from=path :: provenance TODO: make sure this is accurate
-        here=path :: our address
+    $:  now=@da       :: time
+        our=@p        :: host
+        eny=@uvJ      :: entropy
+        wex=boat:gall :: outgoing gall subs
+        sup=bitt:gall :: incoming gall subs
+        from=path     :: provenance
+        here=path     :: our address
     ==
   ::
   +$  sign
@@ -65,11 +86,12 @@
   +$  intake
     $%  [%bump =pail]
         [%peek =wire =path =land] :: local read
-        [%root =wire =sign]
-        :: responses to / expectation of syscalls
-        :: we should make sure these get back to
-        :: the process that started them and not
-        :: some subsequent one
+        [%made =wire err=(unit tang)] :: response to make
+        [%gone =wire err=(unit tang)] :: response to oust
+        [%dead =wire err=(unit tang)] :: response to kill
+        [%root =wire =sign] :: response from poke or bump
+        [%tidy =wire err=(unit tang)] :: response to tidy
+        :: messages from gall and arvo
         ::
         [%arvo =wire sign=sign-arvo]
         [%agent =wire =sign:agent:gall]
@@ -102,8 +124,6 @@
   +$  give  [from=path =wire]
   +$  poke  [=give =pail]
   :: 
-  +$  root-data  [proc=(unit (pair proc give)) line=(qeu poke)]
-  ::
   ++  charm
     |*  value=mold
     |%
@@ -165,28 +185,5 @@
         ==
       --
     --
-  ::
-  ++  ingest
-    |=  [=proc =bowl state=vase in=(unit intake)]
-    =/  m  (charm ,pail)
-    ^-  [[(list dart) vase result:eval:m] ^proc]
-    =/  res  (mule |.((take:eval:m proc bowl state in)))
-    ?-  -.res
-      %&  p.res
-      %|  [[~ state [%fail %crash p.res]] proc]
-    ==
-  --
-::
-++  stem
-  =<  stem
-  |%
-  +$  stem  $-(bowl (quip dart vase))
-  +$  bowl
-    $:  now=@da              :: time
-        our=@p               :: host
-        eny=@uvJ             :: entropy
-        here=path            :: our address
-        deps=(map path vase) :: dependencies
-    ==
   --
 --

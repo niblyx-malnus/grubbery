@@ -1,9 +1,6 @@
 /-  s=signals
 /+  signalsio
 |%
-:: TODO: /per for permissions
-:: TODO: /san for sandboxing
-::
 ++  slip
   |=  [vax=vase gen=hoon]
   ^-  vase
@@ -17,20 +14,20 @@
     |=  =bowl:stem:s
     ^-  (quip dart:s vase)
     ?>  ?=([%bin *] here.bowl)
-    =/  file=vase  (~(got by deps.bowl) (welp /fil t.here.bowl))
+    =/  file=vase  (~(got by deps.bowl) (welp /lib t.here.bowl))
     =+  !<([@t deps=(list (pair term path)) =hoon] file)
     ?>  .=  ~(key by deps.bowl)
-        (~(put in (sy (turn deps tail))) (welp /fil t.here.bowl))
+        (~(put in (sy (turn deps tail))) (welp /lib t.here.bowl))
     =;  vax=(list vase)
       =.  vax  (snoc vax :(slop !>(signalsio=signalsio) !>(s=s) !>(..zuse)))
-      [~ (slap (reel vax slop) hoon)]
+      [~ (slip (reel vax slop) hoon)]
     %+  turn  deps
     |=  [fac=term dep=path]
     =/  =vase  (~(got by deps.bowl) dep)
     vase(p [%face fac p.vase])
   --
 ::
-++  fil
+++  lib
   |%
   ++  root
     =,  signalsio
@@ -41,20 +38,18 @@
     ?+    stud  !!
         [%init ~]
       ~&  >>  %initing
-      ;<  =@t  bind:m  (get-state-as @t)
+      =+  !<(=@t vase)
       =/  [pax=(list (pair term path)) =hoon]  (build t)
       ;<  ~  bind:m  (replace !>([t pax hoon]))
-      ?>  ?=([%fil *] here.bowl)
+      ?>  ?=([%lib *] here.bowl)
       =/  dest=path  (welp /bin t.here.bowl)
-      =/  sour=(set path)
-        (~(put in (sy (turn pax tail))) here.bowl)
-      ;<  ~  bind:m
-        %+  gall-poke  [our.bowl %signals]
-        make-stem+!>([dest /bin sour])
+      =/  sour=(set path)  (sy (turn pax tail))
+      =.  sour  (~(put in sour) here.bowl)
+      ;<  ~  bind:m  (make-stem dest /bin sour)
       ~&  >  %finished-initing
       done
     ==
-  :: TODO: allow optionally setting a path prefix
+  :: TODO: allow optional face and relative paths (i.e. /^/^/path)
   ::
   ++  import-line
     ;~  plug
@@ -77,8 +72,6 @@
   =/  m  (charm:root:s ,pail:s)
   ^-  form:m
   ?+    stud  !!
-    [%init ~]  done
-    ::
       [%inc ~]
     ;<  a=@ud  bind:m  (get-state-as @ud)
     (pour !>(+(a)))

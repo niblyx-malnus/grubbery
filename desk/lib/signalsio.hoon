@@ -14,6 +14,29 @@
   ^-  form:m
   (send-raw-darts dart ~)
 ::
+++  make-stem
+  |=  [=path stud=path sour=(set path)]
+  =/  m  (charm ,~)
+  =/  =dart  [%node /make-stem path %make %stem stud sour]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-made /make-stem)
+::
+++  take-made
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %made *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  err.u.in
+      [%done ~]
+    [%fail %make-fail u.err.u.in]
+  ==
+::
 ++  ignore
   |=  input
   [~ state %fail %ignore ~]
@@ -106,7 +129,6 @@
   ^-  form:m
   =/  =dart  [%sysc %pass /poke %agent dock %poke cage]
   ;<  ~  bind:m  (send-raw-dart dart)
-  ~&  %sent-dart
   (take-poke-ack /poke)
 ::
 ++  take-poke-ack
