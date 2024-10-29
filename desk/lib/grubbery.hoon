@@ -40,7 +40,7 @@
     =/  m  (charm:base:g ,pail:g)
     ^-  form:m
     ?+    stud  !!
-        [%init ~]
+        [%sig ~]
       =+  !<(=@t vase)
       =/  res=(each [pax=(list (pair term path)) =hoon] tang)
         (mule |.((build t)))
@@ -66,6 +66,37 @@
      ^-  [(list (pair term path)) hoon]
      (rash text ;~(pfix (star gap) ;~(plug (more gap import-line) vest)))
   --
+::
+++  boot
+  =,  grubberyio
+  ^-  base:g
+  |=  [=bowl:base:g =stud:g =vase]
+  =/  m  (charm:base:g ,pail:g)
+  ^-  form:m
+  ?+    stud  !!
+      [%sig ~]
+    ;<  ~  bind:m  (make-lib /stud/ud '@ud')
+    ;<  ~  bind:m  (make-lib /stud/loob '?')
+    ;<  ~  bind:m  (make-lib /stud/txt '@t')
+    ;<  ~  bind:m  (make-lib /stud/dr 'dr')
+    ;<  ~  bind:m  (make-lib /stud/manx 'manx')
+    :: counter test
+    ::
+    ;<  ~  bind:m  (make-lib /add/two add-two)
+    ;<  ~  bind:m  (make-lib /counter counter)
+    ;<  ~  bind:m  (make-lib /is-even is-even)
+    ;<  ~  bind:m  (make-lib /parity parity)
+    ;<  ~  bind:m  (make-base /counter /ud /counter `!>(10))
+    ;<  ~  bind:m  (make-stem /is-even /loob /is-even (sy ~[/counter]))
+    ;<  ~  bind:m  (make-stem /parity /txt /parity (sy ~[/is-even]))
+    :: gui setup
+    ::
+    ;<  ~  bind:m  (make-lib /base/gui 'base:gui')
+    ;<  ~  bind:m  (make-lib /stud/gui/init ',~')
+    ;<  *  bind:m  (make-and-poke /gui /sig /gui ~ /gui/init !>(~))
+    ~&  >  "Grubbery booted!"
+    done
+  ==
 ::
 ++  gui
   |%
@@ -247,7 +278,7 @@
     ^-  form:m
     =/  refresher=path  (weld here.bowl /refresher)
     ?+    stud  !!
-        [%init ~]
+        [%gui %init ~]
       ;<  ~  bind:m  (eyre-connect /grub)
       ;<  *  bind:m  (make-lib /gui/refresher 'refresher:gui')
       ;<  ~  bind:m  (make-base refresher /dr /gui/refresher `!>(~s5))
@@ -295,10 +326,17 @@
           :: (redirect:gen:server (spat ))
           :: !!
           ::
-            [%grub %lib *]
+            [%grub %make %base ~]
+          %+  pure:m  /simple-payload
+          !>((manx-response:gen:server (wrap-manx make-base-interface)))
+          ::
+            [%grub %tree %lib *]
+          ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.site)
+          ;<  ~  bind:m
+            ?^(g (pure:(charm ,~) ~) (make-lib t.t.site ''))
           ;<  =manx  bind:m  (make-lib-page t.t.site)
           %+  pure:m  /simple-payload
-          !>((manx-response:gen:server manx))
+          !>((manx-response:gen:server (wrap-manx manx)))
           ::
             [%grub %counter ~]
           ;<  now=@da        bind:m  get-time
@@ -324,17 +362,111 @@
             (send-raw-dart %grub / refresher %bump /fast-refresh !>(~))
           (pure:m /simple-payload !>(two-oh-four))
           ::
+            [%grub %make %base ~]
+          =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
+          =/  =path       (rash (need (get-key:kv 'path' args)) stap)
+          =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
+          =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
+          ;<  ~  bind:m  (make-base path stud base ~)
+          (pure:m /simple-payload !>(two-oh-four))
+          ::
             [%grub %make %lib ~]
           =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
           =/  =path    (rash (need (get-key:kv 'path' args)) stap)
           =/  code=@t  (need (get-key:kv 'code' args))
           ;<  ~  bind:m  (make-lib path code)
-          (pure:m /simple-payload !>(two-oh-four))
+          ;<  =manx  bind:m  (make-lib-page path)
+          %+  pure:m  /simple-payload
+          !>((manx-response:gen:server manx))
         ==
       ==
     ==
     ::
     |%
+    ++  wrap-manx
+      |=  =manx
+      ^+  manx
+      ;html(lang "en")
+        ;head
+          ;meta(charset "UTF-8");
+          ;meta(name "viewport", content "width=device-width, initial-scale=1.0");
+          ;title: Grubbery
+          ;script(src "https://cdn.tailwindcss.com");
+          ;script(src "https://unpkg.com/htmx.org@1.9.4");
+        ==
+        ;body
+          ;+  manx
+        ==
+      ==
+    ::
+    ++  make-base-interface
+      ^-  manx
+      ;div(class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
+        ;h2(class "text-2xl font-bold text-gray-700 mb-6 text-center"): Make Base
+        ;form
+          =class  "space-y-4"
+          =hx-post  "/grub/make/base"
+          =hx-indicator  "#loading-indicator"
+          =hx-swap  "none"
+          ;div
+            ;label
+              =for  "path"
+              =class  "block text-gray-700 font-semibold mb-1"
+              Path
+            ==
+            ;input
+              =type  "text"
+              =id  "path"
+              =name  "path"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div
+            ;label
+              =for  "stud"
+              =class  "block text-gray-700 font-semibold mb-1"
+              Stud
+            ==
+            ;input
+              =type  "text"
+              =id  "stud"
+              =name  "stud"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div
+            ;label
+              =for  "base"
+              =class  "block text-gray-700 font-semibold mb-1"
+              Base
+            ==
+            ;input
+              =type  "text"
+              =id  "base"
+              =name  "base"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div(class "flex items-center justify-center mt-6")
+            ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+              Make
+            ==
+            ;div(id "loading-indicator", class "ml-4 hidden")
+              ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
+                ;circle(class "opacity-25", cx "12", cy "12", r "10", stroke "currentColor", stroke-width "4");
+                ;path(class "opacity-75", fill "currentColor", d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z");
+              ==
+            ==
+          ==
+        ==
+      ==
+    ::
     ++  main-page
       |=  =cone:g
       ^-  manx
@@ -367,47 +499,38 @@
       |=  [=path code=@t =grub:g]
       ?>  ?=(%stem -.kind.grub)
       ^-  manx
-      ;html(lang "en", id (make-id [%lib path]))
-        ;head
-          ;meta(charset "UTF-8");
-          ;meta(name "viewport", content "width=device-width, initial-scale=1.0");
-          ;title: Grubbery
-          ;script(src "https://cdn.tailwindcss.com");
-          ;script(src "https://unpkg.com/htmx.org@1.9.4");
-          ;script(src "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js");
-          ;link(rel "stylesheet", href "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css");
-          ;link(rel "stylesheet", href "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css");
-          ;script(src "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/keymap/vim.min.js");
-          ;style: .CodeMirror \{ height: 80%; font-size: 14px; }
-        ==
-        ;body.p-4.flex.flex-col.justify-center.items-center.bg-gray-100
-          ;div.flex.flex-row.justify-center
-            ;div.w-full.h-full.bg-blue-500
-              ; {?:(flag.tidy.kind.grub "clean" "dirty")}
-              ;*  ?^  boom.tidy.kind.grub
-                    ;=
-                      ;code:"*{(render-tang-to-marl 80 u.boom.tidy.kind.grub)}"
-                    ==
-                  ~
-            ==
+      ;div(id (make-id [%lib path]))
+        ;div.h-screen.p-4.flex.flex-col.justify-center.items-center.bg-gray-100
+          ;div.max-h-screen.h-full.w-full.flex.flex-row
+            ;+  (code-result [data tidy.kind]:grub)
             ;+  (textarea path (trip code))
           ==
-          ;script: {code-mirror}
         ==
       ==
     ::
-    ++  code-mirror
-      ^-  tape
-      """
-      const editor = CodeMirror.fromTextArea(document.getElementById('code'), \{
-        mode: 'text/x-hoon', // You can adjust this to the mode you want
-        theme: 'monokai',
-        lineNumbers: true,
-        keyMap: 'vim',
-        showCursorWhenSelecting: true,
-        viewportMargin: Infinity // Ensures full height use
-      });
-      """
+    ++  code-result
+      |=  [data=vase flag=? boom=(unit tang)]
+      ^-  manx
+      =/  color=tape  ?^(boom "red" ?.(flag "brown" "green"))
+      ;div
+        =class  "flex-1 flex flex-col w-full bg-{color}-200 p-8 rounded-lg shadow-lg h-full"
+        ;div(class "text-xl font-bold mb-4 text-center text-{color}-700")
+          ; {?:(flag "clean" "dirty")}
+        ==
+        ;*  ?^  boom
+              ;=
+                ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
+                  ;code:"*{(render-tang-to-marl 80 u.boom)}"
+                ==
+              ==
+            ?.  flag
+              ~
+            ;=
+              ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
+                ;code:"*{(render-tang-to-marl 80 (sell data) ~)}"
+              ==
+            ==
+      ==
     ::
     ++  textarea
       |=  [=path contents=tape]
@@ -415,7 +538,7 @@
         =hx-post  "/grub/make/lib"
         =hx-swap  "outerHTML"
         =hx-target  "#{(make-id [%lib path])}"
-        =class  "flex-grow max-w-lg mx-auto bg-white p-8 rounded-lg shadow-lg"
+        =class  "flex-1 flex flex-col bg-white p-8 rounded-lg shadow-lg h-full"
         ;label
           =for  "textInput"
           =class  "block text-gray-700 font-bold mb-2"
@@ -427,7 +550,7 @@
           =name  "code"
           =rows  "6"
           =cols  "50"
-          =class  "flex-grow mb-3 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          =class  "font-mono flex-grow h-full mb-3 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           =placeholder  "Type something..."
           ; {contents}
         ==

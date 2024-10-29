@@ -1,7 +1,5 @@
 /-  g=grubbery
 /+  grubbery, io=grubberyio, server, dbug, verb, default-agent
-/=  x-  /ted/boot
-/=  x-  /ted/scry
 /=  x-  /mar/sign-base
 |%
 +$  state-0  [%0 =cone:g =trac:g =bindings:g =history:g]
@@ -23,16 +21,18 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  :_  this
-  [%pass /boot-thread %arvo %k %fard %grubbery %boot %noun !>(~)]~
+  =^  cards  state
+    abet:boot:hc
+  [cards this]
 ::
 ++  on-save   !>(state)
 ::
 ++  on-load
   |=  ole=vase
   ^-  (quip card _this)
-  :_  this
-  [%pass /boot-thread %arvo %k %fard %grubbery %boot %noun !>(~)]~
+  =^  cards  state
+    abet:boot:hc
+  [cards this]
 ::
 ++  on-peek
   |=  =(pole knot)
@@ -88,7 +88,7 @@
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %oust)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(oust-grub:hc give here)
     [cards this]
@@ -97,7 +97,7 @@
     =+  !<([here=path stud=path base=path data=(unit ^vase)] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %make)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(make-base:hc give here stud base data)
     [cards this]
@@ -106,7 +106,7 @@
     =+  !<([here=path stud=path stem=path sour=(set path)] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %make)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(make-stem:hc give here stud stem sour)
     [cards this]
@@ -115,7 +115,7 @@
     =+  !<([=wire here=path =pail:g] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %poke)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] wire]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] wire]
     =^  cards  state
       abet:(poke-base:hc here give pail)
     [cards this]
@@ -124,7 +124,7 @@
     =+  !<([here=path =pail:g] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %bump)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(bump-base:hc here give pail)
     [cards this]
@@ -133,7 +133,7 @@
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %kill)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(kill-base:hc give here)
     [cards this]
@@ -142,7 +142,7 @@
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %tidy)
-    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(tidy-stem:hc give here)
     [cards this]
@@ -191,12 +191,6 @@
     =^  cards  state
       abet:(take-arvo:hc wire sign)
     [cards this]
-    ::
-      [%boot-thread ~]
-    ?>  ?=([%khan %arow *] sign)
-    ?:  ?=(%.n -.p.sign)
-      ((slog p.p.sign) `this)
-    ~&(> "Grubbery booted with boot thread!" `this)
   ==
 ::
 ++  on-fail   on-fail:def
@@ -258,6 +252,12 @@
       $(this (tidy-stem [from wire] path):[dart .])
     ==
   ==
+::
+++  boot
+  ^-  _this
+  =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
+  =.  this  (make-base give /boot /sig /boot ~)
+  (poke-base /boot give /sig !>(~))
 ::
 ++  new-last
   |=  [now=@da last=@da]
@@ -361,6 +361,7 @@
 ++  get-base
   |=  base=path
   ^-  base:g
+  ?:  ?=([%boot ~] base)  boot:grubbery
   ?:  ?=([%lib ~] base)  base:lib:grubbery
   =/  =grub:g  (need (~(get of cone) (welp /bin/base base)))
   ?>  ?=(%stem -.kind.grub)
@@ -380,6 +381,7 @@
   |=  pat=path
   ^-  mold
   ~|  "{(spud pat)}: stud not found"
+  ?:  ?=([%sig ~] pat)  ,~
   ?:  ?=([%lib ~] pat)
     ,[@t (each [(list (pair term path)) hoon] tang)]
   ?:  ?=([%bin ~] pat)  noun
@@ -812,6 +814,7 @@
   =.  cone  (~(put of cone) here grub(proc.kind ~))
   =.  trac  (~(put of trac) here tack(give ~))
   =.  this  (clean here poke.last.tack)
+  ?:  ?=([@ %clay ~] from.u.give.tack)  this :: +on-load
   ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
     %^    ingest
         [(scot %p our.bowl) /gall/grubbery]
@@ -830,6 +833,8 @@
   %+  give-simple-payload:app:server
     eyre-id
   ?:  ?=(%| -.res)
+    ~&  >>>  mote.p.res
+    %-  (slog tang.p.res)
     %^    internal-server-error:io
         =(src our.bowl)
       "Base Grub Crashed"

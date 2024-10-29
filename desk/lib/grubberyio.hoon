@@ -305,9 +305,9 @@
   =/  m  (charm ,~)
   ;<  *  bind:m 
     %:  make-and-poke
-      (weld /lib/base path)
+      (weld /lib path)
       /lib  /lib  ~
-      [/init !>(code)]
+      [/sig !>(code)]
     ==
   (pure:m ~)
 ::
