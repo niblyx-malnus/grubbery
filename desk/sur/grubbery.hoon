@@ -3,19 +3,26 @@
 +$  pail  (pair stud vase)
 +$  card  card:agent:gall
 +$  make
-  $%  [%root =pail]
-      [%stem =stud sour=(set path)]
+  $%  [%base =stud base=path data=(unit vase)]
+      [%stem =stud stem=path sour=(set path)]
   ==
 ::
 +$  deed  ?(%poke %bump %peek %make %oust %kill %tidy)
-::
+:: group   (set ship)
+:: groups  (map deed (set path)) :: set of group references
+:: /grp contains set of ships
+:: /acl contains (map deed (set path))
+:: /san contains (set path)
+:: 
 +$  sand  $-((unit [path deed]) ?) :: constrains outgoing darts
 +$  acol  $-([ship deed] ?)        :: constrains incoming pokes
-:: effects that a root can emit
+::
+:: effects that a base grub can emit
 ::
 +$  dart
-  $%  [%node =wire =path =load]
+  $%  [%grub =wire =path =load]
       [%sysc =card:agent:gall]
+      [%scry =wire =mold =path]
   ==
 ::
 +$  bolt  (pair path dart)
@@ -32,12 +39,12 @@
   ==
 ::
 +$  kind
-  $%  [%root proc=(unit proc:root)]
-      [%stem tidy=[flag=? boom=(unit tang)] sour=(map path @da)]
+  $%  [%base base=path proc=(unit proc:base)]
+      [%stem stem=path tidy=[flag=? boom=(unit tang)] sour=(map path @da)]
   ==
 ::
-+$  node  [data=vase =stud =kind]
-+$  land  (axal node)
++$  grub  [data=vase =stud =kind]
++$  cone  (axal grub)
 +$  give  [from=path =wire]
 +$  poke  [=give =pail]
 +$  tack
@@ -45,12 +52,19 @@
       sinx=(set path)
       give=(unit give)
       line=(qeu poke)
-      eyre=(unit @ta)
   ==
 +$  trac  (axal tack)
+:: NOTE: the distinction between cone and trac exists because
+::       it is not yet clear what information should be available
+::       on peek. Sinx being in tack also makes dependencies
+::       more ergonomic (for now) in the case where a source
+::       is deleted and then recreated or replaced
 ::
-+$  bindings  (map (list @t) path)
-+$  http-response  (pair response-header:http (unit octs))
++$  bindings  (map (list @t) path) :: eyre bindings
+:: time ordered latest changes
+::
++$  history   ((mop @da path) gth)
+++  hon       ((on @da path) gth)
 ::
 ++  stem
   =<  stem
@@ -65,8 +79,8 @@
     ==
   --
 ::
-++  root
-  =<  root
+++  base
+  =<  base
   |%
   +$  bowl
     $:  now=@da       :: time
@@ -85,14 +99,15 @@
   ::
   +$  intake
     $%  [%bump =pail]
-        [%peek =wire =path =land] :: local read
+        [%peek =wire =path =cone] :: local read
         [%made =wire err=(unit tang)] :: response to make
         [%gone =wire err=(unit tang)] :: response to oust
         [%dead =wire err=(unit tang)] :: response to kill
-        [%root =wire =sign] :: response from poke or bump
+        [%base =wire =sign] :: response from poke or bump
         [%tidy =wire err=(unit tang)] :: response to tidy
         :: messages from gall and arvo
         ::
+        [%scry =wire =path =vase]
         [%arvo =wire sign=sign-arvo]
         [%agent =wire =sign:agent:gall]
         [%watch =path]
@@ -120,8 +135,8 @@
     $-(input (output-raw value))
   ::
   +$  proc  _*form:(charm ,pail)
-  +$  root  $-([bowl pail] proc)
-  +$  give  [from=path =wire]
+  +$  base  $-([bowl pail] proc)
+  +$  give  (each @ta [from=path =wire])
   +$  poke  [=give =pail]
   :: 
   ++  charm

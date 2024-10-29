@@ -1,9 +1,10 @@
-/-  s=signals
-/+  signals, server, dbug, verb, default-agent
+/-  g=grubbery
+/+  grubbery, io=grubberyio, server, dbug, verb, default-agent
 /=  x-  /ted/boot
-/=  x-  /mar/sign-root
+/=  x-  /ted/scry
+/=  x-  /mar/sign-base
 |%
-+$  state-0  [%0 =land:s =trac:s =bindings:s]
++$  state-0  [%0 =cone:g =trac:g =bindings:g =history:g]
 +$  card     card:agent:gall
 --
 ::
@@ -22,16 +23,24 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  [~ this]
+  :_  this
+  [%pass /boot-thread %arvo %k %fard %grubbery %boot %noun !>(~)]~
 ::
 ++  on-save   !>(state)
 ::
 ++  on-load
   |=  ole=vase
   ^-  (quip card _this)
-  [~ this]
+  :_  this
+  [%pass /boot-thread %arvo %k %fard %grubbery %boot %noun !>(~)]~
 ::
-++  on-peek   on-peek:def
+++  on-peek
+  |=  =(pole knot)
+  ^-  (unit (unit cage))
+  ?.  ?=([%x %history since=@ta ~] pole)
+    [~ ~]
+  =/  since=@da  (slav %da since.pole)
+  ``noun+!>((tap:hon:g (lot:hon:g history ~ `since)))
 ::
 ++  on-poke
   |=  [=mark =vase]
@@ -40,76 +49,100 @@
   ?+    mark  (on-poke:def mark vase)
       %handle-http-request
     =+  !<([eyre-id=@ta req=inbound-request:eyre] vase)
-    =/  [[* site=(list @t)] *]
+    =/  lin=request-line:server
       (parse-request-line:server url.request.req)
-    =/  prefix=(list @t)  (scag 1 site)
+    =/  prefix=(list @t)  (scag 1 site.lin)
     |-
     ?~  here=(~(get by bindings) prefix)
-      $(prefix (scag +((lent prefix)) site))
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+      ?.  (lth (lent prefix) (lent site.lin))
+        ~&("strange url: {(spud site.lin)}" [~ this])
+      $(prefix (scag +((lent prefix)) site.lin))
+    =/  suffix=path  (slag (lent prefix) site.lin)
+    :: send the request to the base grub with the longest
+    :: corresponding prefix
+    ::
+    =/  dest=path  (weld u.here suffix)
+    =.  dest
+      |-
+      ?^  get=(~(get of cone) dest)
+        ?:  ?=(%base -.kind.u.get)
+          dest
+        $(dest (snip dest))
+      $(dest (snip dest))
+    ::
+    =/  =give:g
+      :_  /
+      ;:  weld
+        /(scot %p our.bowl)
+        sap.bowl
+        /(scot %p src.bowl)
+        /[eyre-id]
+      ==
+    ::
+    =/  =pail:g  [/handle-http-request !>([lin req])]
     =^  cards  state
-      abet:(poke-root:hc u.here give /handle-http-request !>(req))
+      abet:(poke-base:hc dest give pail)
     [cards this]
     ::
-      %oust-node
+      %oust-grub
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %oust)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(oust-node:hc give here)
+      abet:(oust-grub:hc give here)
     [cards this]
     ::
-      %make-root
-    =+  !<([here=path stud=path data=^vase] vase)
+      %make-base
+    =+  !<([here=path stud=path base=path data=(unit ^vase)] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %make)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(make-root:hc give here stud data)
+      abet:(make-base:hc give here stud base data)
     [cards this]
     ::
       %make-stem
-    =+  !<([here=path stud=path sour=(set path)] vase)
+    =+  !<([here=path stud=path stem=path sour=(set path)] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %make)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(make-stem:hc give here stud sour)
+      abet:(make-stem:hc give here stud stem sour)
     [cards this]
     ::
-      %poke-root
-    =+  !<([=wire here=path =pail:s] vase)
+      %poke-base
+    =+  !<([=wire here=path =pail:g] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %poke)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] wire]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] wire]
     =^  cards  state
-      abet:(poke-root:hc here give pail)
+      abet:(poke-base:hc here give pail)
     [cards this]
     ::
-      %bump-root
-    =+  !<([here=path =pail:s] vase)
+      %bump-base
+    =+  !<([here=path =pail:g] vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %bump)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(bump-root:hc here give pail)
+      abet:(bump-base:hc here give pail)
     [cards this]
     ::
-      %kill-root
+      %kill-base
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %kill)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(kill-root:hc give here)
+      abet:(kill-base:hc give here)
     [cards this]
     ::
       %tidy-stem
     =+  !<(here=path vase)
     ~&  here+here
     ?>  (acol-tunnel:hc here src.bowl %tidy)
-    =/  =give:s  [[(scot %p our.bowl) sap.bowl] /]
+    =/  =give:g  [[(scot %p our.bowl) sap.bowl] /]
     =^  cards  state
       abet:(tidy-stem:hc give here)
     [cards this]
@@ -119,7 +152,7 @@
   |=  =path
   ^-  (quip card _this)
   ?+    path  (on-watch:def path)
-      [%root @ *]
+      [%base @ *]
     =^  cards  state
       abet:(take-watch path)
     [cards this]
@@ -135,7 +168,7 @@
 ++  on-leave
   |=  =path
   ^-  (quip card _this)
-  ?.  ?=([%root @ *] path)
+  ?.  ?=([%base @ *] path)
     (on-leave:def path)
   =^  cards  state
     abet:(take-leave path)
@@ -144,7 +177,8 @@
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
-  ~&  >  %on-agent
+  ?.  ?=([%base @ *] wire)
+    (on-agent:def wire sign)
   =^  cards  state
     abet:(take-agent:hc wire sign)
   [cards this]
@@ -153,31 +187,36 @@
   |=  [=wire sign=sign-arvo]
   ^-  (quip card _this)
   ?+    wire  (on-arvo:def wire sign)
-      [%root @ *]
+      [%base @ *]
     =^  cards  state
       abet:(take-arvo:hc wire sign)
     [cards this]
+    ::
+      [%boot-thread ~]
+    ?>  ?=([%khan %arow *] sign)
+    ?:  ?=(%.n -.p.sign)
+      ((slog p.p.sign) `this)
+    ~&(> "Grubbery booted with boot thread!" `this)
   ==
 ::
 ++  on-fail   on-fail:def
 --
 ::
 =|  cards=(list card)
-=|  bolts=(list bolt:s)
+=|  bolts=(list bolt:g) :: a stack
 |_  =bowl:gall
 +*  this  .
 ++  emit-card   |=(=card this(cards [card cards]))
 ++  emit-cards  |=(cadz=(list card) this(cards (welp (flop cadz) cards)))
-++  emit-bolt   |=(=bolt:s this(bolts [bolt bolts]))
-++  emit-bolts  |=(botz=(list bolt:s) this(bolts (welp (flop botz) bolts)))
+++  emit-bolt   |=(=bolt:g this(bolts [bolt bolts]))
+++  emit-bolts  |=(botz=(list bolt:g) this(bolts (welp botz bolts)))
 :: handle all bolts and return effects and state
 ::
 ++  abet
-  =.  bolts  (flop bolts)
   |-
   ?~  =(~ bolts)
     [(flop cards) state]
-  =/  [here=path =dart:s]  ?~(bolts !! i.bolts)
+  =/  [here=path =dart:g]  ?~(bolts !! i.bolts)
   =.  bolts  ?~(bolts !! t.bolts)
   =/  from=path  (weld /(scot %p our.bowl)/gall/[dap.bowl]/$ here)
   ?-    -.dart
@@ -187,29 +226,33 @@
     ::       a process or when it crashes
     ::
     $(this (handle-sysc-card here card.dart))
-      %node
+    ::
+      %scry
+    $(this (take-scry here [wire mold path]:dart))
+    ::
+      %grub
     ?-    -.load.dart
         %poke
-      $(this (poke-root path [from wire] pail.load):[dart .])
+      $(this (poke-base path [from wire] pail.load):[dart .])
       ::
         %bump
-      $(this (bump-root path [from wire] pail.load):[dart .])
+      $(this (bump-base path [from wire] pail.load):[dart .])
       ::
         %peek
       $(this (take-peek here [wire path]:dart))
       ::
         %make
-      =/  =give:s  [from wire.dart]
+      =/  =give:g  [from wire.dart]
       ?-  -.make.load.dart
-        %root  $(this (make-root give [path pail.make.load]:dart))
-        %stem  $(this (make-stem give [path [stud sour]:make.load]:dart))
+        %base  $(this (make-base give [path [stud base data]:make.load]:dart))
+        %stem  $(this (make-stem give [path [stud stem sour]:make.load]:dart))
       ==
       ::
         %oust
-      $(this (oust-node [from wire] path):[dart .])
+      $(this (oust-grub [from wire] path):[dart .])
       ::
         %kill
-      $(this (kill-root [from wire] path):[dart .])
+      $(this (kill-base [from wire] path):[dart .])
       ::
         %tidy
       $(this (tidy-stem [from wire] path):[dart .])
@@ -219,18 +262,26 @@
 ++  new-last
   |=  [now=@da last=@da]
   ^-  @da
-  ?:  (lth last now)
-    now
-  +(last)
+  =/  next=@da  ?:((lth last now) now +(last))
+  |-
+  ?.  (has:hon:g history next)
+    next
+  $(next +(next))
 ::
 ++  next-tack
   |=  here=path
   ^+  this
-  =/  =tack:s  (need (~(get of trac) here))
-  =.  tack     tack(step.last (new-last now.bowl step.last.tack))
-  ?:  &(=(~ sinx.tack) !(~(has of land) here))
+  ?~  tac=(~(get of trac) here)
+    =/  step=@da  (new-last [now now]:bowl)
+    =.  history  (put:hon:g history step here)
+    this(trac (~(put of trac) here [step step] ~ ~ ~))
+  =^  del  history
+    (del:hon:g history step.last.u.tac)
+  ?:  &(=(~ sinx.u.tac) !(~(has of cone) here))
     this(trac (~(del of trac) here)) :: may occur in an oust
-  this(trac (~(put of trac) here tack))
+  =/  step=@da  (new-last now.bowl step.last.u.tac)
+  =.  history  (put:hon:g history step here)
+  this(trac (~(put of trac) here u.tac(step.last step)))
 :: +decap from /lib/rudder
 ::
 ++  has-prefix
@@ -244,7 +295,7 @@
 ::
 ++  strict-sandbox
   |=  here=path
-  ^-  sand:s
+  ^-  sand:g
   |=  dest=(unit [=path *])
   ^-  ?
   ?~  dest
@@ -253,12 +304,12 @@
 ::
 ++  get-sand
   |=  here=path
-  ^-  sand:s
-  ?~  here  _& :: root can talk to anyone
-  ?~  nod=(~(get of land) [%san here])  _& :: can be bubbled through
+  ^-  sand:g
+  ?~  here  _& :: / can talk to anyone
+  ?~  nod=(~(get of cone) [%san here])  _& :: can be bubbled through
   ?>  ?=(%stem -.kind.u.nod)
   ?.  =([%& ~] tidy.kind.u.nod)  (strict-sandbox here)
-  =/  res=(each sand:s tang)  (mule |.(!<(sand:s data.u.nod)))
+  =/  res=(each sand:g tang)  (mule |.(!<(sand:g data.u.nod)))
   ?-  -.res
     %&  p.res
     %|  (strict-sandbox here) :: emergency sandbox
@@ -266,9 +317,9 @@
 :: check if a dart can leave its cone
 ::
 ++  sand-bubble
-  |=  [here=path dest=(unit [path deed:s])]
+  |=  [here=path dest=(unit [path deed:g])]
   ^-  ?
-  =/  =sand:s  (get-sand here)
+  =/  =sand:g  (get-sand here)
   ?.  (sand dest)
     %|
   ?:  =(~ here)
@@ -277,55 +328,65 @@
 ::
 ++  get-acol
   |=  here=path
-  ^-  acol:s
+  ^-  acol:g
   :: files in /acl define access control on corresponding file in /san
   ?:  ?=([%san *] here)
     $(here [%acl t.here])
   :: files in /acl define access control on themselves as well
   ?.  ?=([%acl *] here)
     $(here [%acl here])
-  ?~  nod=(~(get of land) here)  _|
+  ?~  nod=(~(get of cone) here)  _| :: only you can access / 
   ?>  ?=(%stem -.kind.u.nod)
-  ?.  =([%& ~] tidy.kind.u.nod)  _|
+  ?.  =([%& ~] tidy.kind.u.nod)  _| :: don't use outdated code
   :: TODO: does mule catch evil vases???
-  =/  res=(each acol:s tang)
-    (mule |.(!<(acol:s data.u.nod)))
+  =/  res=(each acol:g tang)
+    (mule |.(!<(acol:g data.u.nod)))
   ?-(-.res %| _|, %& p.res) :: default private
 :: check if a foreign ship can perform an action
 ::
 ++  acol-tunnel
-  |=  [here=path poke=[=ship deed:s]]
+  |=  [here=path poke=[=ship deed:g]]
   ^-  ?
   ?:  =(ship.poke our.bowl)
     %&
   =|  prefix=path
   |-
-  =/  =acol:s  (get-acol prefix)
+  =/  =acol:g  (get-acol prefix)
   ?:  (acol poke)
     %&
   ?:  =(here prefix)
     %|
   $(prefix (scag +((lent prefix)) here))
 ::
-++  get-root
-  |=  here=path
-  ^-  root:s
-  ?<  ?=([%bin *] here) :: all /bin nodes are stems
-  ?:  ?=([%lib *] here)  root:lib:signals :: /lib nodes
-  =/  =node:s  (need (~(get of land) (welp /bin/nod here)))
-  ?>  ?=(%stem -.kind.node)
-  ?>  =([%& ~] tidy.kind.node)
-  !<(root:s data.node)
+++  get-base
+  |=  base=path
+  ^-  base:g
+  ?:  ?=([%lib ~] base)  base:lib:grubbery
+  =/  =grub:g  (need (~(get of cone) (welp /bin/base base)))
+  ?>  ?=(%stem -.kind.grub)
+  ?>  =([%& ~] tidy.kind.grub)
+  !<(base:g data.grub)
 ::
 ++  get-stem
-  |=  here=path
-  ^-  stem:s
-  ?<  ?=([%lib *] here) :: all /lib nodes are roots
-  ?:  ?=([%bin *] here)  stem:bin:signals :: /bin nodes
-  =/  =node:s  (need (~(get of land) (welp /bin/nod here)))
-  ?>  ?=(%stem -.kind.node)
-  ?>  =([%& ~] tidy.kind.node)
-  !<(stem:s data.node)
+  |=  stem=path
+  ^-  stem:g
+  ?:  ?=([%bin ~] stem)  stem:bin:grubbery
+  =/  =grub:g  (need (~(get of cone) (welp /bin/stem stem)))
+  ?>  ?=(%stem -.kind.grub)
+  ?>  =([%& ~] tidy.kind.grub)
+  !<(stem:g data.grub)
+::
+++  get-stud
+  |=  pat=path
+  ^-  mold
+  ~|  "{(spud pat)}: stud not found"
+  ?:  ?=([%lib ~] pat)
+    ,[@t (each [(list (pair term path)) hoon] tang)]
+  ?:  ?=([%bin ~] pat)  noun
+  =/  =grub:g  (need (~(get of cone) (welp /bin/stud pat)))
+  ?>  ?=(%stem -.kind.grub)
+  ?>  =([%& ~] tidy.kind.grub)
+  !<(mold data.grub)
 ::
 ++  no-cycle
   =|  hist=(list path)
@@ -336,9 +397,9 @@
   ?^  cycle
     ~&  ["ERROR: cycle" cycle]
     %| :: a cycle has been found
-  ?~  nod=(~(get of land) here)
-    %& :: non-existent nodes aren't a cycle
-  ?:  ?=(%root -.kind.u.nod)
+  ?~  nod=(~(get of cone) here)
+    %& :: non-existent grubs aren't a cycle
+  ?:  ?=(%base -.kind.u.nod)
     %&
   =/  sour=(list path)  ~(tap in ~(key by sour.kind.u.nod))
   |-
@@ -362,35 +423,35 @@
   ^+  this
   =/  sour=(list path)  ~(tap in sour)
   ?>  (no-cycles here sour)
-  =/  =node:s  (need (~(get of land) here))
-  ?>  ?=(%stem -.kind.node)
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%stem -.kind.grub)
   |-
   ?~  sour
-    this(land (~(put of land) here node))
-  ?.  (~(has of land) i.sour)
+    this(cone (~(put of cone) here grub))
+  ?.  (~(has of cone) i.sour)
     ~|(source+i.sour !!)
-  =/  =tack:s  (need (~(get of trac) i.sour))
+  =/  =tack:g  (need (~(get of trac) i.sour))
   =.  sinx.tack  (~(put in sinx.tack) here)
   =.  trac  (~(put of trac) i.sour tack)
-  =.  sour.kind.node  (~(put by sour.kind.node) i.sour step.last.tack)
+  =.  sour.kind.grub  (~(put by sour.kind.grub) i.sour step.last.tack)
   $(sour t.sour)
 ::
 ++  dirty
   |=  here=path
-  ^-  [(set path) land:s]
-  =/  =node:s  (need (~(get of land) here))
-  =?  land  ?=(%stem -.kind.node)
-    %+  ~(put of land)  here
-    node(kind [%stem [| ~] sour]:kind.node)
-  =/  =tack:s  (need (~(get of trac) here))
+  ^-  [(set path) cone:g]
+  =/  =grub:g  (need (~(get of cone) here))
+  =?  cone  ?=(%stem -.kind.grub)
+    %+  ~(put of cone)  here
+    grub(tidy.kind [| ~])
+  =/  =tack:g  (need (~(get of trac) here))
   ?:  =(0 ~(wyt in sinx.tack))
-    [(sy ~[here]) land]
+    [(sy ~[here]) cone]
   =/  sinx=(list path)  ~(tap in sinx.tack)
   =|  edge=(set path)
   |-
   ?~  sinx
-    [edge land]
-  =^  e  land
+    [edge cone]
+  =^  e  cone
     (dirty i.sinx)
   $(sinx t.sinx, edge (~(uni in edge) e))
 ::
@@ -400,22 +461,22 @@
   %-  ~(gas by *(map path vase))
   %+  turn  ~(tap in sour)
   |=  =path
-  ?>  (sand-bubble here ~ path %peek)
+  :: ?>  (sand-bubble here ~ path %peek)
   :-  path
-  data:(need (~(get of land) path))
+  data:(need (~(get of cone) path))
 ::
 ++  tidy-stem
-  |=  [=give:s here=path]
+  |=  [=give:g here=path]
   ^+  this
   ~&  >>  %tidy-stem
   =/  res=(each _this tang)
     (mule |.((tidy here)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %tidy wire.give err]
 ::
@@ -424,15 +485,15 @@
   ^+  this
   :: deal with non-existent source later
   ::
-  ?~  nod=(~(get of land) here)  this
-  =/  =node:s  u.nod
-  :: roots are always tidy
+  ?~  nod=(~(get of cone) here)  this
+  =/  =grub:g  u.nod
+  :: bases are always tidy
   ::
-  ?.  ?=(%stem -.kind.node)  this
+  ?.  ?=(%stem -.kind.grub)  this
   :: tidy stems stay tidy
   ::
-  ?:  flag.tidy.kind.node  this
-  =/  sour=(list (pair path @da))  ~(tap by sour.kind.node)
+  ?:  flag.tidy.kind.grub  this
+  =/  sour=(list (pair path @da))  ~(tap by sour.kind.grub)
   :: tidy each source
   ::
   =.  this
@@ -450,27 +511,27 @@
     ?~  sour
       :: we've checked all sources and don't need to recompute
       ::
-      =.  node  node(tidy.kind [%& ~])
-      =.  land  (~(put of land) here node)
+      =.  grub  grub(tidy.kind [%& ~])
+      =.  cone  (~(put of cone) here grub)
       this
-    ?~  dep=(~(get of land) p.i.sour)
+    ?~  dep=(~(get of cone) p.i.sour)
       :: If the dep doesn't exist, update boom
       ::
       =/  =tang
         :~  leaf+"stem boom"
             leaf+(spud here)
-            leaf+"{(spud p.i.sour)} has no node"
+            leaf+"{(spud p.i.sour)} has no grub"
         ==
       :: %-  (slog tang)
-      =.  boom.tidy.kind.node  [~ tang]
-      =.  land  (~(put of land) here node)
+      =.  boom.tidy.kind.grub  [~ tang]
+      =.  cone  (~(put of cone) here grub)
       this
     ?:  &(?=(%stem -.kind.u.dep) ?=(^ boom.tidy.kind.u.dep))
       :: If a source is a stem and has a boom (crashed on recompute),
       :: we inherit its boom
       ::
-      =.  boom.tidy.kind.node  boom.tidy.kind.u.dep
-      =.  land  (~(put of land) here node)
+      =.  boom.tidy.kind.grub  boom.tidy.kind.u.dep
+      =.  cone  (~(put of cone) here grub)
       this
     :: if the source step.last has changed, we are not tidy
     ::
@@ -480,33 +541,38 @@
   :: If we are not tidy because our sources have updated
   :: recompute here
   ::
-  =/  res=(each [darts=(list dart:s) data=vase] tang)
+  =/  res=(each [darts=(list dart:g) data=vase] tang)
     %-  mule  |.
-    =/  =stem:s  (get-stem here)
+    =/  =stem:g  (get-stem stem.kind.grub)
     =/  deps=(map path vase)
-      (make-deps here ~(key by sour.kind.node)) :: sandoxed deps
+      (make-deps here ~(key by sour.kind.grub)) :: sandboxed deps
     (stem [now our eny here deps]:[bowl .])
   ?-    -.res
       %|
     =/  =tang  [leaf+"stem boom" leaf+(spud here) p.res]
     :: %-  (slog tang)
-    =.  node  node(tidy.kind [%| ~ tang])
-    =.  land  (~(put of land) here node)
+    =.  grub  grub(tidy.kind [%| ~ tang])
+    =.  cone  (~(put of cone) here grub)
     this
       %&
-    =?  this  !=(data.node data.p.res)  (next-tack here)
-    =.  node  node(data data.p.res, tidy.kind [%& ~])
-    =.  land  (~(put of land) here node)
+    =?  this  !=(data.grub data.p.res)  (next-tack here)
+    =.  grub  grub(data data.p.res, tidy.kind [%& ~])
+    =.  cone  (~(put of cone) here grub)
     %-  emit-bolts
     %+  turn  darts.p.res
-    |=  =dart:s
+    |=  =dart:g
     ?-    -.dart
         %sysc
       ~|  "ERROR: {(spud here)} has no system access"
       ?>  (sand-bubble here ~)
       [here dart]
       ::
-        %node
+        %scry
+      ~|  "ERROR: {(spud here)} has no system access"
+      ?>  (sand-bubble here ~)
+      [here dart]
+      ::
+        %grub
       ~|  "ERROR: {(spud here)} has no {(trip -.load.dart)} access to {(spud path.dart)}"
       ?>  (sand-bubble here ~ [path -.load]:dart)
       [here dart]
@@ -517,7 +583,7 @@
   |=  here=path
   ^+  this
   ~&  >>  %dirty-and-tidy
-  =^  e  land  (dirty here)
+  =^  e  cone  (dirty here)
   =/  edge=(list path)  ~(tap in e)
   |-
   ?~  edge
@@ -528,143 +594,150 @@
 ++  del-sources
   |=  here=path
   ^+  this
-  =/  =node:s  (need (~(get of land) here))
-  ?>  ?=(%stem -.kind.node)
-  =/  sour=(list path)  (turn ~(tap in sour.kind.node) head)
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%stem -.kind.grub)
+  =/  sour=(list path)  (turn ~(tap in sour.kind.grub) head)
   |-
   ?~  sour
     this
-  =/  =tack:s    (need (~(get of trac) i.sour))
+  =/  =tack:g    (need (~(get of trac) i.sour))
   =.  sinx.tack  (~(del in sinx.tack) here)
-  ?:  &(=(~ sinx.tack) !(~(has of land) i.sour))
+  ?:  &(=(~ sinx.tack) !(~(has of cone) i.sour))
     $(sour t.sour, trac (~(del of trac) i.sour))
   $(sour t.sour, trac (~(put of trac) i.sour tack))
 ::
 ++  do-oust
   |=  here=path
   ^+  this
-  =/  =node:s  (need (~(get of land) here))
+  =/  =grub:g  (need (~(get of cone) here))
   =.  this
-    ?-  -.kind.node
-      %root  (kill here)
+    ?-  -.kind.grub
+      %base  (kill here)
       %stem  (del-sources here)
     ==
-  =.  land  (~(del of land) here)
+  =.  cone  (~(del of cone) here)
   (next-tack here)
 ::
-++  oust-node
-  |=  [=give:s here=path]
+++  oust-grub
+  |=  [=give:g here=path]
   ^+  this
   =/  res=(each _this tang)  (mule |.((do-oust here)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %gone wire.give err]
 ::
-++  new-root
-  |=  [here=path stud=path data=vase]
+++  new-base
+  |=  [here=path stud=path base=path data=(unit vase)]
   ^+  this
-  ?<  ?=([%bin *] here) :: roots not allowed in /bin
-  ?<  ?=([%acl *] here) :: roots not allowed in /acl
-  ?<  ?=([%san *] here) :: roots not allowed in /san
-  =/  =node:s  [data stud [%root ~]]
-  =.  land  (~(put of land) here node)
-  =.  trac
-    %+  ~(put of trac)  here
-    ?~  tac=(~(get of trac) here)
-      [[now now]:bowl ~ ~ ~ ~]
-    u.tac(step.last (new-last now.bowl step.last.u.tac))
+  ?<  ?=([%bin *] here) :: bases not allowed in /bin
+  ?<  ?=([%acl *] here) :: bases not allowed in /acl
+  ?<  ?=([%san *] here) :: bases not allowed in /san
+  =/  =mold  (get-stud stud)
+  =/  data=vase
+    ?~  data
+      !>(*mold)
+    !>(!<(mold u.data))
+  =/  =grub:g  [data stud [%base base ~]]
+  =.  cone  (~(put of cone) here grub)
+  =.  this  (next-tack here)
   (dirty-and-tidy here)
 ::
-++  make-root
-  |=  [=give:s here=path stud=path data=vase]
+++  make-base
+  |=  [=give:g here=path stud=path base=path data=(unit vase)]
   ^+  this
-  =/  res=(each _this tang)  (mule |.((new-root here stud data)))
+  =/  res=(each _this tang)  (mule |.((new-base here stud base data)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %made wire.give err]
 ::
 ++  new-stem
-  |=  [here=path stud=path sour=(set path)]
+  |=  [here=path stud=path stem=path sour=(set path)]
   ^+  this
   ?<  ?=([%lib *] here) :: stems not allowed in /lib
-  =/  =node:s  [!>(~) stud [%stem [| ~] ~]]
-  =.  land     (~(put of land) here node)
+  =/  =grub:g  [!>(~) stud [%stem stem [| ~] ~]]
+  =.  cone     (~(put of cone) here grub)
   =.  this     (add-sources here sour)
-  =.  trac
-    %+  ~(put of trac)  here
-    ?~  tac=(~(get of trac) here)
-      [[now now]:bowl ~ ~ ~ ~]
-    u.tac(step.last (new-last now.bowl step.last.u.tac))
+  =.  this     (next-tack here)
   (dirty-and-tidy here)
 ::
 ++  make-stem
-  |=  [=give:s here=path stud=path sour=(set path)]
+  |=  [=give:g here=path stud=path stem=path sour=(set path)]
   ^+  this
-  =/  res=(each _this tang)  (mule |.((new-stem here stud sour)))
+  =/  res=(each _this tang)  (mule |.((new-stem here stud stem sour)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %made wire.give err]
 ::
 ++  take-peek
   |=  [here=path =wire pat=path]
   ^+  this
-  =/  from=path  [(scot %p our.bowl) /gall/signals]
-  (ingest from here ~ %peek wire pat (~(dip of land) pat))
+  =/  from=path  [(scot %p our.bowl) /gall/grubbery]
+  (ingest from here ~ %peek wire pat (~(dip of cone) pat))
+::
+++  take-scry
+  |=  [here=path =wire =mold pat=path]
+  ^+  this
+  =/  from=path  [(scot %p our.bowl) /gall/grubbery]
+  =;  =vase
+    (ingest from here ~ %scry wire pat vase)
+  ?>  ?=(^ pat)
+  ?>  ?=(^ t.pat)
+  !>(.^(mold i.pat (scot %p our.bowl) i.t.pat (scot %da now.bowl) t.t.pat))
 ::
 ++  kill
   |=  here=path
   ^+  this
-  =/  =tack:s  (need (~(get of trac) here))
-  =/  =node:s  (need (~(get of land) here))
-  ?>  ?=(%root -.kind.node)
-  =.  land  (~(put of land) here node(proc.kind ~))
+  =/  =tack:g  (need (~(get of trac) here))
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%base -.kind.grub)
+  =.  cone  (~(put of cone) here grub(proc.kind ~))
   |-
   =.  this  (give-poke-result here %| %killed [leaf+(spud here) ~])
   =^  poke  trac
     (stage-next-poke here)
   ?^(poke $ this) :: repeat until no poke staged
 ::
-++  kill-root
-  |=  [=give:s here=path]
+++  kill-base
+  |=  [=give:g here=path]
   ^+  this
   =/  res=(each _this tang)  (mule |.((kill here)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %dead wire.give err]
 ::
-++  bump-root
-  |=  [here=path =give:s =pail:s]
+++  bump-base
+  |=  [here=path =give:g =pail:g]
   ^+  this
   =/  res=(each _this tang)
     (mule |.((ingest from.give here ~ %bump pail)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %signals %$ ^] from.give)
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
   %^    ingest
-      [(scot %p our.bowl) /gall/signals]
+      [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
-  [~ %root wire.give %bump err]
+  [~ %base wire.give %bump err]
 :: TODO: handle outgoing keens
 ::
 ++  clean
@@ -674,29 +747,29 @@
   %+  murn  ~(tap by wex.bowl)
   |=  [[=wire =ship =term] *]
   ^-  (unit card)
-  ?.  ?=([%root @ *] wire)
+  ?.  ?=([%base @ *] wire)
     ~
   =/  [h=path l=@da *]  (unwrap-wire wire)
   ?.  &(=(h here) =(l last))
     ~
   [~ %pass wire %agent [ship term] %leave ~]
 ::
-++  poke-root
-  |=  [here=path =poke:s]
+++  poke-base
+  |=  [here=path =poke:g]
   ^+  this
   ~&  %take-poke
-  =/  =tack:s  (need (~(get of trac) here))
+  =/  =tack:g  (need (~(get of trac) here))
   =.  trac  (~(put of trac) here tack(line (~(put to line.tack) poke)))
   (run-next-poke here)
 ::
 ++  stage-next-poke
   |=  here=path
-  ^-  [(unit poke:s) trac:s]
-  =/  =tack:s  (need (~(get of trac) here))
+  ^-  [(unit poke:g) trac:g]
+  =/  =tack:g  (need (~(get of trac) here))
   ?>  =(~ give.tack)
   ?:  =(~ line.tack)
     [~ trac] :: no more pokes to run
-  =/  [=poke:s line=(qeu poke:s)]  ~(get to line.tack)
+  =/  [=poke:g line=(qeu poke:g)]  ~(get to line.tack)
   =.  tack
     %=  tack
       line       line
@@ -710,110 +783,80 @@
   ^+  this
   ~&  %run-next-poke
   ~&  here+here
-  =/  =node:s  (need (~(get of land) here))
+  =/  =grub:g  (need (~(get of cone) here))
   =^  poke  trac
     (stage-next-poke here)
   ?~  poke 
     this
-  ?>  ?=(%root -.kind.node)
-  =/  =bowl:root:s  [now our eny ~ ~ from.give.u.poke here]:[bowl .]
-  =/  build=(each proc:root:s tang)
-    (mule |.(((get-root here) bowl pail.u.poke)))
+  ?>  ?=(%base -.kind.grub)
+  =/  =bowl:base:g  [now our eny ~ ~ from.give.u.poke here]:[bowl .]
+  =/  build=(each proc:base:g tang)
+    (mule |.(((get-base base.kind.grub) bowl pail.u.poke)))
   ?:  ?=(%& -.build)
-    =.  land  (~(put of land) here node(proc.kind `p.build))
-    =/  from=path  [(scot %p our.bowl) /gall/signals]
+    =.  cone  (~(put of cone) here grub(proc.kind `p.build))
+    =/  from=path  [(scot %p our.bowl) /gall/grubbery]
     (ingest from here ~) :: start
   :: %-  (slog [leaf+"build-fail" leaf+(spud here) p.build])
   =.  this  (give-poke-result here %| %build-fail p.build)
   (run-next-poke here)
 ::
 ++  give-poke-result
-  |=  [here=path res=(each pail:s goof)]
+  |=  [here=path res=(each pail:g goof)]
   ^+  this
-  =/  =node:s  (need (~(get of land) here))
-  ?>  ?=(%root -.kind.node)
-  =/  =tack:s  (need (~(get of trac) here))
+  ~&  %giving-poke-result
+  ~&  here+here
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%base -.kind.grub)
+  =/  =tack:g  (need (~(get of trac) here))
   ?>  ?=(^ give.tack)
-  =.  land  (~(put of land) here node(proc.kind ~))
+  =.  cone  (~(put of cone) here grub(proc.kind ~))
   =.  trac  (~(put of trac) here tack(give ~))
   =.  this  (clean here poke.last.tack)
-  ?:  ?=([@ %gall %signals %$ ^] from.u.give.tack)
+  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
     %^    ingest
-        [(scot %p our.bowl) /gall/signals]
+        [(scot %p our.bowl) /gall/grubbery]
       t.t.t.t.from.u.give.tack
-    [~ %root wire.u.give.tack %poke res]
-  ?>  ?=([@ %gall @ ~] from.u.give.tack)
-  ?~  eyre.tack
+    [~ %base wire.u.give.tack %poke res]
+  ?:  ?=([@ %gall @ ~] from.u.give.tack)
     =/  =wire  (weld /poke/[i.from] wire):[u.give.tack .]
     %-  emit-cards
-    :~  [%give %fact ~[wire] sign-root+!>([%poke res])]
+    :~  [%give %fact ~[wire] sign-base+!>([%poke res])]
         [%give %kick ~[wire] ~]
     ==
-  =;  rep=http-response:s
-    =/  =wire  /http-response/[u.eyre.tack]
-    %-  emit-cards
-    :~  [%give %fact ~[wire] %http-response-header !>(p.rep)]
-        [%give %fact ~[wire] %http-response-data !>(q.rep)]
-        [%give %kick ~[wire] ~]
-    ==
-  ?-    -.res
-      %&
-    ?.  ?=([%http-response ~] p.p.res)
-      =/  data=octs
-        (as-octs:mimes:html '<h1>500 Bad Root Output</h1>')
-      =/  content-length=@t  (crip ((d-co:co 1) p.data))
-      :_  `data
-      :-  500
-      :~  ['Content-Length' content-length]
-          ['Content-Type' 'text/html']
-          ['Allow' 'GET']
-      ==
-    =/  output  (mule |.(!<(http-response:s q.p.res)))
-    ?:  ?=(%& -.output)
-      p.output
-    =/  data=octs
-      (as-octs:mimes:html '<h1>500 Bad Root Output</h1>')
-    =/  content-length=@t  (crip ((d-co:co 1) p.data))
-    :_  `data
-    :-  500
-    :~  ['Content-Length' content-length]
-        ['Content-Type' 'text/html']
-        ['Allow' 'GET']
-    ==
-    ::
-      %|
-    =/  =acol:s  (get-acol here)
-    ?.  (acol src.bowl %peek)
-      =/  data=octs
-        (as-octs:mimes:html '<h1>500 Root Crashed</h1>')
-      =/  content-length=@t  (crip ((d-co:co 1) p.data))
-      :_  `data
-      :-  500
-      :~  ['Content-Length' content-length]
-          ['Content-Type' 'text/html']
-          ['Allow' 'GET']
-      ==
-    :: TODO: Also add tang and generally clean up
-    =/  data=octs
-      (as-octs:mimes:html '<h1>500 Root Crashed</h1>')
-    =/  content-length=@t  (crip ((d-co:co 1) p.data))
-    :_  `data
-    :-  500
-    :~  ['Content-Length' content-length]
-        ['Content-Type' 'text/html']
-        ['Allow' 'GET']
-    ==
-  ==
+  ?>  ?=([@ %eyre @ @ ~] from.u.give.tack)
+  =/  src=@p       (slav %p i.t.t.from.u.give.tack)
+  =/  eyre-id=@ta  i.t.t.t.from.u.give.tack
+  %-  emit-cards
+  %+  give-simple-payload:app:server
+    eyre-id
+  ?:  ?=(%| -.res)
+    %^    internal-server-error:io
+        =(src our.bowl)
+      "Base Grub Crashed"
+    [leaf+(trip mote.p.res) tang.p.res]
+  ?.  ?=([%simple-payload ~] p.p.res)
+    %^    internal-server-error:io
+        =(src our.bowl)
+      "Bad Grub Response"
+    [leaf+"bad grub response" leaf+(spud p.p.res) ~]
+  =/  pay=(each simple-payload:http tang)
+    (mule |.(!<(simple-payload:http q.p.res)))
+  ?:  ?=(%& -.pay)
+    p.pay
+  %^    internal-server-error:io
+      =(src our.bowl)
+    "Bad Grub Response"
+  p.pay
 ::
 ++  make-bowl
   |=  [from=path here=path]
-  ^-  bowl:root:s
+  ^-  bowl:base:g
   =/  last=@da  poke.last:(need (~(get of trac) here))
   =.  wex.bowl
     %-  ~(gas by *boat:gall)
     %+  murn  ~(tap by wex.bowl)
     |=  [[=wire =ship =term] acked=? pat=path]
-    ?.  ?=([%root @ *] wire)
+    ?.  ?=([%base @ *] wire)
       ~
     =/  [h=path l=@da w=path]  (unwrap-wire wire)
     ?.  &(=(h here) =(l last))
@@ -823,57 +866,66 @@
     %-  ~(gas by *bitt:gall)
     %+  murn  ~(tap by sup.bowl)
     |=  [=duct =ship pat=path]
-    ?.  ?=([%root @ *] pat)
+    ?.  ?=([%base @ *] pat)
       ~
     =/  [h=path l=@da p=path]  (unwrap-wire pat)
     ?.  &(=(h here) =(l last))
       ~
     [~ duct ship p]
   [now our eny wex sup from here]:[bowl .]
+:: TODO: immediately give response if a card is not allowed
+::       by sandboxing
 ::
 ++  ingest
-  |=  [from=path here=path in=(unit intake:root:s)]
+  |=  [from=path here=path in=(unit intake:base:g)]
   ^+  this
   ~&  %ingest
-  ~&  here+here
-  =/  =node:s  (need (~(get of land) here))
-  ?>  ?=(%root -.kind.node)
-  ?>  ?=(^ proc.kind.node)
-  =/  m  (charm:root:s ,pail:s)
-  =/  =bowl:root:s  (make-bowl from here)
-  =/  res=(each [[(list dart:s) vase result:eval:m] proc:root:s] tang)
-    (mule |.((take:eval:m u.proc.kind.node bowl data.node in)))
-  =/  [[darts=(list dart:s) data=vase =result:eval:m] =proc:root:s]
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%base -.kind.grub)
+  ?.  ?=(^ proc.kind.grub)
+    ~&  >>  "process not running at {(spud here)}"
+    :: TODO: Add process id (last) to the wire (in transit)
+    ::       And drop inputs if that process is dead
+    ::
+    this
+  =/  m  (charm:base:g ,pail:g)
+  =/  =bowl:base:g  (make-bowl from here)
+  =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
+    (mule |.((take:eval:m u.proc.kind.grub bowl data.grub in)))
+  =/  [[darts=(list dart:g) data=vase =result:eval:m] =proc:base:g]
     ?-  -.res
       %&  p.res
-      %|  [[~ data.node [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.node]
+      %|  [[~ data.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
     ==
-  ::
-  ~&  result+result
   ::
   =.  this
     %-  emit-bolts
     %+  turn  darts
-    |=  =dart:s
+    |=  =dart:g
     ?-    -.dart
         %sysc
       ~|  "ERROR: {(spud here)} has no system access"
       ?>  (sand-bubble here ~)
       [here dart]
       ::
-        %node
+        %scry
+      ~|  "ERROR: {(spud here)} has no system access"
+      ?>  (sand-bubble here ~)
+      [here dart]
+      ::
+        %grub
       ~|  "ERROR: {(spud here)} has no {(trip -.load.dart)} access to {(spud path.dart)}"
       ?>  (sand-bubble here ~ [path -.load]:dart)
       [here dart]
     ==
   ::
-  =/  tick=?  !=(data data.node)
+  =/  tick=?  !=(data data.grub)
   =?  this  tick  (next-tack here)
-  =.  node  node(data data)
-  =.  land
+  =.  grub  grub(data data)
+  =.  cone
     ?.  ?=(%next -.result)
-      (~(put of land) here node(data data, proc.kind ~))
-    (~(put of land) here node(data data, proc.kind `proc))
+      (~(put of cone) here grub(data data, proc.kind ~))
+    (~(put of cone) here grub(data data, proc.kind `proc))
   ::
   =?  this  tick  (dirty-and-tidy here)
   ::
@@ -892,14 +944,14 @@
   |=  [here=path last=@da =wire]
   ^+  wire
   ;:  weld
-    /root/(scot %ud (lent here))
+    /base/(scot %ud (lent here))
     here  /(scot %da last)  wire
   ==
 ::
 ++  unwrap-wire
   |=  =wire
   ^-  [path @da ^wire]
-  ?>  ?=([%root @ *] wire)
+  ?>  ?=([%base @ *] wire)
   =/  len=@ud  (slav %ud i.t.wire)
   :+  (scag len t.t.wire)
     (slav %da (snag len t.t.wire))
@@ -921,7 +973,7 @@
           [%pass * %arvo %e %disconnect *]
         (~(del by bindings) path.binding.q.card)
         ::
-          [%pass * %arvo %e %connect * %signals]
+          [%pass * %arvo %e %connect * %grubbery]
         (~(put by bindings) path.binding.q.card here)
       ==
     (emit-card [%pass (wrap-wire here last p.card) q.card])
@@ -933,7 +985,7 @@
   =/  [here=path last=@da =wire]  (unwrap-wire wir)
   =/  curr=@da  poke.last:(need (~(get of trac) here))
   ?.  =(last curr)
-    ~&  >>  "discarding message for old root process"
+    ~&  >>  "discarding message for old base process"
     this
   =/  from=path  [(scot %p our.bowl) sap.bowl]
   (ingest from here ~ %arvo wire sign)
@@ -944,7 +996,7 @@
   =/  [here=path last=@da =wire]  (unwrap-wire wir)
   =/  curr=@da  poke.last:(need (~(get of trac) here))
   ?.  =(last curr)
-    ~&  >>  "discarding message for old root process"
+    ~&  >>  "discarding message for old base process"
     this
   =/  from=path  [(scot %p our.bowl) sap.bowl]
   (ingest from here ~ %agent wire sign)
@@ -955,7 +1007,7 @@
   =/  [here=path last=@da pan=path]  (unwrap-wire pat)
   =/  curr=@da  poke.last:(need (~(get of trac) here))
   ?.  =(last curr)
-    ~&  >>  "discarding message for old root process"
+    ~&  >>  "discarding message for old base process"
     this
   =/  from=path  [(scot %p our.bowl) sap.bowl]
   (ingest from here ~ %watch pan)
@@ -967,7 +1019,7 @@
   =/  from=path  [(scot %p our.bowl) sap.bowl]
   =/  curr=@da  poke.last:(need (~(get of trac) here))
   ?.  =(last curr)
-    ~&  >>  "discarding message for old root process"
+    ~&  >>  "discarding message for old base process"
     this
   (ingest from here ~ %leave pan)
 --
