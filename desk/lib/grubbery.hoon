@@ -75,24 +75,24 @@
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
-    ;<  ~  bind:m  (make-lib /stud/ud '@ud')
-    ;<  ~  bind:m  (make-lib /stud/loob '?')
-    ;<  ~  bind:m  (make-lib /stud/txt '@t')
-    ;<  ~  bind:m  (make-lib /stud/dr 'dr')
-    ;<  ~  bind:m  (make-lib /stud/manx 'manx')
+    ;<  ~  bind:m  (make-stud-lib /ud '@ud')
+    ;<  ~  bind:m  (make-stud-lib /loob '?')
+    ;<  ~  bind:m  (make-stud-lib /txt '@t')
+    ;<  ~  bind:m  (make-stud-lib /dr '@dr')
+    ;<  ~  bind:m  (make-stud-lib /manx 'manx')
     :: counter test
     ::
     ;<  ~  bind:m  (make-lib /add/two add-two)
-    ;<  ~  bind:m  (make-lib /counter counter)
-    ;<  ~  bind:m  (make-lib /is-even is-even)
-    ;<  ~  bind:m  (make-lib /parity parity)
-    ;<  ~  bind:m  (make-base /counter /ud /counter `!>(10))
-    ;<  ~  bind:m  (make-stem /is-even /loob /is-even (sy ~[/counter]))
-    ;<  ~  bind:m  (make-stem /parity /txt /parity (sy ~[/is-even]))
+    ;<  ~  bind:m  (make-base-lib /counter counter)
+    ;<  ~  bind:m  (make-base-lib /counter-container counter-container)
+    ;<  ~  bind:m  (make-stem-lib /is-even is-even)
+    ;<  ~  bind:m  (make-stem-lib /parity parity)
+    ;<  *  bind:m
+      (make-and-poke /counter-container /sig /counter-container ~ /sig !>(~))
     :: gui setup
     ::
-    ;<  ~  bind:m  (make-lib /base/gui 'base:gui')
-    ;<  ~  bind:m  (make-lib /stud/gui/init ',~')
+    ;<  ~  bind:m  (make-base-lib /gui 'base:gui')
+    ;<  ~  bind:m  (make-stud-lib /gui/init ',~')
     ;<  *  bind:m  (make-and-poke /gui /sig /gui ~ /gui/init !>(~))
     ~&  >  "Grubbery booted!"
     done
@@ -100,6 +100,12 @@
 ::
 ++  gui
   |%
+  ++  con
+    |%
+    +$  stud  $-(vase manx)
+    +$  cone  $-(cone:g manx)
+    --
+  ::
   ++  make-id  |=(p=path (trip (rap 3 (join '_' p))))
   ::
   ++  counter
@@ -279,18 +285,18 @@
     =/  refresher=path  (weld here.bowl /refresher)
     ?+    stud  !!
         [%gui %init ~]
-      ;<  ~  bind:m  (eyre-connect /grub)
-      ;<  *  bind:m  (make-lib /gui/refresher 'refresher:gui')
+      ;<  ~  bind:m  (eyre-connect /grub here.bowl)
+      ;<  ~  bind:m  (make-lib /gui/refresher 'refresher:gui')
       ;<  ~  bind:m  (make-base refresher /dr /gui/refresher `!>(~s5))
       ;<  ~  bind:m  (make-lib /dom/counter 'counter:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/counter) /manx /dom/counter (sy ~[/counter]))
+        (make-stem (weld here.bowl /dom/counter) /manx /dom/counter (sy ~[/counter-container/counter]))
       ;<  ~  bind:m  (make-lib /dom/is-even 'is-even:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/is-even) /manx /dom/is-even (sy ~[/is-even])) 
+        (make-stem (weld here.bowl /dom/is-even) /manx /dom/is-even (sy ~[/counter-container/is-even])) 
       ;<  ~  bind:m  (make-lib /dom/parity 'parity:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/parity) /manx /dom/is-even (sy ~[/parity]))
+        (make-stem (weld here.bowl /dom/parity) /manx /dom/is-even (sy ~[/counter-container/parity]))
       done
       ::
         [%handle-http-request ~]
@@ -331,12 +337,40 @@
           !>((manx-response:gen:server (wrap-manx make-base-interface)))
           ::
             [%grub %tree %lib *]
-          ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.site)
+          ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
           ;<  ~  bind:m
-            ?^(g (pure:(charm ,~) ~) (make-lib t.t.site ''))
-          ;<  =manx  bind:m  (make-lib-page t.t.site)
+            ?^(g (pure:(charm ,~) ~) (make-lib t.t.t.site ''))
+          ;<  =manx  bind:m  (make-lib-page t.t.t.site)
           %+  pure:m  /simple-payload
           !>((manx-response:gen:server (wrap-manx manx)))
+          ::
+            [%grub %tree *]
+          ;<  =cone:g     bind:m  (peek t.t.site)
+          ?~  grub=(~(get of cone) /)
+            !!
+          =/  cone-con=path
+            ?-  -.kind.u.grub
+              %base  (weld /bin/gui/con/base base.kind.u.grub)
+              %stem  (weld /bin/gui/con/stem stem.kind.u.grub)
+            ==
+          ;<  s=(unit grub:g)  bind:m
+            (peek-root-soft (weld /bin/gui/con/stud stud.u.grub))
+          ;<  c=(unit grub:g)  bind:m  (peek-root-soft cone-con)
+          =/  stud-manx=manx
+            ?~  s
+              (vase-to-manx data.u.grub)
+            (!<($-(^vase manx) data.u.s) data.u.grub)
+          =/  cone-manx=manx
+            ?~  c
+              (vase-to-manx data.u.grub)
+            (!<($-(cone:g manx) data.u.c) cone)
+          =/  view=(unit @t)  (get-key:kv 'view' args)
+          %+  pure:m  /simple-payload  !>
+          %-  manx-response:gen:server
+          ?^  view
+            ?>(?=([~ %cone] view) cone-manx)
+          (wrap-manx (cone-interface stud-manx cone-manx))
+            
           ::
             [%grub %counter ~]
           ;<  now=@da        bind:m  get-time
@@ -378,11 +412,37 @@
           ;<  =manx  bind:m  (make-lib-page path)
           %+  pure:m  /simple-payload
           !>((manx-response:gen:server manx))
+          ::
+            [%grub %poke *]
+          ~&  >>>  %receiving-poke-post
+          =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
+          ;<  =grub:g  bind:m  (peek-root t.t.site)
+          ?>  ?=(%base -.kind.grub)
+          ;<  p=grub:g  bind:m  (peek-root (weld /bin/gui/con/poke base.kind.grub))
+          =/  =pail:g
+            (!<($-(key-value-list:kv pail) data.p) args)
+          ;<  *  bind:m  (poke t.t.site pail)
+          (pure:m /simple-payload !>(two-oh-four))
+          ::
+            [%grub %bump *]
+          =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
+          ;<  =grub:g  bind:m  (peek-root t.t.site)
+          ?>  ?=(%base -.kind.grub)
+          ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.kind.grub))
+          =/  =pail:g
+            (!<($-(key-value-list:kv pail) data.b) args)
+          ;<  ~  bind:m  (bump t.t.site pail)
+          (pure:m /simple-payload !>(two-oh-four))
         ==
       ==
     ==
     ::
     |%
+    ++  vase-to-manx
+      |=  =^vase
+      ^-  manx
+      ;code:"*{(render-tang-to-marl 80 (sell vase) ~)}"
+    ::
     ++  wrap-manx
       |=  =manx
       ^+  manx
@@ -393,9 +453,36 @@
           ;title: Grubbery
           ;script(src "https://cdn.tailwindcss.com");
           ;script(src "https://unpkg.com/htmx.org@1.9.4");
+          ;script(src "https://code.jquery.com/jquery-3.6.0.min.js");
         ==
         ;body
           ;+  manx
+        ==
+      ==
+    ::
+    ++  cone-interface
+      |=  [stud=manx cone=manx]
+      ^-  manx
+      ;div(class "w-screen h-screen mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+        ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+          ;button
+            =id  "studTab"
+            =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+            =onclick  "$('#stud-content').show(); $('#cone-content').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+            Stud
+          ==
+          ;button
+            =id  "coneTab"
+            =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+            =onclick  "$('#cone-content').show(); $('#stud-content').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+            Cone
+          ==
+        ==
+        ;div#stud-content
+          ;+  stud
+        ==
+        ;div#cone-content.hidden
+          ;+  cone
         ==
       ==
     ::
@@ -457,7 +544,7 @@
             ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
               Make
             ==
-            ;div(id "loading-indicator", class "ml-4 hidden")
+            ;div(id "loading-indicator", class "ml-4 htmx-indicator")
               ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
                 ;circle(class "opacity-25", cx "12", cy "12", r "10", stroke "currentColor", stroke-width "4");
                 ;path(class "opacity-75", fill "currentColor", d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z");
@@ -470,20 +557,12 @@
     ++  main-page
       |=  =cone:g
       ^-  manx
-      ;html(lang "en")
-        ;head
-          ;meta(charset "UTF-8");
-          ;meta(name "viewport", content "width=device-width, initial-scale=1.0");
-          ;title: Grubbery
-          ;script(src "https://cdn.tailwindcss.com");
-          ;script(src "https://unpkg.com/htmx.org@1.9.4");
-        ==
-        ;body.p-4.flex.flex-col.justify-center.items-center.min-h-screen.bg-gray-100
-          ;div
-            ;*  %+  turn  ~(tap of cone)
-                |=  [=path *]
-                ;p: {(spud path)}
-          ==
+      %-  wrap-manx
+      ;div.p-4.flex.flex-col.justify-center.items-center.min-h-screen.bg-gray-100
+        ;div
+          ;*  %+  turn  ~(tap of cone)
+              |=  [=path *]
+              ;p: {(spud path)}
         ==
       ==
     ::
@@ -597,6 +676,28 @@
     --
   --
 ::
+++  counter-container
+  %-  crip
+  """
+  =,  grubberyio
+  |=  [=bowl:base:g =stud:g =vase]
+  =/  m  (charm:base:g ,pail:g)
+  ^-  form:m
+  ?+    stud  !!
+      [%sig ~]
+    =/  counter=path  (weld here.bowl /counter)
+    =/  is-even=path  (weld here.bowl /is-even)
+    =/  parity=path   (weld here.bowl /parity)
+    ;<  ~  bind:m
+      (make-base counter /ud /counter `!>(10))
+    ;<  ~  bind:m
+      (make-stem is-even /loob /is-even (sy ~[counter]))
+    ;<  ~  bind:m
+      (make-stem parity /txt /parity (sy ~[is-even]))
+    done
+  ==
+  """
+::
 ++  counter
   %-  crip
   """
@@ -621,7 +722,9 @@
   """
   |=  =bowl:stem:g
   :-  ~
-  =+  !<(=@ud (~(got by deps.bowl) /counter))
+  =/  deps  ~(tap in ~(key by deps.bowl))
+  ?>  ?=(^ deps)
+  =+  !<(=@ud (~(got by deps.bowl) i.deps))
   !>(=(0 (mod ud 2)))
   """
 ::
@@ -630,7 +733,9 @@
   """
   |=  =bowl:stem:g
   :-  ~
-  ?:  !<(? (~(got by deps.bowl) /is-even))
+  =/  deps  ~(tap in ~(key by deps.bowl))
+  ?>  ?=(^ deps)
+  ?:  !<(? (~(got by deps.bowl) i.deps))
     !>('true')
   !>('false')
   """

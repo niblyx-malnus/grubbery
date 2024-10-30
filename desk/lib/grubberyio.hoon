@@ -198,17 +198,25 @@
     (charm-fail %no-root-grub leaf+(spud path) ~)
   (pure:m u.grub)
 ::
+++  peek-root-soft
+  |=  =path
+  =/  m  (charm ,(unit grub))
+  ;<  =cone  bind:m  (peek path)
+  (pure:m (~(get of cone) /))
+::
 ++  peek-root-as
   |*  [a=mold =path]
   =/  m  (charm ,a)
   ;<  =grub  bind:m  (peek-root path)
   (pure:m !<(a data.grub))
 ::
-++  peek-root-soft
-  |=  =path
-  =/  m  (charm ,(unit grub))
-  ;<  =cone  bind:m  (peek path)
-  (pure:m (~(get of cone) /))
+++  peek-root-as-soft
+  |*  [a=mold =path]
+  =/  m  (charm ,(unit a))
+  ;<  grub=(unit grub)  bind:m  (peek-root-soft path)
+  ?~  grub
+    (pure:m ~)
+  (pure:m `!<(a data.u.grub))
 :: peek, but with relative path
 ::
 ++  grab
@@ -251,34 +259,20 @@
   (take-scry mold /scry)
 ::
 ++  eyre-connect
-  |=  url=(list @t)
+  |=  [url=(list @t) dest=path]
   =/  m  (charm ,~)
-  =/  =dart  [%sysc %pass /connect %arvo %e %connect `url %grubbery]
-  ;<  ~  bind:m  (send-raw-dart dart)
-  (take-connect /connect)
+  ;<  our=@p     bind:m  get-our
+  ;<  here=path  bind:m  get-here
+  =/  =dock  [our %grubbery]
+  %-  send-raw-dart
+  [%sysc %pass /connect %agent dock %poke connect+!>([url dest])]
 ::
 ++  eyre-disconnect
   |=  url=(list @t)
   =/  m  (charm ,~)
-  (send-raw-dart %sysc %pass /connect %arvo %e %disconnect `url)
-::
-++  take-connect
-  |=  =wire
-  =/  m  (charm ,~)
-  ^-  form:m
-  |=  input
-  :+  ~  state
-  ?+  in  [%skip ~]
-      ~  [%wait ~]
-      [~ %arvo * %eyre %bound *]
-    ?.  =(wire wire.u.in)
-      [%skip ~]
-    ?:  accepted.sign.u.in
-      ~&  >  "{(spud path.binding.sign.u.in)} bound successfully!"
-      [%done ~]
-    ~&  >>>  "Binding {(spud path.binding.sign.u.in)} failed!"
-    [%done ~]
-  ==
+  ;<  our=@p     bind:m  get-our
+  %-  send-raw-dart
+  [%sysc %pass / %agent [our %grubbery] %poke disconnect+!>(url)]
 ::
 ++  make-stem
   |=  [=path =stud stem=path sour=(set path)]
@@ -310,6 +304,21 @@
       [/sig !>(code)]
     ==
   (pure:m ~)
+::
+++  make-stud-lib 
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (make-lib [%stud path] code)
+::
+++  make-base-lib 
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (make-lib [%base path] code)
+::
+++  make-stem-lib 
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (make-lib [%stem path] code)
 ::
 ++  take-made
   |=  =wire
@@ -498,6 +507,12 @@
   ;<  ~  bind:m
     (send-raw-dart %sysc %pass watch+wire %agent dock %watch path)
   (take-watch-ack wire)
+::
+++  leave
+  |=  [=wire =dock]
+  =/  m  (charm ,~)
+  ^-  form:m
+  (send-raw-dart %sysc %pass watch+wire %agent dock %leave ~)
 ::
 ++  take-watch-ack
   |=  =wire

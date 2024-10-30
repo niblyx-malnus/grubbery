@@ -28,8 +28,14 @@
 ++  on-save   !>(state)
 ::
 ++  on-load
-  |=  ole=vase
+  |=  old=vase
   ^-  (quip card _this)
+  :: TODO: make sure we add a /bin/zuse with !>(..zuse)
+  ::       every time we boot
+  :: TODO: make sure we kill all processes everytime we load
+  ::       (might need to send poke responses outside the agent)
+  ::
+  =.  state  !<(state-0 old)
   =^  cards  state
     abet:boot:hc
   [cards this]
@@ -47,6 +53,18 @@
   ^-  (quip card _this)
   ~&  "poke to {<dap.bowl>} agent with mark {<mark>}"
   ?+    mark  (on-poke:def mark vase)
+      %connect
+    ?>  =(src our):bowl
+    =+  !<([url=path =path] vase)
+    :_  this
+    [%pass [%connect path] %arvo %e %connect `url %grubbery]~
+    ::
+      %disconnect
+    ?>  =(src our):bowl
+    =+  !<(url=path vase)
+    :-  [%pass / %arvo %e %disconnect `url]~
+    this(bindings (~(del by bindings) url))
+    ::
       %handle-http-request
     =+  !<([eyre-id=@ta req=inbound-request:eyre] vase)
     =/  lin=request-line:server
@@ -162,6 +180,10 @@
     [~ this]
     ::
       [%http-response *]
+    :: ~&  >  "eyre subscribing to http-response"
+    :: ~&  src+src.bowl
+    :: ~&  sap+sap.bowl
+    :: ?>  =(src our):bowl :: ?
     [~ this]
   ==
 ::
@@ -191,6 +213,14 @@
     =^  cards  state
       abet:(take-arvo:hc wire sign)
     [cards this]
+    ::
+      [%connect *]
+    ?>  ?=([%eyre %bound *] sign)
+    ?.  accepted.sign
+      %-  (slog leaf+"Binding {(spud path.binding.sign)} to {(spud t.wire)} failed!" ~)
+      [~ this]
+    %-  (slog leaf+"{(spud path.binding.sign)} bound successfully to {(spud t.wire)}!" ~)
+    [~ this(bindings (~(put by bindings) path.binding.sign t.wire))]
   ==
 ::
 ++  on-fail   on-fail:def
@@ -431,7 +461,7 @@
   ?~  sour
     this(cone (~(put of cone) here grub))
   ?.  (~(has of cone) i.sour)
-    ~|(source+i.sour !!)
+    ~|([here+here source+i.sour] !!)
   =/  =tack:g  (need (~(get of trac) i.sour))
   =.  sinx.tack  (~(put in sinx.tack) here)
   =.  trac  (~(put of trac) i.sour tack)
@@ -640,10 +670,7 @@
   ?<  ?=([%acl *] here) :: bases not allowed in /acl
   ?<  ?=([%san *] here) :: bases not allowed in /san
   =/  =mold  (get-stud stud)
-  =/  data=vase
-    ?~  data
-      !>(*mold)
-    !>(!<(mold u.data))
+  =/  data=vase  (fall data *vase)
   =/  =grub:g  [data stud [%base base ~]]
   =.  cone  (~(put of cone) here grub)
   =.  this  (next-tack here)
@@ -814,7 +841,11 @@
   =.  cone  (~(put of cone) here grub(proc.kind ~))
   =.  trac  (~(put of trac) here tack(give ~))
   =.  this  (clean here poke.last.tack)
-  ?:  ?=([@ %clay ~] from.u.give.tack)  this :: +on-load
+  ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
+    ?:  ?=(%& -.res)
+      this
+    ~&  >>>  mote.p.res
+    (mean tang.p.res)
   ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
     %^    ingest
         [(scot %p our.bowl) /gall/grubbery]
@@ -972,15 +1003,6 @@
     (turn paths.p.card |=(p=path (wrap-wire here last p)))
     ::
       [%pass * *]
-    =.  bindings
-      ?+    card
-        bindings
-          [%pass * %arvo %e %disconnect *]
-        (~(del by bindings) path.binding.q.card)
-        ::
-          [%pass * %arvo %e %connect * %grubbery]
-        (~(put by bindings) path.binding.q.card here)
-      ==
     (emit-card [%pass (wrap-wire here last p.card) q.card])
   ==
 ::
