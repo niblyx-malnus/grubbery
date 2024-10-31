@@ -6,8 +6,9 @@
   $%  [%base =stud base=path data=(unit vase)]
       [%stem =stud stem=path sour=(set path)]
   ==
+:: add a %cull action as a recursive %oust
 ::
-+$  deed  ?(%poke %bump %peek %make %oust %kill %tidy)
++$  deed  ?(%make %oust %poke %bump %kill %peek %tidy)
 :: group   (set ship)
 :: groups  (map deed (set path)) :: set of group references
 :: /grp contains set of ships

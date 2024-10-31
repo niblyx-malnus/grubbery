@@ -50,7 +50,7 @@
       =/  sour=(set path)
         ?:(?=(%| -.res) ~ (sy (turn pax.p.res tail)))
       =.  sour  (~(put in sour) here.bowl)
-      ;<  ~  bind:m  (make-stem dest /bin /bin sour)
+      ;<  ~  bind:m  (overwrite-stem dest /bin /bin sour)
       done
     ==
   :: TODO: allow optional face and relative paths (i.e. /^/^/path)
@@ -75,25 +75,25 @@
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
-    ;<  ~  bind:m  (make-stud-lib /ud '@ud')
-    ;<  ~  bind:m  (make-stud-lib /loob '?')
-    ;<  ~  bind:m  (make-stud-lib /txt '@t')
-    ;<  ~  bind:m  (make-stud-lib /dr '@dr')
-    ;<  ~  bind:m  (make-stud-lib /manx 'manx')
+    ;<  ~  bind:m  (overwrite-stud-lib /ud '@ud')
+    ;<  ~  bind:m  (overwrite-stud-lib /loob '?')
+    ;<  ~  bind:m  (overwrite-stud-lib /txt '@t')
+    ;<  ~  bind:m  (overwrite-stud-lib /dr '@dr')
+    ;<  ~  bind:m  (overwrite-stud-lib /manx 'manx')
     :: counter test
     ::
-    ;<  ~  bind:m  (make-lib /add/two add-two)
-    ;<  ~  bind:m  (make-base-lib /counter counter)
-    ;<  ~  bind:m  (make-base-lib /counter-container counter-container)
-    ;<  ~  bind:m  (make-stem-lib /is-even is-even)
-    ;<  ~  bind:m  (make-stem-lib /parity parity)
+    ;<  ~  bind:m  (overwrite-lib /add/two add-two)
+    ;<  ~  bind:m  (overwrite-base-lib /counter counter)
+    ;<  ~  bind:m  (overwrite-base-lib /counter-container counter-container)
+    ;<  ~  bind:m  (overwrite-stem-lib /is-even is-even)
+    ;<  ~  bind:m  (overwrite-stem-lib /parity parity)
     ;<  *  bind:m
-      (make-and-poke /counter-container /sig /counter-container ~ /sig !>(~))
+      (overwrite-and-poke /counter-container /sig /counter-container ~ /sig !>(~))
     :: gui setup
     ::
-    ;<  ~  bind:m  (make-base-lib /gui 'base:gui')
-    ;<  ~  bind:m  (make-stud-lib /gui/init ',~')
-    ;<  *  bind:m  (make-and-poke /gui /sig /gui ~ /gui/init !>(~))
+    ;<  ~  bind:m  (overwrite-base-lib /gui 'base:gui')
+    ;<  ~  bind:m  (overwrite-stud-lib /gui/init ',~')
+    ;<  *  bind:m  (overwrite-and-poke /gui /sig /gui ~ /gui/init !>(~))
     ~&  >  "Grubbery booted!"
     done
   ==
@@ -286,17 +286,17 @@
     ?+    stud  !!
         [%gui %init ~]
       ;<  ~  bind:m  (eyre-connect /grub here.bowl)
-      ;<  ~  bind:m  (make-lib /gui/refresher 'refresher:gui')
-      ;<  ~  bind:m  (make-base refresher /dr /gui/refresher `!>(~s5))
-      ;<  ~  bind:m  (make-lib /dom/counter 'counter:gui')
+      ;<  ~  bind:m  (overwrite-lib /gui/refresher 'refresher:gui')
+      ;<  ~  bind:m  (overwrite-base refresher /dr /gui/refresher `!>(~s5))
+      ;<  ~  bind:m  (overwrite-lib /dom/counter 'counter:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/counter) /manx /dom/counter (sy ~[/counter-container/counter]))
-      ;<  ~  bind:m  (make-lib /dom/is-even 'is-even:gui')
+        (overwrite-stem (weld here.bowl /dom/counter) /manx /dom/counter (sy ~[/counter-container/counter]))
+      ;<  ~  bind:m  (overwrite-lib /dom/is-even 'is-even:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/is-even) /manx /dom/is-even (sy ~[/counter-container/is-even])) 
-      ;<  ~  bind:m  (make-lib /dom/parity 'parity:gui')
+        (overwrite-stem (weld here.bowl /dom/is-even) /manx /dom/is-even (sy ~[/counter-container/is-even])) 
+      ;<  ~  bind:m  (overwrite-lib /dom/parity 'parity:gui')
       ;<  ~  bind:m
-        (make-stem (weld here.bowl /dom/parity) /manx /dom/is-even (sy ~[/counter-container/parity]))
+        (overwrite-stem (weld here.bowl /dom/parity) /manx /dom/is-even (sy ~[/counter-container/parity]))
       done
       ::
         [%handle-http-request ~]
@@ -689,11 +689,11 @@
     =/  is-even=path  (weld here.bowl /is-even)
     =/  parity=path   (weld here.bowl /parity)
     ;<  ~  bind:m
-      (make-base counter /ud /counter `!>(10))
+      (overwrite-base counter /ud /counter `!>(10))
     ;<  ~  bind:m
-      (make-stem is-even /loob /is-even (sy ~[counter]))
+      (overwrite-stem is-even /loob /is-even (sy ~[counter]))
     ;<  ~  bind:m
-      (make-stem parity /txt /parity (sy ~[is-even]))
+      (overwrite-stem parity /txt /parity (sy ~[is-even]))
     done
   ==
   """

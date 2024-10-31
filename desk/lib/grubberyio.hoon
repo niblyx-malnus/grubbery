@@ -59,7 +59,6 @@
   |=  input
   :+  ~  state
   ~&  %taking-poke-sign
-  ~&  input++<
   ?+  in  [%skip ~]
       ~  [%wait ~]
       [~ %base * %poke *]
@@ -274,12 +273,41 @@
   %-  send-raw-dart
   [%sysc %pass / %agent [our %grubbery] %poke disconnect+!>(url)]
 ::
+++  oust-grub
+  |=  =path
+  =/  m  (charm ,~)
+  =/  =dart  [%grub /oust-grub path %oust ~]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-gone /oust-grub)
+::
+++  take-gone
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %gone *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  err.u.in
+      [%done ~]
+    [%fail %oust-fail u.err.u.in]
+  ==
+::
 ++  make-stem
   |=  [=path =stud stem=path sour=(set path)]
   =/  m  (charm ,~)
   =/  =dart  [%grub /make-stem path %make %stem stud stem sour]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-stem)
+::
+++  overwrite-stem
+  |=  [=path =stud base=path sour=(set path)]
+  =/  m  (charm ,~)
+  ;<  ~  bind:m  (oust-grub path)
+  (make-stem path stud base sour)
 ::
 ++  make-base
   |=  [=path =stud base=path data=(unit vase)]
@@ -288,10 +316,22 @@
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-base)
 ::
+++  overwrite-base
+  |=  [=path =stud base=path data=(unit vase)]
+  =/  m  (charm ,~)
+  ;<  ~  bind:m  (oust-grub path)
+  (make-base path stud base data)
+::
 ++  make-and-poke
   |=  [=path =stud base=path data=(unit vase) poke=pail]
   =/  m  (charm ,pail)
   ;<  ~  bind:m  (make-base path stud base data)
+  (^poke path poke)
+::
+++  overwrite-and-poke
+  |=  [=path =stud base=path data=(unit vase) poke=pail]
+  =/  m  (charm ,pail)
+  ;<  ~  bind:m  (overwrite-base path stud base data)
   (^poke path poke)
 ::
 ++  make-lib
@@ -299,26 +339,47 @@
   =/  m  (charm ,~)
   ;<  *  bind:m 
     %:  make-and-poke
-      (weld /lib path)
+      [%lib path]
       /lib  /lib  ~
       [/sig !>(code)]
     ==
   (pure:m ~)
+::
+++  overwrite-lib
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  ;<  ~  bind:m  (oust-grub [%lib path])
+  (make-lib path code)
 ::
 ++  make-stud-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
   (make-lib [%stud path] code)
 ::
+++  overwrite-stud-lib
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (overwrite-lib [%stud path] code)
+::
 ++  make-base-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
   (make-lib [%base path] code)
 ::
+++  overwrite-base-lib
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (overwrite-lib [%base path] code)
+::
 ++  make-stem-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
   (make-lib [%stem path] code)
+::
+++  overwrite-stem-lib
+  |=  [=path code=@t]
+  =/  m  (charm ,~)
+  (overwrite-lib [%stem path] code)
 ::
 ++  take-made
   |=  =wire

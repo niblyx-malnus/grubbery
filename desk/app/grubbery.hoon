@@ -286,6 +286,7 @@
 ++  boot
   ^-  _this
   =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
+  =.  this  (oust-grub give /boot)
   =.  this  (make-base give /boot /sig /boot ~)
   (poke-base /boot give /sig !>(~))
 ::
@@ -396,7 +397,11 @@
   =/  =grub:g  (need (~(get of cone) (welp /bin/base base)))
   ?>  ?=(%stem -.kind.grub)
   ?>  =([%& ~] tidy.kind.grub)
-  !<(base:g data.grub)
+  =/  res  (mule |.(!<(base:g data.grub)))
+  ?:  ?=(%& -.res)
+    p.res
+  ~|("base {(spud base)} failed to compile" !!)
+::
 ::
 ++  get-stem
   |=  stem=path
@@ -405,20 +410,28 @@
   =/  =grub:g  (need (~(get of cone) (welp /bin/stem stem)))
   ?>  ?=(%stem -.kind.grub)
   ?>  =([%& ~] tidy.kind.grub)
-  !<(stem:g data.grub)
+  =/  res  (mule |.(!<(stem:g data.grub)))
+  ?:  ?=(%& -.res)
+    p.res
+  ~|("stem {(spud stem)} failed to compile" !!)
 ::
 ++  get-stud
-  |=  pat=path
+  |=  =stud:g
   ^-  mold
-  ~|  "{(spud pat)}: stud not found"
-  ?:  ?=([%sig ~] pat)  ,~
-  ?:  ?=([%lib ~] pat)
+  ?:  ?=([%sig ~] stud)  ,~
+  ?:  ?=([%lib ~] stud)
     ,[@t (each [(list (pair term path)) hoon] tang)]
-  ?:  ?=([%bin ~] pat)  noun
-  =/  =grub:g  (need (~(get of cone) (welp /bin/stud pat)))
+  ?:  ?=([%bin ~] stud)  noun
+  =/  =grub:g
+    ~|  "{(spud stud)}: stud not found"
+    (need (~(get of cone) (welp /bin/stud stud)))
   ?>  ?=(%stem -.kind.grub)
   ?>  =([%& ~] tidy.kind.grub)
-  !<(mold data.grub)
+  :: only useful for clamming
+  =/  res  (mule |.(!<(mold data.grub)))
+  ?:  ?=(%& -.res)
+    p.res
+  ~|("stud {(spud stud)} failed to compile" !!)
 ::
 ++  no-cycle
   =|  hist=(list path)
@@ -626,6 +639,7 @@
 ++  del-sources
   |=  here=path
   ^+  this
+  ~|  "deleting sources of {(spud here)} failed"
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%stem -.kind.grub)
   =/  sour=(list path)  (turn ~(tap in sour.kind.grub) head)
@@ -641,9 +655,11 @@
 ++  do-oust
   |=  here=path
   ^+  this
-  =/  =grub:g  (need (~(get of cone) here))
+  ?~  grub=(~(get of cone) here)
+    ~&  >>  "nothing to oust at {(spud here)}"
+    this
   =.  this
-    ?-  -.kind.grub
+    ?-  -.kind.u.grub
       %base  (kill here)
       %stem  (del-sources here)
     ==
@@ -657,7 +673,7 @@
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
-    ?:(?=(%| -.res) !! this)
+    ?:(?=(%& -.res) this (mean p.res))
   %^    ingest
       [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
@@ -666,6 +682,8 @@
 ++  new-base
   |=  [here=path stud=path base=path data=(unit vase)]
   ^+  this
+  ~|  "making base {(spud here)} failed"
+  ?<  (~(has of cone) here)
   ?<  ?=([%bin *] here) :: bases not allowed in /bin
   ?<  ?=([%acl *] here) :: bases not allowed in /acl
   ?<  ?=([%san *] here) :: bases not allowed in /san
@@ -683,7 +701,7 @@
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
-    ?:(?=(%| -.res) !! this)
+    ?:(?=(%& -.res) this (mean p.res))
   %^    ingest
       [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
@@ -692,6 +710,8 @@
 ++  new-stem
   |=  [here=path stud=path stem=path sour=(set path)]
   ^+  this
+  ~|  "making stem {(spud here)} failed"
+  ?<  (~(has of cone) here)
   ?<  ?=([%lib *] here) :: stems not allowed in /lib
   =/  =grub:g  [!>(~) stud [%stem stem [| ~] ~]]
   =.  cone     (~(put of cone) here grub)
@@ -706,7 +726,7 @@
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
-    ?:(?=(%| -.res) !! this)
+    ?:(?=(%& -.res) this (mean p.res))
   %^    ingest
       [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
@@ -731,9 +751,13 @@
 ++  kill
   |=  here=path
   ^+  this
+  ~|  "killing {(spud here)} failed"
   =/  =tack:g  (need (~(get of trac) here))
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%base -.kind.grub)
+  ?~  proc.kind.grub
+    ~&  >>  "no processes to kill for {(spud here)}"
+    this
   =.  cone  (~(put of cone) here grub(proc.kind ~))
   |-
   =.  this  (give-poke-result here %| %killed [leaf+(spud here) ~])
