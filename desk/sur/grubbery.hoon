@@ -8,15 +8,7 @@
   ==
 :: add a %cull action as a recursive %oust
 ::
-+$  deed  ?(%make %oust %poke %bump %kill %peek %tidy)
-:: group   (set ship)
-:: groups  (map deed (set path)) :: set of group references
-:: /grp contains set of ships
-:: /acl contains (map deed (set path))
-:: /san contains (set path)
-:: 
-+$  sand  $-((unit [path deed]) ?) :: constrains outgoing darts
-+$  acol  $-([ship deed] ?)        :: constrains incoming pokes
++$  deed  ?(%make %oust %poke %bump %kill %peek)
 ::
 :: effects that a base grub can emit
 ::
@@ -30,21 +22,20 @@
 :: dart payload
 ::
 +$  load
-  $%  [%poke =pail]
-      [%bump =pail]
-      [%peek ~]
-      [%make =make]
+  $%  [%make =make]
       [%oust ~]
+      [%poke =pail]
+      [%bump =pail]
       [%kill ~]
-      [%tidy ~]
+      [%peek ~]
   ==
 ::
 +$  kind
-  $%  [%base base=path proc=(unit proc:base)]
-      [%stem stem=path tidy=[flag=? boom=(unit tang)] sour=(map path @da)]
+  $%  [%base data=vase base=path proc=(unit proc:base)]
+      [%stem data=(each vase tang) stem=path tidy=? sour=(map path @da)]
   ==
 ::
-+$  grub  [data=vase =stud =kind]
++$  grub  [=stud =kind]
 +$  cone  (axal grub)
 +$  give  [from=path =wire]
 +$  poke  [=give =pail]
@@ -72,11 +63,11 @@
   |%
   +$  stem  $-(bowl (quip dart vase))
   +$  bowl
-    $:  now=@da              :: time
-        our=@p               :: host
-        eny=@uvJ             :: entropy
-        here=path            :: our address
-        deps=(map path vase) :: dependencies
+    $:  now=@da                          :: time
+        our=@p                           :: host
+        eny=@uvJ                         :: entropy
+        here=path                        :: our address
+        deps=(map path (each vase tang)) :: dependencies
     ==
   --
 ::
@@ -105,7 +96,6 @@
         [%gone =wire err=(unit tang)] :: response to oust
         [%dead =wire err=(unit tang)] :: response to kill
         [%base =wire =sign] :: response from poke or bump
-        [%tidy =wire err=(unit tang)] :: response to tidy
         :: messages from gall and arvo
         ::
         [%scry =wire =path =vase]

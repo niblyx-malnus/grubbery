@@ -105,7 +105,6 @@
       %oust-grub
     =+  !<(here=path vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %oust)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(oust-grub:hc give here)
@@ -114,7 +113,6 @@
       %make-base
     =+  !<([here=path stud=path base=path data=(unit ^vase)] vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %make)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(make-base:hc give here stud base data)
@@ -123,7 +121,6 @@
       %make-stem
     =+  !<([here=path stud=path stem=path sour=(set path)] vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %make)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(make-stem:hc give here stud stem sour)
@@ -132,7 +129,6 @@
       %poke-base
     =+  !<([=wire here=path =pail:g] vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %poke)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] wire]
     =^  cards  state
       abet:(poke-base:hc here give pail)
@@ -141,7 +137,6 @@
       %bump-base
     =+  !<([here=path =pail:g] vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %bump)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(bump-base:hc here give pail)
@@ -150,19 +145,9 @@
       %kill-base
     =+  !<(here=path vase)
     ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %kill)
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
       abet:(kill-base:hc give here)
-    [cards this]
-    ::
-      %tidy-stem
-    =+  !<(here=path vase)
-    ~&  here+here
-    ?>  (acol-tunnel:hc here src.bowl %tidy)
-    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
-    =^  cards  state
-      abet:(tidy-stem:hc give here)
     [cards this]
   ==
 ::
@@ -277,14 +262,11 @@
       ::
         %kill
       $(this (kill-base [from wire] path):[dart .])
-      ::
-        %tidy
-      $(this (tidy-stem [from wire] path):[dart .])
     ==
   ==
 ::
 ++  boot
-  ^-  _this
+  ^+  this
   =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
   =.  this  (oust-grub give /boot)
   =.  this  (make-base give /boot /sig /boot ~)
@@ -322,86 +304,20 @@
   ?~  path  %|
   ?.  =(i.head i.path)  %|
   $(head t.head, path t.path)
-:: Cannot talk to system and cannot talk outside cone
-::
-++  strict-sandbox
-  |=  here=path
-  ^-  sand:g
-  |=  dest=(unit [=path *])
-  ^-  ?
-  ?~  dest
-    %|
-  (has-prefix here path.u.dest)
-::
-++  get-sand
-  |=  here=path
-  ^-  sand:g
-  ?~  here  _& :: / can talk to anyone
-  ?~  nod=(~(get of cone) [%san here])  _& :: can be bubbled through
-  ?>  ?=(%stem -.kind.u.nod)
-  ?.  =([%& ~] tidy.kind.u.nod)  (strict-sandbox here)
-  =/  res=(each sand:g tang)  (mule |.(!<(sand:g data.u.nod)))
-  ?-  -.res
-    %&  p.res
-    %|  (strict-sandbox here) :: emergency sandbox
-  ==
-:: check if a dart can leave its cone
-::
-++  sand-bubble
-  |=  [here=path dest=(unit [path deed:g])]
-  ^-  ?
-  =/  =sand:g  (get-sand here)
-  ?.  (sand dest)
-    %|
-  ?:  =(~ here)
-    %&
-  $(here (snip here))
-::
-++  get-acol
-  |=  here=path
-  ^-  acol:g
-  :: files in /acl define access control on corresponding file in /san
-  ?:  ?=([%san *] here)
-    $(here [%acl t.here])
-  :: files in /acl define access control on themselves as well
-  ?.  ?=([%acl *] here)
-    $(here [%acl here])
-  ?~  nod=(~(get of cone) here)  _| :: only you can access / 
-  ?>  ?=(%stem -.kind.u.nod)
-  ?.  =([%& ~] tidy.kind.u.nod)  _| :: don't use outdated code
-  :: TODO: does mule catch evil vases???
-  =/  res=(each acol:g tang)
-    (mule |.(!<(acol:g data.u.nod)))
-  ?-(-.res %| _|, %& p.res) :: default private
-:: check if a foreign ship can perform an action
-::
-++  acol-tunnel
-  |=  [here=path poke=[=ship deed:g]]
-  ^-  ?
-  ?:  =(ship.poke our.bowl)
-    %&
-  =|  prefix=path
-  |-
-  =/  =acol:g  (get-acol prefix)
-  ?:  (acol poke)
-    %&
-  ?:  =(here prefix)
-    %|
-  $(prefix (scag +((lent prefix)) here))
 ::
 ++  get-base
   |=  base=path
   ^-  base:g
   ?:  ?=([%boot ~] base)  boot:grubbery
   ?:  ?=([%lib ~] base)  base:lib:grubbery
+  ?:  ?=([%bin ~] base)  base:bin:grubbery
   =/  =grub:g  (need (~(get of cone) (welp /bin/base base)))
   ?>  ?=(%stem -.kind.grub)
-  ?>  =([%& ~] tidy.kind.grub)
-  =/  res  (mule |.(!<(base:g data.grub)))
+  ?>  tidy.kind.grub
+  =/  res  (mule |.(!<(base:g (grab-data:io grub))))
   ?:  ?=(%& -.res)
     p.res
   ~|("base {(spud base)} failed to compile" !!)
-::
 ::
 ++  get-stem
   |=  stem=path
@@ -409,8 +325,8 @@
   ?:  ?=([%bin ~] stem)  stem:bin:grubbery
   =/  =grub:g  (need (~(get of cone) (welp /bin/stem stem)))
   ?>  ?=(%stem -.kind.grub)
-  ?>  =([%& ~] tidy.kind.grub)
-  =/  res  (mule |.(!<(stem:g data.grub)))
+  ?>  tidy.kind.grub
+  =/  res  (mule |.(!<(stem:g (grab-data:io grub))))
   ?:  ?=(%& -.res)
     p.res
   ~|("stem {(spud stem)} failed to compile" !!)
@@ -426,9 +342,9 @@
     ~|  "{(spud stud)}: stud not found"
     (need (~(get of cone) (welp /bin/stud stud)))
   ?>  ?=(%stem -.kind.grub)
-  ?>  =([%& ~] tidy.kind.grub)
+  ?>  tidy.kind.grub
   :: only useful for clamming
-  =/  res  (mule |.(!<(mold data.grub)))
+  =/  res  (mule |.(!<(mold (grab-data:io grub))))
   ?:  ?=(%& -.res)
     p.res
   ~|("stud {(spud stud)} failed to compile" !!)
@@ -478,156 +394,110 @@
   =/  =tack:g  (need (~(get of trac) i.sour))
   =.  sinx.tack  (~(put in sinx.tack) here)
   =.  trac  (~(put of trac) i.sour tack)
-  =.  sour.kind.grub  (~(put by sour.kind.grub) i.sour step.last.tack)
+  =.  sour.kind.grub  (~(put by sour.kind.grub) i.sour `@da`0) :: 0 forces recompute
   $(sour t.sour)
 ::
 ++  dirty
   |=  here=path
   ^-  [(set path) cone:g]
+  ~&  >>  "dirtying {(spud here)}"
   =/  =grub:g  (need (~(get of cone) here))
-  =?  cone  ?=(%stem -.kind.grub)
-    %+  ~(put of cone)  here
-    grub(tidy.kind [| ~])
   =/  =tack:g  (need (~(get of trac) here))
+  ?:  &(?=(%stem -.kind.grub) !tidy.kind.grub)
+    [~ cone]
+  =?  cone  ?=(%stem -.kind.grub)
+    (~(put of cone) here grub(tidy.kind |))
   ?:  =(0 ~(wyt in sinx.tack))
+    ?:  ?=(%base -.kind.grub)
+      [~ cone]
     [(sy ~[here]) cone]
   =/  sinx=(list path)  ~(tap in sinx.tack)
   =|  edge=(set path)
   |-
   ?~  sinx
     [edge cone]
-  =^  e  cone
-    (dirty i.sinx)
-  $(sinx t.sinx, edge (~(uni in edge) e))
-::
-++  make-deps
-  |=  [here=path sour=(set path)]
-  ^-  (map path vase)
-  %-  ~(gas by *(map path vase))
-  %+  turn  ~(tap in sour)
-  |=  =path
-  :: ?>  (sand-bubble here ~ path %peek)
-  :-  path
-  data:(need (~(get of cone) path))
-::
-++  tidy-stem
-  |=  [=give:g here=path]
-  ^+  this
-  ~&  >>  %tidy-stem
-  =/  res=(each _this tang)
-    (mule |.((tidy here)))
-  =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
-  =?  this  ?=(%& -.res)  p.res
-  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
-    ?:(?=(%| -.res) !! this)
-  %^    ingest
-      [(scot %p our.bowl) /gall/grubbery]
-    t.t.t.t.from.give
-  [~ %tidy wire.give err]
+  =^  e  cone  (dirty i.sinx)
+  %=  $
+    sinx   t.sinx
+    edge   (~(uni in edge) e)
+  ==
 ::
 ++  tidy
   |=  here=path
   ^+  this
-  :: deal with non-existent source later
-  ::
-  ?~  nod=(~(get of cone) here)  this
-  =/  =grub:g  u.nod
-  :: bases are always tidy
-  ::
-  ?.  ?=(%stem -.kind.grub)  this
-  :: tidy stems stay tidy
-  ::
-  ?:  flag.tidy.kind.grub  this
-  =/  sour=(list (pair path @da))  ~(tap by sour.kind.grub)
-  :: tidy each source
-  ::
-  =.  this
-    |-
-    ?~  sour
-      this
-    =.  this  (tidy p.i.sour)
-    $(sour t.sour)
-  :: check sources to see if we need to tidy ourselves;
-  :: if we have no sources we are being asked to recompute
-  ::
-  =/  tidy=?  =(~ sour)
+  ~&  >>  "tidying {(spud here)}"
+  ?~  grub=(~(get of cone) here)
+    ~&  >>  "{(spud here)} has no data"
+    this
+  ?:  ?=(%base -.kind.u.grub)
+    ~&  >>  "{(spud here)} is a base and thus tidy"
+    this
+  ?:  tidy.kind.u.grub
+    ~&  >>  "{(spud here)} is already tidy"
+    this
+  =/  sour=(list (pair path @da))  ~(tap by sour.kind.u.grub)
   |-
-  ?:  tidy
-    ?~  sour
-      :: we've checked all sources and don't need to recompute
-      ::
-      =.  grub  grub(tidy.kind [%& ~])
-      =.  cone  (~(put of cone) here grub)
-      this
-    ?~  dep=(~(get of cone) p.i.sour)
-      :: If the dep doesn't exist, update boom
-      ::
-      =/  =tang
-        :~  leaf+"stem boom"
-            leaf+(spud here)
-            leaf+"{(spud p.i.sour)} has no grub"
-        ==
-      :: %-  (slog tang)
-      =.  boom.tidy.kind.grub  [~ tang]
-      =.  cone  (~(put of cone) here grub)
-      this
-    ?:  &(?=(%stem -.kind.u.dep) ?=(^ boom.tidy.kind.u.dep))
-      :: If a source is a stem and has a boom (crashed on recompute),
-      :: we inherit its boom
-      ::
-      =.  boom.tidy.kind.grub  boom.tidy.kind.u.dep
-      =.  cone  (~(put of cone) here grub)
-      this
-    :: if the source step.last has changed, we are not tidy
-    ::
-    ?:  (lth q.i.sour step.last:(need (~(get of trac) p.i.sour)))
-      $(tidy %|)
-    $(sour t.sour)
-  :: If we are not tidy because our sources have updated
-  :: recompute here
-  ::
+  ?~  sour
+    (recompute-stem here u.grub)
+  $(sour t.sour, this (tidy p.i.sour))
+::
+++  make-deps
+  |=  [here=path sour=(set path)]
+  ^-  (map path (each vase tang))
+  %-  ~(gas by *(map path (each vase tang)))
+  %+  turn  ~(tap in sour)
+  |=  =path
+  :-  path
+  ?~  grub=(~(get of cone) path)
+    |+[leaf+"no grub" leaf+(spud here) ~]
+  (grab-data-soft:io u.grub)
+::
+++  make-sour
+  |=  sour=(set path)
+  ^-  (map path @da)
+  %-  ~(gas by *(map path @da))
+  %+  turn  ~(tap in sour)
+  |=  =path
+  :-  path
+  step.last:(need (~(get of trac) path))
+::
+++  recompute-stem
+  |=  [here=path =grub:g]
+  ^+  this
+  ?>  ?=(%stem -.kind.grub)
+  =/  new-sour=(map path @da)  (make-sour ~(key by sour.kind.grub))
+  ?:  =(new-sour sour.kind.grub)
+    ~&  >>  "{(spud here)} hasn't changed on recompute"
+    =.  grub  grub(tidy.kind %&)
+    this(cone (~(put of cone) here grub))
   =/  res=(each [darts=(list dart:g) data=vase] tang)
     %-  mule  |.
     =/  =stem:g  (get-stem stem.kind.grub)
-    =/  deps=(map path vase)
+    =/  deps=(map path (each vase tang))
       (make-deps here ~(key by sour.kind.grub)) :: sandboxed deps
     (stem [now our eny here deps]:[bowl .])
   ?-    -.res
       %|
+    ~&  >>  "{(spud here)} crashed on recompute"
     =/  =tang  [leaf+"stem boom" leaf+(spud here) p.res]
+    =?  this  !=(data.kind.grub |+tang)  (next-tack here)
     :: %-  (slog tang)
-    =.  grub  grub(tidy.kind [%| ~ tang])
-    =.  cone  (~(put of cone) here grub)
-    this
+    =.  grub  grub(tidy.kind %&, data.kind |+tang)
+    this(cone (~(put of cone) here grub))
+    ::
       %&
-    =?  this  !=(data.grub data.p.res)  (next-tack here)
-    =.  grub  grub(data data.p.res, tidy.kind [%& ~])
+    ~&  >>  "{(spud here)} successfully recomputed"
+    =?  this  !=(data.kind.grub &+data.p.res)  (next-tack here)
+    =.  grub
+      grub(data.kind &+data.p.res, sour.kind new-sour, tidy.kind %&)
     =.  cone  (~(put of cone) here grub)
-    %-  emit-bolts
-    %+  turn  darts.p.res
-    |=  =dart:g
-    ?-    -.dart
-        %sysc
-      ~|  "ERROR: {(spud here)} has no system access"
-      ?>  (sand-bubble here ~)
-      [here dart]
-      ::
-        %scry
-      ~|  "ERROR: {(spud here)} has no system access"
-      ?>  (sand-bubble here ~)
-      [here dart]
-      ::
-        %grub
-      ~|  "ERROR: {(spud here)} has no {(trip -.load.dart)} access to {(spud path.dart)}"
-      ?>  (sand-bubble here ~ [path -.load]:dart)
-      [here dart]
-    ==
+    (emit-bolts (turn darts.p.res (lead here)))
   ==
 ::
 ++  dirty-and-tidy
   |=  here=path
   ^+  this
-  ~&  >>  %dirty-and-tidy
+  ~&  >>  "dirty-and-tidy {(spud here)}"
   =^  e  cone  (dirty here)
   =/  edge=(list path)  ~(tap in e)
   |-
@@ -684,12 +554,9 @@
   ^+  this
   ~|  "making base {(spud here)} failed"
   ?<  (~(has of cone) here)
-  ?<  ?=([%bin *] here) :: bases not allowed in /bin
-  ?<  ?=([%acl *] here) :: bases not allowed in /acl
-  ?<  ?=([%san *] here) :: bases not allowed in /san
   =/  =mold  (get-stud stud)
   =/  data=vase  (fall data *vase)
-  =/  =grub:g  [data stud [%base base ~]]
+  =/  =grub:g  [stud [%base data base ~]]
   =.  cone  (~(put of cone) here grub)
   =.  this  (next-tack here)
   (dirty-and-tidy here)
@@ -713,10 +580,12 @@
   ~|  "making stem {(spud here)} failed"
   ?<  (~(has of cone) here)
   ?<  ?=([%lib *] here) :: stems not allowed in /lib
-  =/  =grub:g  [!>(~) stud [%stem stem [| ~] ~]]
+  =/  =grub:g  [stud [%stem |+[leaf+"new stem"]~ stem | ~]]
   =.  cone     (~(put of cone) here grub)
   =.  this     (add-sources here sour)
   =.  this     (next-tack here)
+  ~&  >>  "computing-new-stem {(spud here)}"
+  =.  this     (recompute-stem here (need (~(get of cone) here)))
   (dirty-and-tidy here)
 ::
 ++  make-stem
@@ -951,41 +820,22 @@
   =/  m  (charm:base:g ,pail:g)
   =/  =bowl:base:g  (make-bowl from here)
   =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
-    (mule |.((take:eval:m u.proc.kind.grub bowl data.grub in)))
+    (mule |.((take:eval:m u.proc.kind.grub bowl data.kind.grub in)))
   =/  [[darts=(list dart:g) data=vase =result:eval:m] =proc:base:g]
     ?-  -.res
       %&  p.res
-      %|  [[~ data.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
+      %|  [[~ data.kind.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
     ==
   ::
-  =.  this
-    %-  emit-bolts
-    %+  turn  darts
-    |=  =dart:g
-    ?-    -.dart
-        %sysc
-      ~|  "ERROR: {(spud here)} has no system access"
-      ?>  (sand-bubble here ~)
-      [here dart]
-      ::
-        %scry
-      ~|  "ERROR: {(spud here)} has no system access"
-      ?>  (sand-bubble here ~)
-      [here dart]
-      ::
-        %grub
-      ~|  "ERROR: {(spud here)} has no {(trip -.load.dart)} access to {(spud path.dart)}"
-      ?>  (sand-bubble here ~ [path -.load]:dart)
-      [here dart]
-    ==
+  =.  this  (emit-bolts (turn darts (lead here)))
   ::
-  =/  tick=?  !=(data data.grub)
+  =/  tick=?  !=(data data.kind.grub)
   =?  this  tick  (next-tack here)
-  =.  grub  grub(data data)
+  =.  grub  grub(data.kind data)
   =.  cone
     ?.  ?=(%next -.result)
-      (~(put of cone) here grub(data data, proc.kind ~))
-    (~(put of cone) here grub(data data, proc.kind `proc))
+      (~(put of cone) here grub(data.kind data, proc.kind ~))
+    (~(put of cone) here grub(data.kind data, proc.kind `proc))
   ::
   =?  this  tick  (dirty-and-tidy here)
   ::

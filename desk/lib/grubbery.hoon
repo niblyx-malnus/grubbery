@@ -11,23 +11,36 @@
 ::
 ++  bin
   |%
+  :: bin base does nothing; it's like a rock
+  ::
+  ++  base
+    =,  grubberyio
+    ^-  base:g
+    |=  [=bowl:base:g =stud:g =vase]
+    =/  m  (charm:base:g ,pail:g)
+    ^-  form:m
+    done
+    ::
   ++  stem
+    =,  grubberyio
     ^-  stem:g
     |=  =bowl:stem:g
     ^-  (quip dart:g vase)
     ?>  ?=([%bin *] here.bowl)
-    =/  file=vase  (~(got by deps.bowl) (welp /lib t.here.bowl))
+    =/  grubbery=vase  (nead (~(got by deps.bowl) /bin/grubbery))
+    =/  file=vase  (nead (~(got by deps.bowl) [%lib t.here.bowl]))
     =+  !<([@t res=(each [deps=(list (pair term path)) =hoon] tang)] file)
     ?:  ?=(%| -.res)
-      ~|("hoon parsing failure" !!)
-    ?>  .=  ~(key by deps.bowl)
-        (~(put in (sy (turn deps.p.res tail))) (welp /lib t.here.bowl))
+      ~|("hoon parsing failure" (mean p.res))
+    =/  deps=(set path)
+      %-  ~(gas in (sy (turn deps.p.res tail)))
+      ~[/bin/grubbery [%lib t.here.bowl]]
+    ?>  =(deps ~(key by deps.bowl))
     =;  vax=(list vase)
-      =.  vax  (snoc vax !>(..bin))
-      [~ (slip (reel vax slop) hoon.p.res)]
+      [~ (slip (reel (snoc vax grubbery) slop) hoon.p.res)]
     %+  turn  deps.p.res
     |=  [fac=term dep=path]
-    =/  =vase  (~(got by deps.bowl) dep)
+    =/  =vase  (nead (~(got by deps.bowl) dep))
     vase(p [%face fac p.vase])
   --
 ::
@@ -46,10 +59,10 @@
         (mule |.((build t)))
       ;<  ~  bind:m  (replace !>([t res]))
       ?>  ?=([%lib *] here.bowl)
-      =/  dest=path  (welp /bin t.here.bowl)
+      =/  dest=path  [%bin t.here.bowl]
       =/  sour=(set path)
         ?:(?=(%| -.res) ~ (sy (turn pax.p.res tail)))
-      =.  sour  (~(put in sour) here.bowl)
+      =.  sour  (~(gas in sour) here.bowl /bin/grubbery ~)
       ;<  ~  bind:m  (overwrite-stem dest /bin /bin sour)
       done
     ==
@@ -68,6 +81,7 @@
   --
 ::
 ++  boot
+  =*  grubbery-lib  ..bin :: avoid masking by grubberyio
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
@@ -75,6 +89,9 @@
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
+    ;<  ~  bind:m  (overwrite-base /bin/zuse /bin /bin `!>(..zuse))
+    ;<  ~  bind:m  (overwrite-base /bin/grubbery /bin /bin `!>(grubbery-lib))
+    ;<  ~  bind:m  (overwrite-lib /add/two add-two)
     ;<  ~  bind:m  (overwrite-stud-lib /ud '@ud')
     ;<  ~  bind:m  (overwrite-stud-lib /loob '?')
     ;<  ~  bind:m  (overwrite-stud-lib /txt '@t')
@@ -109,10 +126,11 @@
   ++  make-id  |=(p=path (trip (rap 3 (join '_' p))))
   ::
   ++  counter
+    =,  grubberyio
     |=  =bowl:stem:g
     ^-  (quip dart:g vase)
     :-  ~
-    =+  !<(=@ud (~(got by deps.bowl) /counter))
+    =+  !<(=@ud (nead (~(got by deps.bowl) /counter)))
     !>
     ;div
       =id     (make-id here.bowl)
@@ -132,10 +150,11 @@
     ==
   ::
   ++  is-even
+    =,  grubberyio
     |=  =bowl:stem:g
     ^-  (quip dart:g vase)
     :-  ~
-    =+  !<(e=? (~(got by deps.bowl) /is-even))
+    =+  !<(e=? (nead (~(got by deps.bowl) /is-even)))
     !>
     ^-  manx
     ;div
@@ -145,10 +164,11 @@
     ==
   ::
   ++  parity
+    =,  grubberyio
     |=  =bowl:stem:g
     ^-  (quip dart:g vase)
     :-  ~
-    =+  !<(=@t (~(got by deps.bowl) /parity))
+    =+  !<(=@t (nead (~(got by deps.bowl) /parity)))
     !>
     ;div
       =id     (make-id here.bowl)
@@ -358,12 +378,13 @@
           ;<  c=(unit grub:g)  bind:m  (peek-root-soft cone-con)
           =/  stud-manx=manx
             ?~  s
-              (vase-to-manx data.u.grub)
-            (!<($-(^vase manx) data.u.s) data.u.grub)
+              (vase-to-manx (grab-data u.grub))
+            %.  (grab-data u.grub)
+            !<($-(^vase manx) (grab-data u.s))
           =/  cone-manx=manx
             ?~  c
-              (vase-to-manx data.u.grub)
-            (!<($-(cone:g manx) data.u.c) cone)
+              (vase-to-manx (grab-data u.grub))
+            (!<($-(cone:g manx) (grab-data u.c)) cone)
           =/  view=(unit @t)  (get-key:kv 'view' args)
           %+  pure:m  /simple-payload  !>
           %-  manx-response:gen:server
@@ -401,14 +422,14 @@
           =/  =path       (rash (need (get-key:kv 'path' args)) stap)
           =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
           =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
-          ;<  ~  bind:m  (make-base path stud base ~)
+          ;<  ~  bind:m  (overwrite-base path stud base ~)
           (pure:m /simple-payload !>(two-oh-four))
           ::
             [%grub %make %lib ~]
           =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
           =/  =path    (rash (need (get-key:kv 'path' args)) stap)
           =/  code=@t  (need (get-key:kv 'code' args))
-          ;<  ~  bind:m  (make-lib path code)
+          ;<  ~  bind:m  (overwrite-lib path code)
           ;<  =manx  bind:m  (make-lib-page path)
           %+  pure:m  /simple-payload
           !>((manx-response:gen:server manx))
@@ -420,7 +441,7 @@
           ?>  ?=(%base -.kind.grub)
           ;<  p=grub:g  bind:m  (peek-root (weld /bin/gui/con/poke base.kind.grub))
           =/  =pail:g
-            (!<($-(key-value-list:kv pail) data.p) args)
+            (!<($-(key-value-list:kv pail) (grab-data p)) args)
           ;<  *  bind:m  (poke t.t.site pail)
           (pure:m /simple-payload !>(two-oh-four))
           ::
@@ -430,7 +451,7 @@
           ?>  ?=(%base -.kind.grub)
           ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.kind.grub))
           =/  =pail:g
-            (!<($-(key-value-list:kv pail) data.b) args)
+            (!<($-(key-value-list:kv pail) (grab-data b)) args)
           ;<  ~  bind:m  (bump t.t.site pail)
           (pure:m /simple-payload !>(two-oh-four))
         ==
@@ -571,42 +592,44 @@
       =/  m  (charm ,manx)
       ^-  form:m
       ;<  [code=@t *]  bind:m  (peek-root-as ,[@t *] [%lib pat])
-      ;<  =grub:g  bind:m  (peek-root [%bin pat])
+      ;<  grub=(unit grub:g)  bind:m  (peek-root-soft [%bin pat])
       (pure:m (lib-page pat code grub))
     ::
     ++  lib-page
-      |=  [=path code=@t =grub:g]
-      ?>  ?=(%stem -.kind.grub)
+      |=  [=path code=@t grub=(unit grub:g)]
       ^-  manx
+      =/  data=(each vase tang)
+        ?~  grub
+          |+~[leaf+"no bin; bad dependency"]
+        (grab-data-soft u.grub)
       ;div(id (make-id [%lib path]))
         ;div.h-screen.p-4.flex.flex-col.justify-center.items-center.bg-gray-100
           ;div.max-h-screen.h-full.w-full.flex.flex-row
-            ;+  (code-result [data tidy.kind]:grub)
+            ;+  (code-result data)
             ;+  (textarea path (trip code))
           ==
         ==
       ==
     ::
     ++  code-result
-      |=  [data=vase flag=? boom=(unit tang)]
+      |=  data=(each vase tang)
       ^-  manx
-      =/  color=tape  ?^(boom "red" ?.(flag "brown" "green"))
+      =/  color=tape
+        ?:(?=(%| -.data) "red" "green")
       ;div
         =class  "flex-1 flex flex-col w-full bg-{color}-200 p-8 rounded-lg shadow-lg h-full"
         ;div(class "text-xl font-bold mb-4 text-center text-{color}-700")
-          ; {?:(flag "clean" "dirty")}
+          ; {?:(?=(%| -.data) "crashed" "compiled")}
         ==
-        ;*  ?^  boom
+        ;*  ?:  ?=(%| -.data)
               ;=
                 ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
-                  ;code:"*{(render-tang-to-marl 80 u.boom)}"
+                  ;code:"*{(render-tang-to-marl 80 p.data)}"
                 ==
               ==
-            ?.  flag
-              ~
             ;=
               ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
-                ;code:"*{(render-tang-to-marl 80 (sell data) ~)}"
+                ;code:"*{(render-tang-to-marl 80 (sell p.data) ~)}"
               ==
             ==
       ==
@@ -648,7 +671,7 @@
       ?~  grub=(~(get of cone) path)
         %-  pure:m
         ;div: No grub at this path.
-      =/  res  (mule |.(!<(manx data.u.grub)))
+      =/  res  (mule |.(!<(manx (grab-data u.grub))))
       %-  pure:m
       ?-  -.res
         %&  p.res
@@ -720,22 +743,24 @@
 ++  is-even
   %-  crip
   """
+  =,  grubberyio
   |=  =bowl:stem:g
   :-  ~
   =/  deps  ~(tap in ~(key by deps.bowl))
   ?>  ?=(^ deps)
-  =+  !<(=@ud (~(got by deps.bowl) i.deps))
+  =+  !<(=@ud (nead (~(got by deps.bowl) i.deps)))
   !>(=(0 (mod ud 2)))
   """
 ::
 ++  parity
   %-  crip
   """
+  =,  grubberyio
   |=  =bowl:stem:g
   :-  ~
   =/  deps  ~(tap in ~(key by deps.bowl))
   ?>  ?=(^ deps)
-  ?:  !<(? (~(got by deps.bowl) i.deps))
+  ?:  !<(? (nead (~(got by deps.bowl) i.deps)))
     !>('true')
   !>('false')
   """

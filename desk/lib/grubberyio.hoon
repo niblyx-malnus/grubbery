@@ -2,6 +2,29 @@
 /+  server
 =,  base
 |%
+++  grab-data-soft
+  |=  =grub
+  ^-  (each vase tang)
+  ?-  -.kind.grub
+    %base  &+data.kind.grub
+    %stem  data.kind.grub
+  ==
+::
+++  grab-data
+  |=  =grub
+  ^-  vase
+  =/  res  (grab-data-soft grub)
+  ?-  -.res
+    %&  p.res
+    %|  (mean p.res)
+  ==
+::
+++  nead
+  |*  a=(each)
+  ?:  ?=(%& -.a)
+    p.a
+  (mean p.a)
+::
 ++  send-raw-darts
   |=  darts=(list =dart)
   =/  m  (charm ,~)
@@ -207,7 +230,7 @@
   |*  [a=mold =path]
   =/  m  (charm ,a)
   ;<  =grub  bind:m  (peek-root path)
-  (pure:m !<(a data.grub))
+  (pure:m !<(a (grab-data grub)))
 ::
 ++  peek-root-as-soft
   |*  [a=mold =path]
@@ -215,7 +238,7 @@
   ;<  grub=(unit grub)  bind:m  (peek-root-soft path)
   ?~  grub
     (pure:m ~)
-  (pure:m `!<(a data.u.grub))
+  (pure:m `!<(a (grab-data u.grub)))
 :: peek, but with relative path
 ::
 ++  grab
@@ -261,17 +284,13 @@
   |=  [url=(list @t) dest=path]
   =/  m  (charm ,~)
   ;<  our=@p     bind:m  get-our
-  ;<  here=path  bind:m  get-here
-  =/  =dock  [our %grubbery]
-  %-  send-raw-dart
-  [%sysc %pass /connect %agent dock %poke connect+!>([url dest])]
+  (gall-poke [our %grubbery] connect+!>([url dest]))
 ::
 ++  eyre-disconnect
   |=  url=(list @t)
   =/  m  (charm ,~)
   ;<  our=@p     bind:m  get-our
-  %-  send-raw-dart
-  [%sysc %pass / %agent [our %grubbery] %poke disconnect+!>(url)]
+  (gall-poke [our %grubbery] disconnect+!>(url))
 ::
 ++  oust-grub
   |=  =path
