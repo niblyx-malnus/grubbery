@@ -399,24 +399,24 @@
 ::
 ++  dirty
   |=  here=path
-  ^-  [(set path) cone:g]
+  ^-  [(set path) _this]
   ~&  >>  "dirtying {(spud here)}"
   =/  =grub:g  (need (~(get of cone) here))
   =/  =tack:g  (need (~(get of trac) here))
   ?:  &(?=(%stem -.kind.grub) !tidy.kind.grub)
-    [~ cone]
+    [~ this]
   =?  cone  ?=(%stem -.kind.grub)
     (~(put of cone) here grub(tidy.kind |))
   ?:  =(0 ~(wyt in sinx.tack))
     ?:  ?=(%base -.kind.grub)
-      [~ cone]
-    [(sy ~[here]) cone]
+      [~ this]
+    [(sy ~[here]) this]
   =/  sinx=(list path)  ~(tap in sinx.tack)
   =|  edge=(set path)
   |-
   ?~  sinx
-    [edge cone]
-  =^  e  cone  (dirty i.sinx)
+    [edge this]
+  =^  e  this  (dirty i.sinx)
   %=  $
     sinx   t.sinx
     edge   (~(uni in edge) e)
@@ -498,7 +498,7 @@
   |=  here=path
   ^+  this
   ~&  >>  "dirty-and-tidy {(spud here)}"
-  =^  e  cone  (dirty here)
+  =^  e  this  (dirty here)
   =/  edge=(list path)  ~(tap in e)
   |-
   ?~  edge
