@@ -691,4 +691,11 @@
 ++  two-oh-four
   ^-  simple-payload:http
   [[204 ['content-type' 'application/json']~] ~]
+::
+++  give-manx-response
+  |=  =manx
+  =/  m  (charm ,pail)
+  ^-  form:m
+  %+  pure:m  /simple-payload  !>
+  (manx-response:gen:server manx)
 --
