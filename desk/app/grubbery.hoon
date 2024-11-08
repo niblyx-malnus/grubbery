@@ -311,7 +311,9 @@
   ?:  ?=([%boot ~] base)  boot:grubbery
   ?:  ?=([%lib ~] base)  base:lib:grubbery
   ?:  ?=([%bin ~] base)  base:bin:grubbery
-  =/  =grub:g  (need (~(get of cone) (welp /bin/base base)))
+  =/  =grub:g
+    ~|  "{(spud base)}: base not found"
+    (need (~(get of cone) (welp /bin/base base)))
   ?>  ?=(%stem -.kind.grub)
   ?>  tidy.kind.grub
   =/  res  (mule |.(!<(base:g (grab-data:io grub))))
@@ -323,7 +325,9 @@
   |=  stem=path
   ^-  stem:g
   ?:  ?=([%bin ~] stem)  stem:bin:grubbery
-  =/  =grub:g  (need (~(get of cone) (welp /bin/stem stem)))
+  =/  =grub:g  
+    ~|  "{(spud stem)}: stem not found"
+    (need (~(get of cone) (welp /bin/stem stem)))
   ?>  ?=(%stem -.kind.grub)
   ?>  tidy.kind.grub
   =/  res  (mule |.(!<(stem:g (grab-data:io grub))))

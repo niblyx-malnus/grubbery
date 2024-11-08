@@ -80,6 +80,7 @@
 ::
 ++  boot
   =*  grubbery-lib  ..bin :: avoid masking by grubberyio
+  =*  zuse-core  ..zuse
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
@@ -87,7 +88,7 @@
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
-    ;<  ~  bind:m  (overwrite-base /bin/zuse /bin /bin `!>(..zuse))
+    ;<  ~  bind:m  (overwrite-base /bin/zuse /bin /bin `!>(zuse-core))
     ;<  ~  bind:m  (overwrite-base /bin/grubbery /bin /bin `!>(grubbery-lib))
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)
     ;<  ~  bind:m  (overwrite-stud-lib /ud '@ud')

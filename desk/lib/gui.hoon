@@ -3,11 +3,6 @@
 |%
 ++  mx  mx:html-utils
 ++  kv  kv:html-utils
-++  con
-  |%
-  +$  stud  $-(vase manx)
-  +$  cone  $-(cone:g manx)
-  --
 ::
 ++  make-id  |=(p=path (trip (rap 3 (join '_' p))))
 ::
@@ -106,30 +101,6 @@
           =hx-trigger    "click";
   ==
 ::
-++  session
-  =,  grubberyio
-  ^-  base:g
-  |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
-  ^-  form:m
-  ?+    stud  !!
-      [%handle-http-request ~]
-    =+  !<([request-line:server req=inbound-request:eyre] vase)
-    ?+    method.request.req
-      %+  pure:m  /simple-payload
-      !>((method-not-allowed method.request.req))
-      ::
-        %'GET'
-      ~&  site+site
-      ?+    site  !!
-        ::
-          [%grub %lib *]
-        %+  pure:m  /simple-payload
-        !>((manx-response:gen:server *manx))
-      ==
-    ==
-  ==
-::
 ++  base
   =,  grubberyio
   ^-  base:g
@@ -137,21 +108,9 @@
   |=  [=bowl:base:g =stud:g =vase]
   =/  m  (charm:base:g ,pail:g)
   ^-  form:m
-  =/  refresher=path  (weld here.bowl /refresher)
   ?+    stud  !!
       [%gui %init ~]
     ;<  ~  bind:m  (eyre-connect /grub here.bowl)
-    ;<  ~  bind:m  (overwrite-lib /gui/refresher 'refresher:gui')
-    ;<  ~  bind:m  (overwrite-base refresher /dr /gui/refresher `!>(~s5))
-    ;<  ~  bind:m  (overwrite-lib /dom/counter 'counter:gui')
-    ;<  ~  bind:m
-      (overwrite-stem (weld here.bowl /dom/counter) /manx /dom/counter (sy ~[/counter-container/counter]))
-    ;<  ~  bind:m  (overwrite-lib /dom/is-even 'is-even:gui')
-    ;<  ~  bind:m
-      (overwrite-stem (weld here.bowl /dom/is-even) /manx /dom/is-even (sy ~[/counter-container/is-even])) 
-    ;<  ~  bind:m  (overwrite-lib /dom/parity 'parity:gui')
-    ;<  ~  bind:m
-      (overwrite-stem (weld here.bowl /dom/parity) /manx /dom/is-even (sy ~[/counter-container/parity]))
     done
     ::
       [%handle-http-request ~]
@@ -166,6 +125,7 @@
         %'POST'
       =/  args=key-value-list:kv  (parse-body:kv body.request.req) 
       =/  get=(unit @t)  (get-key:kv 'get' args)
+      ~&  >>  get+get
       ;<  ~  bind:m  (do-post site (delete-key:kv 'get' args))
       ?~  get
         (pure:m /simple-payload !>(two-oh-four))
@@ -183,29 +143,18 @@
       %+  pure:m  /simple-payload
       !>((manx-response:gen:server (main-page cone)))
       ::
-      ::   [%grub *]
-      :: =/  src=@t
-      ::   ?:  ?=([@ %eyre @ @ ~] from.bowl)
-      ::     i.t.t.from.bowl
-      ::   (scot %p our.bowl)
-      :: ;<  contents=(list @ta)  bind:m
-      ::   (ls (weld here.bowl /[src]))
-      :: =/  sessions=(list @ud)
-      ::   (sort (turn contents (cury slav %ud)) gth)
-      :: ?~  sessions
-        :: $-(path [sour=(set path) stem])
-        :: create a new session
-        :: !!
-      :: check if
-      :: =/  new=path  
-      :: :: redirects to last session and creates one if it 
-      :: :: doesn't exist
-      :: (redirect:gen:server (spat ))
-      :: !!
-      ::
         [%grub %make %base ~]
       %+  pure:m  /simple-payload
       !>((manx-response:gen:server (wrap-manx make-base-interface)))
+      ::
+        [%grub %main ~]
+      ;<  =cone:g  bind:m  (peek /)
+      %+  pure:m  /simple-payload
+      !>((manx-response:gen:server (wrap-manx (main cone))))
+      ::
+        [%grub %search-bar *]
+      %+  pure:m  /simple-payload
+      !>((manx-response:gen:server (search-bar t.t.site)))
       ::
         [%grub %tree %lib *]
       ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
@@ -215,36 +164,38 @@
       =/  raw=(unit @t)  (get-key:kv 'raw' args)
       ?^  raw
         ?>(?=([~ %true] raw) (give-manx-response manx))
-      ;<  =^manx  bind:m  (nav t.t.site manx)
       (give-manx-response (wrap-manx manx))
       ::
         [%grub %tree *]
-      ;<  =cone:g     bind:m  (peek t.t.site)
-      ?~  grub=(~(get of cone) /)
-        !!
-      =/  cone-con=path
-        ?-  -.kind.u.grub
-          %base  (weld /bin/gui/con/base base.kind.u.grub)
-          %stem  (weld /bin/gui/con/stem stem.kind.u.grub)
-        ==
-      ;<  s=(unit grub:g)  bind:m
-        (peek-root-soft (weld /bin/gui/con/stud stud.u.grub))
-      ;<  c=(unit grub:g)  bind:m  (peek-root-soft cone-con)
-      =/  stud-manx=manx
-        ?~  s
-          (vase-to-manx (grab-data u.grub))
-        %.  (grab-data u.grub)
-        !<($-(^vase manx) (grab-data u.s))
-      =/  cone-manx=manx
-        ?~  c
-          (vase-to-manx (grab-data u.grub))
-        (!<($-(cone:g manx) (grab-data u.c)) cone)
-      =/  view=(unit @t)  (get-key:kv 'view' args)
-      %+  pure:m  /simple-payload  !>
-      %-  manx-response:gen:server
-      ?^  view
-        ?>(?=([~ %cone] view) cone-manx)
-      (wrap-manx (cone-interface stud-manx cone-manx))
+      ;<  =manx  bind:m  (grub-tree t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %view %lib *]
+      ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
+      ;<  ~  bind:m
+        ?^(g (pure:(charm ,~) ~) (make-lib t.t.t.site ''))
+      ;<  =manx  bind:m  (make-lib-page t.t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %view %both *]
+      ;<  =manx  bind:m  (grub-view-both t.t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %view %stud *]
+      ;<  =manx  bind:m  (grub-view-stud t.t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %view %cone *]
+      ;<  =manx  bind:m  (grub-view-cone t.t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %code *]
+      ;<  =manx  bind:m  (grub-code t.t.site)
+      (give-manx-response manx)
+      ::
+        [%grub %gui %con *]
+      ;<  =manx  bind:m  (grub-gui-con t.t.t.site)
+      (give-manx-response manx)
       ::
         [%grub %dom *]
       ;<  =manx   bind:m  (get-dom-manx t.t.site)
@@ -257,6 +208,8 @@
     =/  m  (charm ,~)
     ^-  form:m
     ?+    site  !!
+      [%grub %get ~]  (pure:m ~)
+      ::
         [%grub %make %base ~]
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
       =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
@@ -293,7 +246,7 @@
   ++  vase-to-manx
     |=  =^vase
     ^-  manx
-    ;code:"*{(render-tang-to-marl 80 (sell vase) ~)}"
+    ;code.flex-grow:"*{(render-tang-to-marl 80 (sell vase) ~)}"
   ::
   ++  wrap-manx
     |=  =manx
@@ -312,52 +265,95 @@
       ==
     ==
   ::
-  ++  nav
-    |=  [=path =manx]
-    |^
-    =/  m  (charm ,^manx)
-    ^-  form:m
-    ;<  =cone:g  bind:m  (peek /)
-    %-  pure:m
-    ^+  manx
+  ++  main
+    |=  =cone:g
+    ^-  manx
     ;div.flex.flex-col.h-screen.w-screen
-      ;+  navbar
+      ;+  (navbar /)
       ;div.h-full.w-full.flex.flex-row.bg-gray-500.overflow-hidden
         ;div
           =id  "tree-tab"
           =class  "w-1/3 overflow-auto text-white font-mono font-bold"
-          ;+  (display-cone / cone)
+          ;+  (cone-navigator / cone)
         ==
-        ;div.flex-grow.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto
-          ;+  manx
+        ;div#display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
+      ==
+    ==
+  ::
+  ++  navbar
+    |=  =path
+    ^-  manx
+    ;div.h-12.w-full.flex.flex-row.items-center.justify-start.text-white.font-mono.font-bold.bg-blue-500
+      ;button
+        =class  "px-4 py-2 hover:bg-blue-200"
+        =onclick  "$('#tree-tab').toggleClass('hidden');"
+        ;+  (make:fi %menu)
+      ==
+      ;+  (search-bar path)
+    ==
+  ::
+  ++  search-bar
+    |=  =path
+    ^-  manx
+    ;div(id "search-bar", class "h-full w-full flex flex-row")
+      ;form#search
+        =class  "hidden m-1 flex-grow flex flex-row"
+        =hx-post  "/grub/get"
+        =hx-swap  "outerHTML"
+        =hx-target  "#search-bar"
+        =onsubmit  "document.getElementById('search-in').value = '/grub/search-bar' + document.getElementById('search-in').value;"
+        =hx-on-htmx-after-request  "$('#search').addClass('hidden'); $('#crumbs').removeClass('hidden');"
+        ;input#search-in
+          =class  "p-2 bg-blue-200 flex-grow font-mono text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          =type  "text"
+          =required  ""
+          =name  "get"
+          =placeholder  ""
+          =pattern  "^(/)?([a-zA-Z0-9_\\-\\~\\.]+(/)?)*$"
+          =spellcheck  "false"
+          =autocomplete  "off"
+          =onfocusout  "$('#search').addClass('hidden'); $('#crumbs').removeClass('hidden');"
+          =value  ?:(=(~ path) "/" "{(spud path)}/")
+          ;
+        ==
+        ;div(class "font-mono p-2 bg-blue-400")
+          ;+  (make:fi %search)
+        ==
+      ==
+      ;div(id "crumbs", class "m-1 flex-grow flex flex-row items-center justify-center")
+        ;*  %+  turn  (gulf 0 (lent path))
+            |=  i=@ud
+            ^-  manx
+            ;div
+              =hx-get  "/grub/search-bar{(spud (scag i path))}"
+              =hx-target  "#search-bar"
+              =hx-swap  "outerHTML"
+              =hx-trigger  "click"
+              =class  "cursor-pointer"
+              ; {?:(=(0 i) "/" "{(trip (snag (dec i) path))}/")}
+            ==
+        ;button
+          =class  "font-mono h-full w-full flex flex-row p-2 hover:bg-blue-200 justify-between"
+          =onclick  "$('#crumbs').addClass('hidden'); $('#search').removeClass('hidden'); $('#search-in').focus().get(0).setSelectionRange(999,999);"
+          ;div.hidden
+            =hx-get  "/grub/tree{(spud path)}"
+            =hx-target  "#display"
+            =hx-swap  "innerHTML"
+            =hx-trigger  "load"
+            =hx-indicator  "#loading-indicator"
+            ;
+          ==
+          ;div
+            =id  "loading-indicator"
+            =class  "htmx-indicator p-2"
+            ;+  (pac:~(at mx (make:fi %loader)) "animate-spin")
+          ==
+          ;+  (make:fi %search)
         ==
       ==
     ==
-    ::
-    ++  navbar
-      ^+  manx
-      ;div.h-12.w-full.flex.flex-row.items-center.justify-start.text-white.font-mono.font-bold.bg-blue-500
-        ;button
-          =class  "px-4 py-2 hover:bg-blue-200"
-          =onclick  "$('#tree-tab').toggleClass('hidden');"
-          ;+  (make:fi %menu)
-        ==
-        ;*  %+  turn  (gulf 0 (lent path))
-            |=  i=@ud
-            =/  [href=tape text=tape]
-              ?:  =(0 i)
-                ["/grub/tree" "/"]
-              :-  "/grub/tree{(spud (scag i path))}"
-              "{(trip (snag (dec i) path))}/"
-            ;a
-              =href  href
-              =class  "px-1 py-2 hover:bg-blue-200"
-              {text}
-            ==
-      ==
-    --
   ::
-  ++  display-cone
+  ++  cone-navigator
     |=  [=path =cone:g]
     ^-  manx
     ;div.pl-6
@@ -375,42 +371,230 @@
                 ;+  (make:fi %chevron-down)
               ==
             ==
-        ;a
-          =href  "/grub/tree{(spud path)}"
+        ;div
+          =hx-get  "/grub/search-bar{(spud path)}"
+          =hx-target  "#search-bar"
+          =hx-swap  "outerHTML"
+          =hx-trigger  "click"
+          =class  "cursor-pointer"
           ; {?~(path "/" (trip (rear path)))}
         ==
       ==
       ;div.children.flex.flex-col
         ;*  %+  turn  ~(tap by dir.cone)
             |=  [name=@ta =cone:g]
-            (display-cone (weld path /[name]) cone)
+            (cone-navigator (weld path /[name]) cone)
       ==
     ==
   ::
-  ++  cone-interface
-    |=  [stud=manx cone=manx]
+  ++  grub-tree
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    %-  pure:m
     ^-  manx
-    ;div(class "w-screen h-screen mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+        ;button
+          =id  "viewTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/both{(spud path)}"
+          =hx-target  "#inner-display"
+          =hx-swap  "innerHTML"
+          =hx-trigger  "click, load"
+          ; View
+        ==
+        ;button
+          =id  "codeTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/code{(spud path)}"
+          =hx-target  "#inner-display"
+          =hx-swap  "innerHTML"
+          ; Code
+        ==
+        ;button
+          =id  "conversionsTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/gui/con{(spud path)}"
+          =hx-target  "#inner-display"
+          =hx-swap  "innerHTML"
+          ; Conversions
+        ==
+      ==
+      ;div#inner-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+    ==
+  ::
+  ++  grub-code
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    ;<  =cone:g  bind:m  (peek path)
+    =/  =grub:g  (need (~(get of cone) /))
+    %-  pure:m
+    ^-  manx
+    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+        ;button
+          =id  "viewTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+          =onclick  "$('#stud-path').show(); $('#grub-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/lib/stud{(spud stud.grub)}"
+          =hx-target  "#code-display"
+          =hx-swap  "innerHTML"
+          =hx-trigger  "click, load"
+          ; Stud
+        ==
+        ;button
+          =id  "codeTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$('#grub-path').show(); $('#stud-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/lib/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
+          =hx-target  "#code-display"
+          =hx-swap  "innerHTML"
+          ;+  ;/
+          ?:  ?=(%base -.kind.grub)
+            "Base"
+          "Stem"
+        ==
+      ==
+      ;div#stud-path.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+        ; {(spud stud.grub)}
+      ==
+      ;div#grub-path.hidden.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+        ;+  ;/
+        ?:  ?=(%base -.kind.grub)
+          (spud base.kind.grub)
+        (spud stem.kind.grub)
+      ==
+      ;div#code-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+    ==
+  ::
+  ++  grub-gui-con
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    ;<  =cone:g  bind:m  (peek path)
+    =/  =grub:g  (need (~(get of cone) /))
+    %-  pure:m
+    ^-  manx
+    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+        ;button
+          =id  "viewTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+          =onclick  "$('#stud-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/lib/gui/con/stud{(spud stud.grub)}"
+          =hx-target  "#gui-con-display"
+          =hx-swap  "innerHTML"
+          =hx-trigger  "click, load"
+          ; Stud
+        ==
+        ;button
+          =id  "codeTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/lib/gui/con/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
+          =hx-target  "#gui-con-display"
+          =hx-swap  "innerHTML"
+          ; Cone
+        ==
+        ;*  ?.  ?=(%base -.kind.grub)
+              ~
+            ;=
+              ;button
+                =id  "codeTab"
+                =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+                =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+                =hx-get  "/grub/view/lib/gui/con/poke{(spud base.kind.grub)}"
+                =hx-target  "#gui-con-display"
+                =hx-swap  "innerHTML"
+                ; Poke
+              ==
+              ;button
+                =id  "codeTab"
+                =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+                =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+                =hx-get  "/grub/view/lib/gui/con/bump{(spud base.kind.grub)}"
+                =hx-target  "#gui-con-display"
+                =hx-swap  "innerHTML"
+                ; Bump
+              ==
+            ==
+      ==
+      ;div.flex.flex-col.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+        ;div#stud-path: {(spud stud.grub)}
+        ;div#cone-path.hidden
+          ;+  ;/
+          ?:  ?=(%base -.kind.grub)
+            (spud base.kind.grub)
+          (spud stem.kind.grub)
+        ==
+      ==
+      ;div#gui-con-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+    ==
+  ::
+  ++  grub-view-stud
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    ;<  =cone:g  bind:m  (peek path)
+    =/  =grub:g  (need (~(get of cone) /))
+    ;<  s=(unit grub:g)  bind:m
+      (peek-root-soft (weld /bin/gui/con/stud stud.grub))
+    %-  pure:m
+    ?~  s
+      (vase-to-manx (grab-data grub))
+    %.  (grab-data grub)
+    !<($-(^vase manx) (grab-data u.s))
+  ::
+  ++  grub-view-cone
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    ;<  =cone:g  bind:m  (peek path)
+    =/  =grub:g  (need (~(get of cone) /))
+    =/  con-path=^path
+      ?-  -.kind.grub
+        %base  (weld /bin/gui/con/base base.kind.grub)
+        %stem  (weld /bin/gui/con/stem stem.kind.grub)
+      ==
+    ;<  c=(unit grub:g)  bind:m  (peek-root-soft con-path)
+    %-  pure:m
+    ?~  c
+      (vase-to-manx (grab-data grub))
+    (!<($-([^path cone:g] manx) (grab-data u.c)) path cone)
+  ::
+  ++  grub-view-both
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    %-  pure:m
+    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
       ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "studTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
-          =onclick  "$('#stud-content').show(); $('#cone-content').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          Stud
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/stud{(spud path)}"
+          =hx-target  "#view-display"
+          =hx-swap  "innerHTML"
+          =hx-trigger  "click, load"
+          ; Stud
         ==
         ;button
           =id  "coneTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$('#cone-content').show(); $('#stud-content').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          Cone
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/cone{(spud path)}"
+          =hx-target  "#view-display"
+          =hx-swap  "innerHTML"
+          ; Cone
         ==
       ==
-      ;div#stud-content
-        ;+  stud
-      ==
-      ;div#cone-content.hidden
-        ;+  cone
-      ==
+      ;div#view-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
     ==
   ::
   ++  make-base-interface
