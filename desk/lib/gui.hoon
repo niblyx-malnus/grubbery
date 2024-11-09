@@ -4,7 +4,7 @@
 ++  mx  mx:html-utils
 ++  kv  kv:html-utils
 ::
-++  make-id  |=(p=path (trip (rap 3 (join '_' p))))
+++  make-id  |=(p=path (trip (rap 3 (join '_' `path`[%grub p]))))
 ::
 ++  refresher
   =,  grubberyio
@@ -143,10 +143,6 @@
       %+  pure:m  /simple-payload
       !>((manx-response:gen:server (main-page cone)))
       ::
-        [%grub %make %base ~]
-      %+  pure:m  /simple-payload
-      !>((manx-response:gen:server (wrap-manx make-base-interface)))
-      ::
         [%grub %main ~]
       ;<  =cone:g  bind:m  (peek /)
       %+  pure:m  /simple-payload
@@ -158,23 +154,11 @@
       ::
         [%grub %tree %lib *]
       ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
-      ;<  ~  bind:m
-        ?^(g (pure:(charm ,~) ~) (make-lib t.t.t.site ''))
-      ;<  =manx  bind:m  (make-lib-page t.t.t.site)
-      =/  raw=(unit @t)  (get-key:kv 'raw' args)
-      ?^  raw
-        ?>(?=([~ %true] raw) (give-manx-response manx))
-      (give-manx-response (wrap-manx manx))
+      ;<  =manx  bind:m  (grub-tree-lib t.t.t.site)
+      (give-manx-response manx)
       ::
         [%grub %tree *]
       ;<  =manx  bind:m  (grub-tree t.t.site)
-      (give-manx-response manx)
-      ::
-        [%grub %view %lib *]
-      ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
-      ;<  ~  bind:m
-        ?^(g (pure:(charm ,~) ~) (make-lib t.t.t.site ''))
-      ;<  =manx  bind:m  (make-lib-page t.t.t.site)
       (give-manx-response manx)
       ::
         [%grub %view %both *]
@@ -214,14 +198,21 @@
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
       =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
       =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
-      ;<  ~  bind:m  (overwrite-base path stud base ~)
-      (pure:m ~)
+      (overwrite-base path stud base ~)
+      ::
+        [%grub %oust %grub ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      (oust-grub path)
       ::
         [%grub %make %lib ~]
       =/  =path    (rash (need (get-key:kv 'path' args)) stap)
       =/  code=@t  (need (get-key:kv 'code' args))
-      ;<  ~  bind:m  (overwrite-lib path code)
-      (pure:m ~)
+      (overwrite-lib path code)
+      ::
+        [%grub %oust %lib ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      ;<  ~  bind:m  (oust-grub [%lib path])
+      (oust-grub [%bin path])
       ::
         [%grub %poke *]
       ~&  >>>  %receiving-poke-post
@@ -239,8 +230,7 @@
       ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.kind.grub))
       =/  =pail:g
         (!<($-(key-value-list:kv pail) (grab-data b)) args)
-      ;<  ~  bind:m  (bump t.t.site pail)
-      (pure:m ~)
+      (bump t.t.site pail)
     ==
     
   ++  vase-to-manx
@@ -387,14 +377,76 @@
       ==
     ==
   ::
+  ++  no-grub
+    |=  =path
+    ^-  manx
+    ;div(id (make-id path))
+      ;div(class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
+        ;h2(class "text-2xl font-bold text-gray-700 mb-6 text-center"): Make Base
+        ;form
+          =class  "space-y-4"
+          =hx-post  "/grub/make/base"
+          =hx-indicator  "#loading-indicator"
+          =hx-target  "#{(make-id path)}"
+          =hx-swap  "outerHTML"
+          ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;div
+            ;label
+              =for  "stud"
+              =class  "block text-gray-700 font-semibold mb-1"
+              Stud
+            ==
+            ;input
+              =type  "text"
+              =id  "stud"
+              =name  "stud"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div
+            ;label
+              =for  "base"
+              =class  "block text-gray-700 font-semibold mb-1"
+              Base
+            ==
+            ;input
+              =type  "text"
+              =id  "base"
+              =name  "base"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div(class "flex items-center justify-center mt-6")
+            ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+              Make
+            ==
+            ;div(id "loading-indicator", class "ml-4 htmx-indicator")
+              ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
+                ;circle(class "opacity-25", cx "12", cy "12", r "10", stroke "currentColor", stroke-width "4");
+                ;path(class "opacity-75", fill "currentColor", d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z");
+              ==
+            ==
+          ==
+        ==
+      ==
+    ==
+  ::
   ++  grub-tree
     |=  =path
     =/  m  (charm ,manx)
     ^-  form:m
+    ;<  grub=(unit grub:g)  bind:m  (peek-root-soft path)
+    ?~  grub
+      (pure:m (no-grub path))
     %-  pure:m
     ^-  manx
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
-      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "viewTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
@@ -424,7 +476,7 @@
           ; Conversions
         ==
       ==
-      ;div#inner-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+      ;div#inner-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
   ::
   ++  grub-code
@@ -436,12 +488,12 @@
     %-  pure:m
     ^-  manx
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
-      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "viewTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
           =onclick  "$('#stud-path').show(); $('#grub-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/lib/stud{(spud stud.grub)}"
+          =hx-get  "/grub/tree/lib/stud{(spud stud.grub)}"
           =hx-target  "#code-display"
           =hx-swap  "innerHTML"
           =hx-trigger  "click, load"
@@ -451,7 +503,7 @@
           =id  "codeTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
           =onclick  "$('#grub-path').show(); $('#stud-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/lib/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
+          =hx-get  "/grub/tree/lib/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
           =hx-target  "#code-display"
           =hx-swap  "innerHTML"
           ;+  ;/
@@ -460,16 +512,16 @@
           "Stem"
         ==
       ==
-      ;div#stud-path.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+      ;div#stud-path.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
         ; {(spud stud.grub)}
       ==
-      ;div#grub-path.hidden.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+      ;div#grub-path.hidden.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
         ;+  ;/
         ?:  ?=(%base -.kind.grub)
           (spud base.kind.grub)
         (spud stem.kind.grub)
       ==
-      ;div#code-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+      ;div#code-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
   ::
   ++  grub-gui-con
@@ -481,12 +533,12 @@
     %-  pure:m
     ^-  manx
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
-      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "viewTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
           =onclick  "$('#stud-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/lib/gui/con/stud{(spud stud.grub)}"
+          =hx-get  "/grub/tree/lib/gui/con/stud{(spud stud.grub)}"
           =hx-target  "#gui-con-display"
           =hx-swap  "innerHTML"
           =hx-trigger  "click, load"
@@ -496,7 +548,7 @@
           =id  "codeTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
           =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/lib/gui/con/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
+          =hx-get  "/grub/tree/lib/gui/con/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
           =hx-target  "#gui-con-display"
           =hx-swap  "innerHTML"
           ; Cone
@@ -508,7 +560,7 @@
                 =id  "codeTab"
                 =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
                 =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-                =hx-get  "/grub/view/lib/gui/con/poke{(spud base.kind.grub)}"
+                =hx-get  "/grub/tree/lib/gui/con/poke{(spud base.kind.grub)}"
                 =hx-target  "#gui-con-display"
                 =hx-swap  "innerHTML"
                 ; Poke
@@ -517,14 +569,14 @@
                 =id  "codeTab"
                 =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
                 =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-                =hx-get  "/grub/view/lib/gui/con/bump{(spud base.kind.grub)}"
+                =hx-get  "/grub/tree/lib/gui/con/bump{(spud base.kind.grub)}"
                 =hx-target  "#gui-con-display"
                 =hx-swap  "innerHTML"
                 ; Bump
               ==
             ==
       ==
-      ;div.flex.flex-col.w-full.p-4.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+      ;div.flex.flex-col.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
         ;div#stud-path: {(spud stud.grub)}
         ;div#cone-path.hidden
           ;+  ;/
@@ -533,7 +585,7 @@
           (spud stem.kind.grub)
         ==
       ==
-      ;div#gui-con-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
+      ;div#gui-con-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
   ::
   ++  grub-view-stud
@@ -547,8 +599,15 @@
     %-  pure:m
     ?~  s
       (vase-to-manx (grab-data grub))
-    %.  (grab-data grub)
-    !<($-(^vase manx) (grab-data u.s))
+    =/  res
+      %-  mule  |.
+      %.  (grab-data grub)
+      !<($-(^vase manx) (grab-data u.s))
+    ?:  ?=(%& -.res)
+      p.res
+    ;div(class "bg-red-100 p-1 rounded-lg w-full h-full overflow-y-auto")
+      ;code:"*{(render-tang-to-marl 80 p.res)}"
+    ==
   ::
   ++  grub-view-cone
     |=  =path
@@ -565,7 +624,16 @@
     %-  pure:m
     ?~  c
       (vase-to-manx (grab-data grub))
-    (!<($-([^path cone:g] manx) (grab-data u.c)) path cone)
+    =/  res
+      %-  mule  |.
+      %.  [path cone]
+      !<($-([^path cone:g] manx) (grab-data u.c))
+    ?:  ?=(%& -.res)
+      p.res
+    ;div(class "bg-red-100 p-1 rounded-lg w-full h-full overflow-y-auto")
+      ;code:"*{(render-tang-to-marl 80 p.res)}"
+    ==
+
   ::
   ++  grub-view-both
     |=  =path
@@ -573,7 +641,7 @@
     ^-  form:m
     %-  pure:m
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
-      ;div(class "flex justify-center p-4 border-b border-gray-300 bg-gray-50")
+      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "studTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
@@ -594,75 +662,7 @@
           ; Cone
         ==
       ==
-      ;div#view-display.h-full.w-full.flex.flex-col.bg-gray-300.items-center.justify-center.overflow-auto;
-    ==
-  ::
-  ++  make-base-interface
-    ^-  manx
-    ;div(class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
-      ;h2(class "text-2xl font-bold text-gray-700 mb-6 text-center"): Make Base
-      ;form
-        =class  "space-y-4"
-        =hx-post  "/grub/make/base"
-        =hx-indicator  "#loading-indicator"
-        =hx-swap  "none"
-        ;div
-          ;label
-            =for  "path"
-            =class  "block text-gray-700 font-semibold mb-1"
-            Path
-          ==
-          ;input
-            =type  "text"
-            =id  "path"
-            =name  "path"
-            =required  ""
-            =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ;
-          ==
-        ==
-        ;div
-          ;label
-            =for  "stud"
-            =class  "block text-gray-700 font-semibold mb-1"
-            Stud
-          ==
-          ;input
-            =type  "text"
-            =id  "stud"
-            =name  "stud"
-            =required  ""
-            =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ;
-          ==
-        ==
-        ;div
-          ;label
-            =for  "base"
-            =class  "block text-gray-700 font-semibold mb-1"
-            Base
-          ==
-          ;input
-            =type  "text"
-            =id  "base"
-            =name  "base"
-            =required  ""
-            =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ;
-          ==
-        ==
-        ;div(class "flex items-center justify-center mt-6")
-          ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
-            Make
-          ==
-          ;div(id "loading-indicator", class "ml-4 htmx-indicator")
-            ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
-              ;circle(class "opacity-25", cx "12", cy "12", r "10", stroke "currentColor", stroke-width "4");
-              ;path(class "opacity-75", fill "currentColor", d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z");
-            ==
-          ==
-        ==
-      ==
+      ;div#view-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
   ::
   ++  main-page
@@ -677,13 +677,36 @@
       ==
     ==
   ::
-  ++  make-lib-page
-    |=  pat=path
+  ++  grub-tree-lib
+    |=  here=path
     =/  m  (charm ,manx)
     ^-  form:m
-    ;<  [code=@t *]  bind:m  (peek-root-as ,[@t *] [%lib pat])
-    ;<  grub=(unit grub:g)  bind:m  (peek-root-soft [%bin pat])
-    (pure:m (lib-page pat code grub))
+    ;<  lib=(unit grub:g)  bind:m  (peek-root-soft [%lib here])
+    ?~  lib
+      (pure:m (no-lib here))
+    =+  !<([code=@t *] (grab-data u.lib))
+    ;<  grub=(unit grub:g)  bind:m  (peek-root-soft [%bin here])
+    (pure:m (lib-page here code grub))
+  ::
+  ++  no-lib
+    |=  =path
+    ^-  manx
+    ;div(id (make-id %lib path))
+      ;form
+        =hx-post  "/grub/make/lib"
+        =hx-trigger  "submit"
+        =hx-swap  "outerHTML"
+        =hx-target  "#{(make-id %lib path)}"
+        ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}");
+        ;input(type "hidden", name "path", value "{(spud path)}");
+        ;input(type "hidden", name "code", value "");
+        ;button
+          =type   "submit"
+          =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+          ; make
+        ==
+      ==
+    ==
   ::
   ++  lib-page
     |=  [=path code=@t grub=(unit grub:g)]
@@ -692,11 +715,43 @@
       ?~  grub
         |+~[leaf+"no bin; bad dependency"]
       (grab-data-soft u.grub)
-    ;div
+    ;div.h-full.w-full.flex-grow.flex.flex-col.overflow-auto
       =id  (make-id [%lib path])
-      =class  "h-full w-full p-4 flex-grow flex flex-row justify-center items-center bg-gray-100"
-      ;+  (code-result data)
-      ;+  (textarea path (trip code))
+      ;div.flex.flex-row.items-center.justify-center.text-white.font-mono.font-bold
+        ;form
+          =hx-post  "/grub/oust/lib"
+          =hx-trigger  "submit"
+          =hx-swap  "outerHTML"
+          =hx-target  "#{(make-id %lib path)}"
+          =hx-confirm  "Are you sure you want to oust lib {(spud path)}?"
+          ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;button
+            =type   "submit"
+            =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            ; oust
+          ==
+        ==
+        ;form
+          =hx-post  "/grub/cull/lib"
+          =hx-trigger  "submit"
+          =hx-swap  "outerHTML"
+          =hx-target  "#{(make-id %lib path)}"
+          =hx-confirm  "Are you sure you want to cull lib {(spud path)}?"
+          ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;button
+            =type   "submit"
+            =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            ; cull
+          ==
+        ==
+      ==
+      ;div
+        =class  "w-full p-4 flex-grow flex flex-row justify-center items-center bg-gray-100 overflow-auto"
+        ;+  (code-result data)
+        ;+  (textarea path (trip code))
+      ==
     ==
   ::
   ++  code-result
@@ -736,7 +791,7 @@
           =class  "block text-gray-700 font-bold mb-2"
           ; Enter your text
         ==
-        ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}?raw=true");
+        ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}");
         ;input(type "hidden", name "path", value "{(spud path)}");
         ;textarea
           =id  "code"

@@ -558,7 +558,6 @@
   ^+  this
   ~|  "making base {(spud here)} failed"
   ?<  (~(has of cone) here)
-  =/  =mold  (get-stud stud)
   =/  data=vase  (fall data *vase)
   =/  =grub:g  [stud [%base data base ~]]
   =.  cone  (~(put of cone) here grub)

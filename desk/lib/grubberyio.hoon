@@ -19,6 +19,11 @@
     %|  (mean p.res)
   ==
 ::
+++  grab-data-as
+  |*  [a=mold =grub]
+  ^-  a
+  !<(a (grab-data grub))
+::
 ++  nead
   |*  a=(each)
   ?:  ?=(%& -.a)
