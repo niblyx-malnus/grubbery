@@ -2,8 +2,15 @@
 /+  grubbery, io=grubberyio, server, dbug, verb, default-agent
 /=  x-  /mar/sign-base
 |%
-+$  state-0  [%0 =cone:g =trac:g =bindings:g =history:g]
 +$  card     card:agent:gall
++$  state-0
+  $:  %0
+      =cone:g
+      =trac:g
+      sand=(axal (set path))
+      =bindings:g
+      =history:g
+  ==
 --
 ::
 =|  state-0
@@ -30,8 +37,6 @@
 ++  on-load
   |=  old=vase
   ^-  (quip card _this)
-  :: TODO: make sure we add a /bin/zuse with !>(..zuse)
-  ::       every time we boot
   :: TODO: make sure we kill all processes everytime we load
   ::       (might need to send poke responses outside the agent)
   ::
