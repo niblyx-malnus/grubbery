@@ -200,6 +200,14 @@
       =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
       (overwrite-base path stud base ~)
       ::
+        [%grub %make %stem ~]
+      =/  =path       (rash (need (get-key:kv 'path' args)) stap)
+      =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
+      =/  stem=^path  (rash (need (get-key:kv 'stem' args)) stap)
+      =/  sour=(set ^path)
+        (sy (rash (need (get-key:kv 'sour' args)) (more com stap)))
+      (overwrite-stem path stud stem sour)
+      ::
         [%grub %oust %grub ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
       (oust-grub path)
@@ -315,7 +323,7 @@
             |=  i=@ud
             ^-  manx
             ;div
-              =hx-get  "/grub/search-bar{(spud (scag i path))}"
+              =hx-get  "/grub/search-bar{=/(rest (scag i path) ?:(=(~ rest) "" (spud rest)))}"
               =hx-target  "#search-bar"
               =hx-swap  "outerHTML"
               =hx-trigger  "click"
@@ -362,7 +370,7 @@
               ==
             ==
         ;div
-          =hx-get  "/grub/search-bar{(spud path)}"
+          =hx-get  "/grub/search-bar{?:(=(~ path) "" (spud path))}"
           =hx-target  "#search-bar"
           =hx-swap  "outerHTML"
           =hx-trigger  "click"
@@ -380,8 +388,22 @@
   ++  no-grub
     |=  =path
     ^-  manx
-    ;div(id (make-id path))
-      ;div(class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
+    ;div.w-full.h-full.flex.flex-col(id (make-id path))
+      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
+        ;button
+          =id  "baseTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-base').show(); $('#make-stem').hide();"
+          ; Make Base
+        ==
+        ;button
+          =id  "stemTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-stem').show(); $('#make-base').hide();"
+          ; Make Stem
+        ==
+      ==
+      ;div(id "make-base", class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
         ;h2(class "text-2xl font-bold text-gray-700 mb-6 text-center"): Make Base
         ;form
           =class  "space-y-4"
@@ -395,7 +417,7 @@
             ;label
               =for  "stud"
               =class  "block text-gray-700 font-semibold mb-1"
-              Stud
+              ; Stud
             ==
             ;input
               =type  "text"
@@ -410,7 +432,7 @@
             ;label
               =for  "base"
               =class  "block text-gray-700 font-semibold mb-1"
-              Base
+              ; Base
             ==
             ;input
               =type  "text"
@@ -423,7 +445,75 @@
           ==
           ;div(class "flex items-center justify-center mt-6")
             ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
-              Make
+              ; Make
+            ==
+            ;div(id "loading-indicator", class "ml-4 htmx-indicator")
+              ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
+                ;circle(class "opacity-25", cx "12", cy "12", r "10", stroke "currentColor", stroke-width "4");
+                ;path(class "opacity-75", fill "currentColor", d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z");
+              ==
+            ==
+          ==
+        ==
+      ==
+      ;div(id "make-stem", class "hidden max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
+        ;h2(class "text-2xl font-bold text-gray-700 mb-6 text-center"): Make Stem
+        ;form
+          =class  "space-y-4"
+          =hx-post  "/grub/make/stem"
+          =hx-indicator  "#loading-indicator"
+          =hx-target  "#{(make-id path)}"
+          =hx-swap  "outerHTML"
+          ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;div
+            ;label
+              =for  "stud"
+              =class  "block text-gray-700 font-semibold mb-1"
+              ; Stud
+            ==
+            ;input
+              =type  "text"
+              =id  "stud"
+              =name  "stud"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div
+            ;label
+              =for  "stem"
+              =class  "block text-gray-700 font-semibold mb-1"
+              ; Stem
+            ==
+            ;input
+              =type  "text"
+              =id  "stem"
+              =name  "stem"
+              =required  ""
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ;
+            ==
+          ==
+          ;div
+            ;label
+              =for  "sour"
+              =class  "block text-gray-700 font-semibold mb-1"
+              ; Sources
+            ==
+            ;textarea
+              =id  "sour"
+              =name  "sour"
+              =rows  "4"
+              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+              ;
+            ==
+          ==
+          ;div(class "flex items-center justify-center mt-6")
+            ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+              ; Make
             ==
             ;div(id "loading-indicator", class "ml-4 htmx-indicator")
               ;svg(class "animate-spin h-6 w-6 text-blue-500", xmlns "http://www.w3.org/2000/svg", fill "none", viewBox "0 0 24 24")
@@ -445,7 +535,37 @@
       (pure:m (no-grub path))
     %-  pure:m
     ^-  manx
-    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+    ;div(id (make-id path), class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+      ;div.flex.flex-row.items-center.justify-center.text-white.font-mono.font-bold
+        ;form
+          =hx-post  "/grub/oust/grub"
+          =hx-trigger  "submit"
+          =hx-swap  "outerHTML"
+          =hx-target  "#{(make-id path)}"
+          =hx-confirm  "Are you sure you want to oust {?:(?=(%base -.kind.u.grub) "base" "stem")} grub {(spud path)}?"
+          ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;button
+            =type   "submit"
+            =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            ; oust
+          ==
+        ==
+        ;form
+          =hx-post  "/grub/cull/grub"
+          =hx-trigger  "submit"
+          =hx-swap  "outerHTML"
+          =hx-target  "#{(make-id path)}"
+          =hx-confirm  "Are you sure you want to cull {?:(?=(%base -.kind.u.grub) "base" "stem")} grub {(spud path)}?"
+          ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+          ;input(type "hidden", name "path", value "{(spud path)}");
+          ;button
+            =type   "submit"
+            =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            ; cull
+          ==
+        ==
+      ==
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "viewTab"
@@ -644,21 +764,21 @@
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "studTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
           =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
           =hx-get  "/grub/view/stud{(spud path)}"
           =hx-target  "#view-display"
           =hx-swap  "innerHTML"
-          =hx-trigger  "click, load"
           ; Stud
         ==
         ;button
           =id  "coneTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
           =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
           =hx-get  "/grub/view/cone{(spud path)}"
           =hx-target  "#view-display"
           =hx-swap  "innerHTML"
+          =hx-trigger  "click, load"
           ; Cone
         ==
       ==

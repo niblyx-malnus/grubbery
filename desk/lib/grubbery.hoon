@@ -96,6 +96,8 @@
     ;<  ~  bind:m  (overwrite-stud-lib /txt '@t')
     ;<  ~  bind:m  (overwrite-stud-lib /dr '@dr')
     ;<  ~  bind:m  (overwrite-stud-lib /manx 'manx')
+    ;<  ~  bind:m  (overwrite-stud-lib /sig ',~')
+    ;<  ~  bind:m  (overwrite-stud-lib /init ',~')
     :: counter test
     ::
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)
