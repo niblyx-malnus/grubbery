@@ -6,6 +6,69 @@
   ^-  vase
   =+  gun=(~(mint ut p.vax) %noun gen)
   [p.gun (need (mack q.vax q.gun))]
+:: from rudder (paldev)
+::
+++  decap  ::  strip leading base from full site path
+  |=  [base=(list @t) site=(list @t)]
+  ^-  (unit (list @t))
+  ?~  base  `site
+  ?~  site  ~
+  ?.  =(i.base i.site)  ~
+  $(base t.base, site t.site)
+::
+++  clean-perm
+  |=  [here=path =perm:g]
+  ^+  perm
+  |^
+  :*  (clean make.perm)
+      (clean poke.perm)
+      (clean peek.perm)
+  ==
+  :: all subdirectories of here are converted to here
+  ::
+  ++  clean
+    |=  pax=(set path)
+    ^-  (set path)
+    %-  ~(gas in *(set path))
+    :-  here
+    %+  murn  ~(tap in pax)
+    |=  =path
+    ?^  (decap here path)
+      ~
+    [~ path]
+  --
+::
+++  check-pax
+  |=  [dest=path pax=(list path)]
+  ^-  ?
+  ?~  pax
+    %|
+  ?^  (decap i.pax dest)
+    %&
+  $(pax t.pax)
+::
+++  check-pax-hard
+  |=  [dest=path pax=(list path)]
+  ^-  ?
+  ?~  pax
+    %|
+  ?:  ?=([~ ^] (decap i.pax dest))
+    %&
+  $(pax t.pax)
+::
+++  allowed
+  |=  [=dart:g perm=(unit perm:g)]
+  ^-  ?
+  ?~  perm  %&
+  ?:  ?=(?(%sysc %scry) -.dart)  %|
+  ?-    -.load.dart
+      ?(%make %oust)
+    (check-pax path.dart ~(tap in make.u.perm))
+      ?(%poke %bump %kill)
+    (check-pax path.dart ~(tap in poke.u.perm))
+      %peek
+    (check-pax path.dart ~(tap in peek.u.perm))
+  ==
 ::
 ++  bin
   |%

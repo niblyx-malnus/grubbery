@@ -7,7 +7,7 @@
   $:  %0
       =cone:g
       =trac:g
-      sand=(axal (set path))
+      =sand:g
       =bindings:g
       =history:g
   ==
@@ -154,6 +154,14 @@
     =^  cards  state
       abet:(kill-base:hc give here)
     [cards this]
+    ::
+      %put-sand
+    =+  !<([here=path perm=(unit perm:g)] vase)
+    ~&  here+here
+    ?~  perm
+      [~ this(sand (~(del of sand) here))]
+    =.  u.perm  (clean-perm:grubbery here u.perm)
+    [~ this(sand (~(put of sand) here u.perm))]
   ==
 ::
 ++  on-watch
@@ -406,6 +414,15 @@
   =.  sour.kind.grub  (~(put by sour.kind.grub) i.sour `@da`0) :: 0 forces recompute
   $(sour t.sour)
 ::
+++  allowed
+  |=  [here=path =dart:g]
+  ^-  ?
+  ?.  (allowed:grubbery dart (~(get of sand) here))
+    %|
+  ?:  =(~ here)
+    %&
+  $(here (snip here))
+::
 ++  dirty
   |=  here=path
   ^-  [(set path) _this]
@@ -500,7 +517,14 @@
     =.  grub
       grub(data.kind &+data.p.res, sour.kind new-sour, tidy.kind %&)
     =.  cone  (~(put of cone) here grub)
-    (emit-bolts (turn darts.p.res (lead here)))
+    =/  bolts=(list bolt:g)  (turn darts.p.res (lead here))
+    %-  emit-bolts
+    %+  murn  bolts
+    |=  [here=path =dart:g]
+    ?.  (allowed here dart)
+      ~&  >>  "ignoring sandboxed dart from {(spud here)}"
+      ~
+    [~ here dart]
   ==
 ::
 ++  dirty-and-tidy
@@ -835,7 +859,16 @@
       %|  [[~ data.kind.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
     ==
   ::
-  =.  this  (emit-bolts (turn darts (lead here)))
+  =/  bolts=(list bolt:g)  (turn darts (lead here))
+  :: TODO: should actually return response to with a failure
+  =.  this
+    %-  emit-bolts
+    %+  murn  bolts
+    |=  [here=path =dart:g]
+    ?.  (allowed here dart)
+      ~&  >>  "ignoring sandboxed dart from {(spud here)}"
+      ~
+    [~ here dart]
   ::
   =/  tick=?  !=(data data.kind.grub)
   =?  this  tick  (next-tack here)

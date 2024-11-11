@@ -10,6 +10,14 @@
 ::
 +$  deed  ?(%make %oust %poke %bump %kill %peek)
 ::
++$  perm
+  $:  make=(set path) :: %make or %oust (%sand ?)
+      poke=(set path) :: %poke, %bump or %kill
+      peek=(set path)
+  ==
+::
++$  sand  (axal perm)
+::
 :: effects that a base grub can emit
 ::
 +$  dart
