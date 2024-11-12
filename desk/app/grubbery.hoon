@@ -48,10 +48,11 @@
 ++  on-peek
   |=  =(pole knot)
   ^-  (unit (unit cage))
-  ?.  ?=([%x %history since=@ta ~] pole)
-    [~ ~]
-  =/  since=@da  (slav %da since.pole)
-  ``noun+!>((tap:hon:g (lot:hon:g history ~ `since)))
+  ?+    pole  [~ ~]
+      [%x %history since=@ta ~]
+    =/  since=@da  (slav %da since.pole)
+    ``noun+!>((tap:hon:g (lot:hon:g history ~ `since)))
+  ==
 ::
 ++  on-poke
   |=  [=mark =vase]
@@ -155,13 +156,13 @@
       abet:(kill-base:hc give here)
     [cards this]
     ::
-      %put-sand
+      %edit-perm
     =+  !<([here=path perm=(unit perm:g)] vase)
     ~&  here+here
-    ?~  perm
-      [~ this(sand (~(del of sand) here))]
-    =.  u.perm  (clean-perm:grubbery here u.perm)
-    [~ this(sand (~(put of sand) here u.perm))]
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
+    =^  cards  state
+      abet:(edit-perm:hc give here perm)
+    [cards this]
   ==
 ::
 ++  on-watch
@@ -272,6 +273,9 @@
       ::
         %oust
       $(this (oust-grub [from wire] path):[dart .])
+      ::
+        %sand
+      $(this (edit-perm [from wire] path perm.load):[dart .])
       ::
         %kill
       $(this (kill-base [from wire] path):[dart .])
@@ -426,7 +430,7 @@
 ++  dirty
   |=  here=path
   ^-  [(set path) _this]
-  ~&  >>  "dirtying {(spud here)}"
+  :: ~&  >>  "dirtying {(spud here)}"
   =/  =grub:g  (need (~(get of cone) here))
   =/  =tack:g  (need (~(get of trac) here))
   ?:  &(?=(%stem -.kind.grub) !tidy.kind.grub)
@@ -451,15 +455,15 @@
 ++  tidy
   |=  here=path
   ^+  this
-  ~&  >>  "tidying {(spud here)}"
+  :: ~&  >>  "tidying {(spud here)}"
   ?~  grub=(~(get of cone) here)
-    ~&  >>  "{(spud here)} has no data"
+    :: ~&  >>  "{(spud here)} has no data"
     this
   ?:  ?=(%base -.kind.u.grub)
-    ~&  >>  "{(spud here)} is a base and thus tidy"
+    :: ~&  >>  "{(spud here)} is a base and thus tidy"
     this
   ?:  tidy.kind.u.grub
-    ~&  >>  "{(spud here)} is already tidy"
+    :: ~&  >>  "{(spud here)} is already tidy"
     this
   =/  sour=(list (pair path @da))  ~(tap by sour.kind.u.grub)
   |-
@@ -493,7 +497,7 @@
   ?>  ?=(%stem -.kind.grub)
   =/  new-sour=(map path @da)  (make-sour ~(key by sour.kind.grub))
   ?:  =(new-sour sour.kind.grub)
-    ~&  >>  "{(spud here)} hasn't changed on recompute"
+    :: ~&  >>  "{(spud here)} hasn't changed on recompute"
     =.  grub  grub(tidy.kind %&)
     this(cone (~(put of cone) here grub))
   =/  res=(each [darts=(list dart:g) data=vase] tang)
@@ -504,7 +508,7 @@
     (stem [now our eny here deps]:[bowl .])
   ?-    -.res
       %|
-    ~&  >>  "{(spud here)} crashed on recompute"
+    :: ~&  >>  "{(spud here)} crashed on recompute"
     =/  =tang  [leaf+"stem boom" leaf+(spud here) p.res]
     =?  this  !=(data.kind.grub |+tang)  (next-tack here)
     :: %-  (slog tang)
@@ -512,7 +516,7 @@
     this(cone (~(put of cone) here grub))
     ::
       %&
-    ~&  >>  "{(spud here)} successfully recomputed"
+    :: ~&  >>  "{(spud here)} successfully recomputed"
     =?  this  !=(data.kind.grub &+data.p.res)  (next-tack here)
     =.  grub
       grub(data.kind &+data.p.res, sour.kind new-sour, tidy.kind %&)
@@ -522,7 +526,7 @@
     %+  murn  bolts
     |=  [here=path =dart:g]
     ?.  (allowed here dart)
-      ~&  >>  "ignoring sandboxed dart from {(spud here)}"
+      :: ~&  >>  "ignoring sandboxed dart from {(spud here)}"
       ~
     [~ here dart]
   ==
@@ -530,7 +534,7 @@
 ++  dirty-and-tidy
   |=  here=path
   ^+  this
-  ~&  >>  "dirty-and-tidy {(spud here)}"
+  :: ~&  >>  "dirty-and-tidy {(spud here)}"
   =^  e  this  (dirty here)
   =/  edge=(list path)  ~(tap in e)
   |-
@@ -566,7 +570,10 @@
       %base  (kill here)
       %stem  (del-sources here)
     ==
-  =.  cone  (~(del of cone) here)
+  =.  cone
+    ?:  ?=([* ~] (~(dip of cone) here)) :: if no descendants
+      (~(lop of cone) here)
+    (~(del of cone) here)
   (next-tack here)
 ::
 ++  oust-grub
@@ -581,6 +588,27 @@
       [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %gone wire.give err]
+::
+++  put-sand
+  |=  [here=path perm=(unit perm:g)]
+  ^+  this
+  ?~  perm
+    this(sand (~(del of sand) here))
+  =.  u.perm  (clean-perm:grubbery here u.perm)
+  this(sand (~(put of sand) here u.perm))
+::
+++  edit-perm
+  |=  [=give:g here=path perm=(unit perm:g)]
+  ^+  this
+  =/  res=(each _this tang)  (mule |.((put-sand here perm)))
+  =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
+  =?  this  ?=(%& -.res)  p.res
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
+    ?:(?=(%& -.res) this (mean p.res))
+  %^    ingest
+      [(scot %p our.bowl) /gall/grubbery]
+    t.t.t.t.from.give
+  [~ %sand wire.give err]
 ::
 ++  new-base
   |=  [here=path stud=path base=path data=(unit vase)]
@@ -637,7 +665,7 @@
   |=  [here=path =wire pat=path]
   ^+  this
   =/  from=path  [(scot %p our.bowl) /gall/grubbery]
-  (ingest from here ~ %peek wire pat (~(dip of cone) pat))
+  (ingest from here ~ %peek wire pat (~(dip of cone) pat) (~(dip of sand) pat))
 ::
 ++  take-scry
   |=  [here=path =wire =mold pat=path]
@@ -682,6 +710,8 @@
 ++  bump-base
   |=  [here=path =give:g =pail:g]
   ^+  this
+  :: TODO: clam the bump if it "crosses a boundary"
+  ::       (first prefix restriction in sand)
   =/  res=(each _this tang)
     (mule |.((ingest from.give here ~ %bump pail)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
@@ -712,6 +742,8 @@
   |=  [here=path =poke:g]
   ^+  this
   ~&  %take-poke
+  :: TODO: clam the poke if it "crosses a boundary"
+  ::       (first prefix restriction in sand)
   =/  =tack:g  (need (~(get of trac) here))
   =.  trac  (~(put of trac) here tack(line (~(put to line.tack) poke)))
   (run-next-poke here)

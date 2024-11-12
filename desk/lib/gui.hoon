@@ -212,6 +212,20 @@
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
       (oust-grub path)
       ::
+        [%grub %sand %sysc ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      (edit-perm path ~)
+      ::
+        [%grub %sand %grub ~]
+      =/  =path       (rash (need (get-key:kv 'path' args)) stap)
+      =/  make=(set ^path)
+        (sy (rash (need (get-key:kv 'make' args)) (more com stap)))
+      =/  poke=(set ^path)
+        (sy (rash (need (get-key:kv 'poke' args)) (more com stap)))
+      =/  peek=(set ^path)
+        (sy (rash (need (get-key:kv 'peek' args)) (more com stap)))
+      (edit-perm path ~ make poke peek)
+      ::
         [%grub %make %lib ~]
       =/  =path    (rash (need (get-key:kv 'path' args)) stap)
       =/  code=@t  (need (get-key:kv 'code' args))
@@ -801,12 +815,14 @@
     |=  here=path
     =/  m  (charm ,manx)
     ^-  form:m
-    ;<  lib=(unit grub:g)  bind:m  (peek-root-soft [%lib here])
+    ;<  lib=(unit grub:g)  bind:m  (peek-root-soft %lib here)
     ?~  lib
       (pure:m (no-lib here))
     =+  !<([code=@t *] (grab-data u.lib))
-    ;<  grub=(unit grub:g)  bind:m  (peek-root-soft [%bin here])
-    (pure:m (lib-page here code grub))
+    ;<  grub=(unit grub:g)  bind:m  (peek-root-soft %bin here)
+    ;<  perm=(unit perm:g)  bind:m  (get-perm %lib here)
+    ~&  >>  ["perm in +grub-tree-lib:" perm]
+    (pure:m (lib-page here code grub perm))
   ::
   ++  no-lib
     |=  =path
@@ -829,8 +845,9 @@
     ==
   ::
   ++  lib-page
-    |=  [=path code=@t grub=(unit grub:g)]
+    |=  [=path code=@t grub=(unit grub:g) perm=(unit perm:g)]
     ^-  manx
+    ~&  >>  ["perm in +lib-page:" perm]
     =/  data=(each vase tang)
       ?~  grub
         |+~[leaf+"no bin; bad dependency"]
@@ -866,11 +883,126 @@
             ; cull
           ==
         ==
+        ;form
+          ;div
+            =class  "cursor-pointer mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            =onclick  "$('#sandbox').show(); $('#lib-view').hide();"
+            ; sand
+          ==
+        ==
       ==
       ;div
+        =id  "lib-view"
         =class  "w-full p-4 flex-grow flex flex-row justify-center items-center bg-gray-100 overflow-auto"
         ;+  (code-result data)
         ;+  (textarea path (trip code))
+      ==
+      ;div#sandbox.hidden.flex-grow.flex.flex-col.w-full.bg-gray-100.overflow-hidden
+        ;div.p-2.w-full.flex.justify-between.bg-gray-200
+          ;button
+            =class  "p-2 rounded-full hover:bg-gray-400 text-white font-mono font-bold"
+            =onclick  "$('#lib-view').show(); $('#sandbox').hide();"
+            ;+  (make:fi %arrow-left)
+          ==
+        ==
+        ;div(class "h-full flex-grow flex items-center justify-center")
+          ;div.m-4.flex-grow.flex.flex-col
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/sysc"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id %lib path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to give system access to {(spud %lib path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud %lib path)}");
+              ;input(type "hidden", name "path", value "{(spud %lib path)}");
+              ;div(class "flex items-center justify-center mt-6")
+                ;+  ?~  perm
+                    ;div(class "text-center text-3xl font-bold text-gray-800 p-4 bg-gray-200 rounded-lg shadow-lg")
+                      ; Full System Access
+                    ==
+                    ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                      ; Give System Access
+                    ==
+              ==
+            ==
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/grub"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id %lib path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to edit the perms of {(spud %lib path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud %lib path)}");
+              ;input(type "hidden", name "path", value "{(spud %lib path)}");
+              ;div
+                ;label
+                  =for  "make"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Make
+                ==
+                ;textarea
+                  =id  "make"
+                  =name  "make"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in make.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "poke"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Poke
+                ==
+                ;textarea
+                  =id  "poke"
+                  =name  "poke"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in poke.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "peek"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Peek
+                ==
+                ;textarea
+                  =id  "peek"
+                  =name  "peek"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in peek.u.perm)) spat)
+                ==
+              ==
+              ;div(class "flex items-center justify-center mt-6")
+                ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                  ;+  ;/
+                  ?~  perm
+                    "Give Perms"
+                  "Edit Perms"
+                ==
+              ==
+            ==
+          ==
+        ==
       ==
     ==
   ::

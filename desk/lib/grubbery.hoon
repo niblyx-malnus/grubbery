@@ -64,11 +64,17 @@
   ?-    -.load.dart
       ?(%make %oust)
     (check-pax path.dart ~(tap in make.u.perm))
+      %sand
+    (check-pax-hard path.dart ~(tap in make.u.perm))
       ?(%poke %bump %kill)
     (check-pax path.dart ~(tap in poke.u.perm))
       %peek
     (check-pax path.dart ~(tap in peek.u.perm))
   ==
+::  user groups:
+::  /grp/who (set ship)
+::  /grp/how perm
+::  /grp/pub perm
 ::
 ++  bin
   |%
@@ -161,6 +167,15 @@
     ;<  ~  bind:m  (overwrite-stud-lib /manx 'manx')
     ;<  ~  bind:m  (overwrite-stud-lib /sig ',~')
     ;<  ~  bind:m  (overwrite-stud-lib /init ',~')
+    :: user groups
+    ::
+    ;<  ~  bind:m  (overwrite-stud-lib /group '(set @p)')
+    ;<  ~  bind:m  (overwrite-stud-lib /perm 'perm')
+    ;<  ~  bind:m  (overwrite-base-lib /usergroup usergroup)
+    ;<  ~  bind:m  (overwrite-base-lib /group-perm group-perm)
+    ;<  ~  bind:m  (overwrite-base /grp/who/~zod /group /usergroup `!>((sy ~[~zod])))
+    ;<  ~  bind:m  (overwrite-base /grp/how/~zod /perm /group-perm `!>(*perm:g))
+    ;<  ~  bind:m  (overwrite-base /grp/pub /perm /group-perm `!>(*perm:g))
     :: counter test
     ::
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)

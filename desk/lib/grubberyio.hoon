@@ -2,6 +2,54 @@
 /+  server
 =,  base
 |%
+++  get-ship-groups
+  |=  [=ship =cone]
+  ^-  (set path)
+  %-  ~(gas in *(set path))
+  %+  murn  ~(tap of (~(dip of cone) /grp/who))
+  |=  [=path =grub]
+  ^-  (unit ^path)
+  =/  data=(each vase tang)  (grab-data-soft grub)
+  ?:  ?=(%| -.data)  ~
+  =/  res  (mule |.(!<((set @p) p.data)))
+  ?:  ?=(%| -.res)  ~
+  ?.  (~(has in p.res) ship)  ~
+  [~ path]
+::
+++  merge-perms
+  =|  =perm
+  |=  perms=(list ^perm)
+  ^+  perm
+  ?~  perms
+    perm
+  %=  $
+    perms      t.perms
+    make.perm  (~(uni in make.perm) make.i.perms)
+    poke.perm  (~(uni in poke.perm) poke.i.perms)
+    peek.perm  (~(uni in peek.perm) peek.i.perms)
+  ==
+::
+++  get-ship-perm
+  |=  [=ship =cone]
+  ^-  perm
+  =/  groups=(set path)  (get-ship-groups ship cone)
+  =/  groups-perm=(list perm)
+    %+  murn  ~(tap of (~(dip of cone) /grp/how))
+    |=  [=path =grub]
+    ^-  (unit perm)
+    ?.  (~(has in groups) path)  ~
+    =/  data=(each vase tang)  (grab-data-soft grub)
+    ?:  ?=(%| -.data)  ~
+    =/  res  (mule |.(!<(perm p.data)))
+    ?:(?=(%| -.res) ~ [~ p.res])
+  =/  public-perm=perm
+    ?~  grub=(~(get of cone) /grp/pub)  *perm
+    =/  data=(each vase tang)  (grab-data-soft u.grub)
+    ?:  ?=(%| -.data)  *perm
+    =/  res  (mule |.(!<(perm p.data)))
+    ?:(?=(%| -.res) *perm p.res)
+  (merge-perms public-perm groups-perm)
+::
 ++  grab-data-soft
   |=  =grub
   ^-  (each vase tang)
@@ -86,7 +134,6 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ~&  %taking-poke-sign
   ?+  in  [%skip ~]
       ~  [%wait ~]
       [~ %base * %poke *]
@@ -102,7 +149,6 @@
   =/  m  (charm ,^pail)
   =/  =dart  [%grub /poke path %poke pail]
   ;<  ~  bind:m  (send-raw-dart dart)
-  ~&  >>  %sent-card
   (take-poke-sign /poke)
 ::
 ++  throw
@@ -158,7 +204,7 @@
 ::
 ++  take-peek
   |=  =wire
-  =/  m  (charm ,cone)
+  =/  m  (charm ,[cone sand])
   ^-  form:m
   |=  input
   :+  ~  state
@@ -167,7 +213,7 @@
       [~ %peek *]
     ?.  =(wire wire.u.in)
       [%skip ~]
-    [%done cone.u.in]
+    [%done [cone sand]:u.in]
   ==
 ::
 ++  ls
@@ -210,12 +256,21 @@
   %-  ~(gas of *(axal ~))
   (turn ~(tap of cone) |=([p=^path *] [p ~]))
 ::
+++  get-perm
+  |=  =path
+  =/  m  (charm ,(unit perm))
+  =/  =dart  [%grub /get-perm path %peek ~]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  ;<  [* =sand]  bind:m  (take-peek /get-perm)
+  (pure:m (~(get of sand) /))
+::
 ++  peek
   |=  =path
   =/  m  (charm ,cone)
   =/  =dart  [%grub /peek path %peek ~]
   ;<  ~  bind:m  (send-raw-dart dart)
-  (take-peek /peek)
+  ;<  [=cone *]  bind:m  (take-peek /peek)
+  (pure:m cone)
 ::
 ++  peek-root
   |=  =path
@@ -320,6 +375,29 @@
     [%fail %oust-fail u.err.u.in]
   ==
 ::
+++  edit-perm
+  |=  [=path perm=(unit perm)]
+  =/  m  (charm ,~)
+  =/  =dart  [%grub /edit-perm path %sand perm]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-sand /edit-perm)
+::
+++  take-sand
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %sand *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  err.u.in
+      [%done ~]
+    [%fail %sand-fail u.err.u.in]
+  ==
+::
 ++  make-stem
   |=  [=path =stud stem=path sour=(set path)]
   =/  m  (charm ,~)
@@ -372,6 +450,7 @@
 ++  overwrite-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ;<  ~  bind:m  (edit-perm [%lib path] ~)
   ;<  ~  bind:m  (oust-grub [%lib path])
   (make-lib path code)
 ::
@@ -571,15 +650,12 @@
   =/  m  (charm ,~)
   ^-  form:m
   |=  input
-  ~&  %taking-poke-ack
   :+  ~  state
   ?+  in  [%skip ~]
       ~  [%wait ~]
       [~ %agent * %poke-ack *]
     ?.  =(wire wire.u.in)
       [%skip ~]
-    ~&  %got-a-poke-ack-for-real
-    ~&  p.sign.u.in
     ?~  p.sign.u.in
       [%done ~]
     [%fail %poke-fail u.p.sign.u.in]
