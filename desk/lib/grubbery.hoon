@@ -196,7 +196,7 @@
     :: user groups
     ::
     ;<  ~  bind:m  (overwrite-stud-lib /group '(set @p)')
-    ;<  ~  bind:m  (overwrite-stud-lib /perm 'perm')
+    ;<  ~  bind:m  (overwrite-stud-lib /perm 'perm:g')
     ;<  ~  bind:m  (overwrite-base-lib /usergroup usergroup)
     ;<  ~  bind:m  (overwrite-base-lib /group-perm group-perm)
     ;<  ~  bind:m  (overwrite-base /grp/who/~zod /group /usergroup `!>((sy ~[~zod])))

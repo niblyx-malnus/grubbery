@@ -400,21 +400,127 @@
     ==
   ::
   ++  no-grub
-    |=  =path
+    |=  [=path perm=(unit perm:g)]
     ^-  manx
     ;div.w-full.h-full.flex.flex-col(id (make-id path))
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
           =id  "baseTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-base').show(); $('#make-stem').hide();"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-base').show(); $('#make-stem').hide(); $('#sandbox').hide();"
           ; Make Base
         ==
         ;button
           =id  "stemTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-stem').show(); $('#make-base').hide();"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#make-stem').show(); $('#make-base').hide(); $('#sandbox').hide();"
           ; Make Stem
+        ==
+        ;button
+          =id  "stemTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500'); $('#sandbox').show(); $('#make-stem').hide(); $('#make-base').hide();"
+          ; Sandbox
+        ==
+      ==
+      ;div#sandbox.hidden.flex-grow.flex.flex-col.w-full.bg-gray-100.overflow-hidden
+        ;div(class "h-full flex-grow flex items-center justify-center")
+          ;div.m-4.flex-grow.flex.flex-col
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/sysc"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to give system access to {(spud path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+              ;input(type "hidden", name "path", value "{(spud path)}");
+              ;div(class "flex items-center justify-center mt-6")
+                ;+  ?~  perm
+                    ;div(class "text-center text-3xl font-bold text-gray-800 p-4 bg-gray-200 rounded-lg shadow-lg")
+                      ; Full System Access
+                    ==
+                    ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                      ; Give System Access
+                    ==
+              ==
+            ==
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/grub"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to edit the perms of {(spud path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+              ;input(type "hidden", name "path", value "{(spud path)}");
+              ;div
+                ;label
+                  =for  "make"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Make
+                ==
+                ;textarea
+                  =id  "make"
+                  =name  "make"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in make.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "poke"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Poke
+                ==
+                ;textarea
+                  =id  "poke"
+                  =name  "poke"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in poke.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "peek"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Peek
+                ==
+                ;textarea
+                  =id  "peek"
+                  =name  "peek"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in peek.u.perm)) spat)
+                ==
+              ==
+              ;div(class "flex items-center justify-center mt-6")
+                ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                  ;+  ;/
+                  ?~  perm
+                    "Give Perms"
+                  "Edit Perms"
+                ==
+              ==
+            ==
+          ==
         ==
       ==
       ;div(id "make-base", class "max-w-md mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200")
@@ -545,8 +651,9 @@
     =/  m  (charm ,manx)
     ^-  form:m
     ;<  grub=(unit grub:g)  bind:m  (peek-root-soft path)
+    ;<  perm=(unit perm:g)  bind:m  (get-perm path)
     ?~  grub
-      (pure:m (no-grub path))
+      (pure:m (no-grub path perm))
     %-  pure:m
     ^-  manx
     ;div(id (make-id path), class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
@@ -579,38 +686,154 @@
             ; cull
           ==
         ==
-      ==
-      ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
-        ;button
-          =id  "viewTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/both{(spud path)}"
-          =hx-target  "#inner-display"
-          =hx-swap  "innerHTML"
-          =hx-trigger  "click, load"
-          ; View
-        ==
-        ;button
-          =id  "codeTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/code{(spud path)}"
-          =hx-target  "#inner-display"
-          =hx-swap  "innerHTML"
-          ; Code
-        ==
-        ;button
-          =id  "conversionsTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/gui/con{(spud path)}"
-          =hx-target  "#inner-display"
-          =hx-swap  "innerHTML"
-          ; Conversions
+        ;form
+          ;div
+            =class  "cursor-pointer mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
+            =onclick  "$('#sandbox').show(); $('#grub-view').hide();"
+            ; sand
+          ==
         ==
       ==
-      ;div#inner-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
+      ;div#sandbox.hidden.flex-grow.flex.flex-col.w-full.bg-gray-100.overflow-hidden
+        ;div.p-2.w-full.flex.justify-between.bg-gray-200
+          ;button
+            =class  "p-2 rounded-full hover:bg-gray-400 text-white font-mono font-bold"
+            =onclick  "$('#grub-view').show(); $('#sandbox').hide();"
+            ;+  (make:fi %arrow-left)
+          ==
+        ==
+        ;div(class "h-full flex-grow flex items-center justify-center")
+          ;div.m-4.flex-grow.flex.flex-col
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/sysc"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to give system access to {(spud path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+              ;input(type "hidden", name "path", value "{(spud path)}");
+              ;div(class "flex items-center justify-center mt-6")
+                ;+  ?~  perm
+                    ;div(class "text-center text-3xl font-bold text-gray-800 p-4 bg-gray-200 rounded-lg shadow-lg")
+                      ; Full System Access
+                    ==
+                    ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                      ; Give System Access
+                    ==
+              ==
+            ==
+            ;form
+              =class  "space-y-4"
+              =hx-post  "/grub/sand/grub"
+              =hx-indicator  "#loading-indicator"
+              =hx-target  "#{(make-id path)}"
+              =hx-swap  "outerHTML"
+              =hx-confirm  "Are you sure you want to edit the perms of {(spud path)}?"
+              ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+              ;input(type "hidden", name "path", value "{(spud path)}");
+              ;div
+                ;label
+                  =for  "make"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Make
+                ==
+                ;textarea
+                  =id  "make"
+                  =name  "make"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in make.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "poke"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Poke
+                ==
+                ;textarea
+                  =id  "poke"
+                  =name  "poke"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in poke.u.perm)) spat)
+                ==
+              ==
+              ;div
+                ;label
+                  =for  "peek"
+                  =class  "block text-gray-700 font-semibold mb-1"
+                  ; Peek
+                ==
+                ;textarea
+                  =id  "peek"
+                  =name  "peek"
+                  =rows  "4"
+                  =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  =placeholder  "Enter paths separated by commas: /path/one,/path/two,/path/three"
+                  ;+  ;/
+                  %-  trip
+                  %+  rap  3
+                  %+  join  ','
+                  (turn ?~(perm ~ ~(tap in peek.u.perm)) spat)
+                ==
+              ==
+              ;div(class "flex items-center justify-center mt-6")
+                ;button(type "submit", class "bg-blue-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-600 transition duration-300 ease-in-out")
+                  ;+  ;/
+                  ?~  perm
+                    "Give Perms"
+                  "Edit Perms"
+                ==
+              ==
+            ==
+          ==
+        ==
+      ==
+      ;div(id "grub-view", class "w-full flex-grow flex flex-col")
+        ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
+          ;button
+            =id  "viewTab"
+            =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
+            =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+            =hx-get  "/grub/view/both{(spud path)}"
+            =hx-target  "#inner-display"
+            =hx-swap  "innerHTML"
+            =hx-trigger  "click, load"
+            ; View
+          ==
+          ;button
+            =id  "codeTab"
+            =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+            =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+            =hx-get  "/grub/code{(spud path)}"
+            =hx-target  "#inner-display"
+            =hx-swap  "innerHTML"
+            ; Code
+          ==
+          ;button
+            =id  "conversionsTab"
+            =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+            =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+            =hx-get  "/grub/gui/con{(spud path)}"
+            =hx-target  "#inner-display"
+            =hx-swap  "innerHTML"
+            ; Conversions
+          ==
+        ==
+        ;div#inner-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
+      ==
     ==
   ::
   ++  grub-code

@@ -351,24 +351,27 @@
   ?:  ?=(%& -.res)
     p.res
   ~|("stem {(spud stem)} failed to compile" !!)
+:: only useful for clamming
 ::
 ++  get-stud
   |=  =stud:g
-  ^-  mold
-  ?:  ?=([%sig ~] stud)  ,~
+  ^-  vase
+  ?:  ?=([%sig ~] stud)  !>(,~)
   ?:  ?=([%lib ~] stud)
-    ,[@t (each [(list (pair term path)) hoon] tang)]
-  ?:  ?=([%bin ~] stud)  noun
+    !>(,[@t (each [(list (pair term path)) hoon] tang)])
+  ?:  ?=([%bin ~] stud)  !>(noun)
   =/  =grub:g
     ~|  "{(spud stud)}: stud not found"
     (need (~(get of cone) (welp /bin/stud stud)))
   ?>  ?=(%stem -.kind.grub)
   ?>  tidy.kind.grub
-  :: only useful for clamming
-  =/  res  (mule |.(!<(mold (grab-data:io grub))))
-  ?:  ?=(%& -.res)
-    p.res
-  ~|("stud {(spud stud)} failed to compile" !!)
+  (grab-data:io grub)
+::
+++  bunt-stud
+  |=  =stud:g
+  ^-  vase
+  =/  func=vase  (get-stud stud)
+  (slam func (slot 6 func))
 ::
 ++  no-cycle
   =|  hist=(list path)
@@ -453,10 +456,10 @@
     [~ %veto dart]
     ::
       %&
-    ?~  p.res                           (emit-bolt here dart)
-    ?^  (decap:grubbery u.p.res here)   (emit-bolt here dart)
-    ?.  ?=(%grub -.dart)                (emit-bolt here dart)
-    ?.  ?=(?(%poke %bump) -.load.dart)  (emit-bolt here dart)
+    ?~  p.res                                 (emit-bolt here dart)
+    ?^  (decap:grubbery u.p.res here)         (emit-bolt here dart)
+    ?.  ?=(%grub -.dart)                      (emit-bolt here dart)
+    ?.  ?=(?(%poke %bump %make) -.load.dart)  (emit-bolt here dart)
     ?-    -.load.dart
         %poke
       =/  res  (mule |.((get-stud p.pail.load.dart)))
@@ -465,13 +468,13 @@
             [(scot %p our.bowl) /gall/grubbery]
           here
         [~ %base wire.dart %poke %| %poke-stud-fail p.res]
-      =/  res  (mule |.(;;(p.res q.q.pail.load.dart)))
+      =/  res  (mule |.((slam p.res q.pail.load.dart)))
       ?:  ?=(%| -.res)
         %^    ingest
             [(scot %p our.bowl) /gall/grubbery]
           here
         [~ %base wire.dart %poke %| %poke-clam-fail p.res]
-      (emit-bolt here dart(q.q.pail.load p.res))
+      (emit-bolt here dart(q.pail.load p.res))
       ::
         %bump
       =/  res  (mule |.((get-stud p.pail.load.dart)))
@@ -480,13 +483,30 @@
             [(scot %p our.bowl) /gall/grubbery]
           here
         [~ %base wire.dart %bump ~ leaf+"bump-stud-fail" p.res]
-      =/  res  (mule |.(;;(p.res q.q.pail.load.dart)))
+      =/  res  (mule |.((slam p.res q.pail.load.dart)))
       ?:  ?=(%| -.res)
         %^    ingest
             [(scot %p our.bowl) /gall/grubbery]
           here
         [~ %base wire.dart %bump ~ leaf+"bump-clam-fail" p.res]
-      (emit-bolt here dart(q.q.pail.load p.res))
+      (emit-bolt here dart(q.pail.load p.res))
+      ::
+        %make
+      ?:  ?=(%stem -.make.load.dart)  (emit-bolt here dart)
+      ?~  data.make.load.dart         (emit-bolt here dart)
+      =/  res  (mule |.((get-stud stud.make.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %made wire.dart ~ %make-stud-fail p.res]
+      =/  res  (mule |.((slam p.res u.data.make.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %made wire.dart ~ %make-clam-fail p.res]
+      (emit-bolt here dart(data.make.load [~ p.res]))
     ==
   ==
 ::
@@ -656,6 +676,7 @@
 ++  put-sand
   |=  [here=path perm=(unit perm:g)]
   ^+  this
+  ?>  ?=(^ here) :: root should always have system access
   ?~  perm
     this(sand (~(del of sand) here))
   =.  u.perm  (clean-perm:grubbery here u.perm)
@@ -679,7 +700,7 @@
   ^+  this
   ~|  "making base {(spud here)} failed"
   ?<  (~(has of cone) here)
-  =/  data=vase  (fall data *vase)
+  =/  data=vase  (fall data (bunt-stud stud))
   =/  =grub:g  [stud [%base data base ~]]
   =.  cone  (~(put of cone) here grub)
   =.  this  (next-tack here)

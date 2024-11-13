@@ -415,6 +415,7 @@
   |=  [=path =stud base=path data=(unit vase)]
   =/  m  (charm ,~)
   =/  =dart  [%grub /make-base path %make %base stud base data]
+  ~&  >>  "making {(spud path)} with stud {(spud stud)}"
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-base)
 ::
