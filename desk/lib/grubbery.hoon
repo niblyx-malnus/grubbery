@@ -156,7 +156,7 @@
       =/  sour=(set path)
         ?:(?=(%| -.res) ~ (sy (turn pax.p.res tail)))
       =.  sour  (~(gas in sour) here.bowl /bin/grubbery ~)
-      ;<  ~  bind:m  (overwrite-stem dest /bin /bin sour)
+      ;<  ~  bind:m  (overwrite-stem dest /bin sour)
       done
     ==
   :: TODO: allow optional face and relative paths (i.e. /^/^/path)
@@ -183,8 +183,8 @@
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
-    ;<  ~  bind:m  (overwrite-base /bin/zuse /bin /bin `!>(zuse-core))
-    ;<  ~  bind:m  (overwrite-base /bin/grubbery /bin /bin `!>(grubbery-lib))
+    ;<  ~  bind:m  (overwrite-base /bin/zuse /bin `!>(zuse-core))
+    ;<  ~  bind:m  (overwrite-base /bin/grubbery /bin `!>(grubbery-lib))
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)
     ;<  ~  bind:m  (overwrite-stud-lib /ud '@ud')
     ;<  ~  bind:m  (overwrite-stud-lib /loob '?')
@@ -199,9 +199,9 @@
     ;<  ~  bind:m  (overwrite-stud-lib /perm 'perm:g')
     ;<  ~  bind:m  (overwrite-base-lib /usergroup usergroup)
     ;<  ~  bind:m  (overwrite-base-lib /group-perm group-perm)
-    ;<  ~  bind:m  (overwrite-base /grp/who/~zod /group /usergroup `!>((sy ~[~zod])))
-    ;<  ~  bind:m  (overwrite-base /grp/how/~zod /perm /group-perm `!>(*perm:g))
-    ;<  ~  bind:m  (overwrite-base /grp/pub /perm /group-perm `!>(*perm:g))
+    ;<  ~  bind:m  (overwrite-base /grp/who/~zod /usergroup `!>((sy ~[~zod])))
+    ;<  ~  bind:m  (overwrite-base /grp/how/~zod /group-perm `!>(*perm:g))
+    ;<  ~  bind:m  (overwrite-base /grp/pub /group-perm `!>(*perm:g))
     :: counter test
     ::
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)
@@ -210,12 +210,12 @@
     ;<  ~  bind:m  (overwrite-stem-lib /is-even is-even)
     ;<  ~  bind:m  (overwrite-stem-lib /parity parity)
     ;<  *  bind:m
-      (overwrite-and-poke /counter-container /sig /counter-container ~ /sig !>(~))
+      (overwrite-and-poke /counter-container /counter-container ~ /sig !>(~))
     :: gui setup
     ::
-    ;<  ~  bind:m  (overwrite-base-lib /gui 'base:gui')
+    ;<  ~  bind:m  (overwrite-base-lib /gui '[/sig base:gui]')
     ;<  ~  bind:m  (overwrite-stud-lib /gui/init ',~')
-    ;<  *  bind:m  (overwrite-and-poke /gui /sig /gui ~ /gui/init !>(~))
+    ;<  *  bind:m  (overwrite-and-poke /gui /gui ~ /gui/init !>(~))
     ~&  >  "Grubbery booted!"
     done
   ==

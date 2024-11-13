@@ -399,42 +399,41 @@
   ==
 ::
 ++  make-stem
-  |=  [=path =stud stem=path sour=(set path)]
+  |=  [=path stem=path sour=(set path)]
   =/  m  (charm ,~)
-  =/  =dart  [%grub /make-stem path %make %stem stud stem sour]
+  =/  =dart  [%grub /make-stem path %make %stem stem sour]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-stem)
 ::
 ++  overwrite-stem
-  |=  [=path =stud base=path sour=(set path)]
+  |=  [=path base=path sour=(set path)]
   =/  m  (charm ,~)
   ;<  ~  bind:m  (oust-grub path)
-  (make-stem path stud base sour)
+  (make-stem path base sour)
 ::
 ++  make-base
-  |=  [=path =stud base=path data=(unit vase)]
+  |=  [=path base=path data=(unit vase)]
   =/  m  (charm ,~)
-  =/  =dart  [%grub /make-base path %make %base stud base data]
-  ~&  >>  "making {(spud path)} with stud {(spud stud)}"
+  =/  =dart  [%grub /make-base path %make %base base data]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-base)
 ::
 ++  overwrite-base
-  |=  [=path =stud base=path data=(unit vase)]
+  |=  [=path base=path data=(unit vase)]
   =/  m  (charm ,~)
   ;<  ~  bind:m  (oust-grub path)
-  (make-base path stud base data)
+  (make-base path base data)
 ::
 ++  make-and-poke
-  |=  [=path =stud base=path data=(unit vase) poke=pail]
+  |=  [=path base=path data=(unit vase) poke=pail]
   =/  m  (charm ,pail)
-  ;<  ~  bind:m  (make-base path stud base data)
+  ;<  ~  bind:m  (make-base path base data)
   (^poke path poke)
 ::
 ++  overwrite-and-poke
-  |=  [=path =stud base=path data=(unit vase) poke=pail]
+  |=  [=path base=path data=(unit vase) poke=pail]
   =/  m  (charm ,pail)
-  ;<  ~  bind:m  (overwrite-base path stud base data)
+  ;<  ~  bind:m  (overwrite-base path base data)
   (^poke path poke)
 ::
 ++  make-lib
@@ -443,7 +442,7 @@
   ;<  *  bind:m 
     %:  make-and-poke
       [%lib path]
-      /lib  /lib  ~
+      /lib  ~
       [/sig !>(code)]
     ==
   (pure:m ~)

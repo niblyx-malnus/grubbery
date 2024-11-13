@@ -117,19 +117,19 @@
     [cards this]
     ::
       %make-base
-    =+  !<([here=path stud=path base=path data=(unit ^vase)] vase)
+    =+  !<([here=path base=path data=(unit ^vase)] vase)
     ~&  here+here
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(make-base:hc give here stud base data)
+      abet:(make-base:hc give here base data)
     [cards this]
     ::
       %make-stem
-    =+  !<([here=path stud=path stem=path sour=(set path)] vase)
+    =+  !<([here=path stem=path sour=(set path)] vase)
     ~&  here+here
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(make-stem:hc give here stud stem sour)
+      abet:(make-stem:hc give here stem sour)
     [cards this]
     ::
       %poke-base
@@ -267,8 +267,8 @@
         %make
       =/  =give:g  [from wire.dart]
       ?-  -.make.load.dart
-        %base  $(this (make-base give [path [stud base data]:make.load]:dart))
-        %stem  $(this (make-stem give [path [stud stem sour]:make.load]:dart))
+        %base  $(this (make-base give [path [base data]:make.load]:dart))
+        %stem  $(this (make-stem give [path [stem sour]:make.load]:dart))
       ==
       ::
         %oust
@@ -286,7 +286,7 @@
   ^+  this
   =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
   =.  this  (oust-grub give /boot)
-  =.  this  (make-base give /boot /sig /boot ~)
+  =.  this  (make-base give /boot /boot ~)
   (poke-base /boot give /sig !>(~))
 ::
 ++  new-last
@@ -322,7 +322,7 @@
   ?.  =(i.head i.path)  %|
   $(head t.head, path t.path)
 ::
-++  get-base
+++  get-base-code
   |=  base=path
   ^-  base:g
   ?:  ?=([%boot ~] base)  boot:grubbery
@@ -333,12 +333,28 @@
     (need (~(get of cone) (welp /bin/base base)))
   ?>  ?=(%stem -.kind.grub)
   ?>  tidy.kind.grub
-  =/  res  (mule |.(!<(base:g (grab-data:io grub))))
+  =/  res  (mule |.(!<([* b=base:g] (grab-data:io grub))))
   ?:  ?=(%& -.res)
-    p.res
+    b.p.res
   ~|("base {(spud base)} failed to compile" !!)
 ::
-++  get-stem
+++  get-base-stud
+  |=  base=path
+  ^-  stud:g
+  ?:  ?=([%boot ~] base)  /sig
+  ?:  ?=([%lib ~] base)  /lib
+  ?:  ?=([%bin ~] base)  /bin
+  =/  =grub:g
+    ~|  "{(spud base)}: base not found"
+    (need (~(get of cone) (welp /bin/base base)))
+  ?>  ?=(%stem -.kind.grub)
+  ?>  tidy.kind.grub
+  =/  res  (mule |.(!<([=stud:g *] (grab-data:io grub))))
+  ?:  ?=(%& -.res)
+    stud.p.res
+  ~|("base {(spud base)} failed to compile" !!)
+::
+++  get-stem-code
   |=  stem=path
   ^-  stem:g
   ?:  ?=([%bin ~] stem)  stem:bin:grubbery
@@ -347,9 +363,23 @@
     (need (~(get of cone) (welp /bin/stem stem)))
   ?>  ?=(%stem -.kind.grub)
   ?>  tidy.kind.grub
-  =/  res  (mule |.(!<(stem:g (grab-data:io grub))))
+  =/  res  (mule |.(!<([* s=stem:g] (grab-data:io grub))))
   ?:  ?=(%& -.res)
-    p.res
+    s.p.res
+  ~|("stem {(spud stem)} failed to compile" !!)
+::
+++  get-stem-stud
+  |=  stem=path
+  ^-  stud:g
+  ?:  ?=([%bin ~] stem)  /bin
+  =/  =grub:g  
+    ~|  "{(spud stem)}: stem not found"
+    (need (~(get of cone) (welp /bin/stem stem)))
+  ?>  ?=(%stem -.kind.grub)
+  ?>  tidy.kind.grub
+  =/  res  (mule |.(!<([=stud:g *] (grab-data:io grub))))
+  ?:  ?=(%& -.res)
+    stud.p.res
   ~|("stem {(spud stem)} failed to compile" !!)
 :: only useful for clamming
 ::
@@ -494,7 +524,8 @@
         %make
       ?:  ?=(%stem -.make.load.dart)  (emit-bolt here dart)
       ?~  data.make.load.dart         (emit-bolt here dart)
-      =/  res  (mule |.((get-stud stud.make.load.dart)))
+      =/  res
+        (mule |.((get-stud (get-base-stud base.make.load.dart))))
       ?:  ?=(%| -.res)
         %^    ingest
             [(scot %p our.bowl) /gall/grubbery]
@@ -585,7 +616,7 @@
     this(cone (~(put of cone) here grub))
   =/  res=(each [darts=(list dart:g) data=vase] tang)
     %-  mule  |.
-    =/  =stem:g  (get-stem stem.kind.grub)
+    =/  =stem:g  (get-stem-code stem.kind.grub)
     =/  deps=(map path (each vase tang))
       (make-deps here ~(key by sour.kind.grub)) :: sandboxed deps
     (stem [now our eny here deps]:[bowl .])
@@ -696,10 +727,11 @@
   [~ %sand wire.give err]
 ::
 ++  new-base
-  |=  [here=path stud=path base=path data=(unit vase)]
+  |=  [here=path base=path data=(unit vase)]
   ^+  this
   ~|  "making base {(spud here)} failed"
   ?<  (~(has of cone) here)
+  =/  =stud:g  (get-base-stud base)
   =/  data=vase  (fall data (bunt-stud stud))
   =/  =grub:g  [stud [%base data base ~]]
   =.  cone  (~(put of cone) here grub)
@@ -707,9 +739,9 @@
   (dirty-and-tidy here)
 ::
 ++  make-base
-  |=  [=give:g here=path stud=path base=path data=(unit vase)]
+  |=  [=give:g here=path base=path data=(unit vase)]
   ^+  this
-  =/  res=(each _this tang)  (mule |.((new-base here stud base data)))
+  =/  res=(each _this tang)  (mule |.((new-base here base data)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
@@ -720,11 +752,12 @@
   [~ %made wire.give err]
 ::
 ++  new-stem
-  |=  [here=path stud=path stem=path sour=(set path)]
+  |=  [here=path stem=path sour=(set path)]
   ^+  this
   ~|  "making stem {(spud here)} failed"
   ?<  (~(has of cone) here)
   ?<  ?=([%lib *] here) :: stems not allowed in /lib
+  =/  =stud:g  (get-stem-stud stem)
   =/  =grub:g  [stud [%stem |+[leaf+"new stem"]~ stem | ~]]
   =.  cone     (~(put of cone) here grub)
   =.  this     (add-sources here sour)
@@ -734,9 +767,9 @@
   (dirty-and-tidy here)
 ::
 ++  make-stem
-  |=  [=give:g here=path stud=path stem=path sour=(set path)]
+  |=  [=give:g here=path stem=path sour=(set path)]
   ^+  this
-  =/  res=(each _this tang)  (mule |.((new-stem here stud stem sour)))
+  =/  res=(each _this tang)  (mule |.((new-stem here stem sour)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
@@ -858,7 +891,7 @@
   ?>  ?=(%base -.kind.grub)
   =/  =bowl:base:g  [now our eny ~ ~ from.give.u.poke here]:[bowl .]
   =/  build=(each proc:base:g tang)
-    (mule |.(((get-base base.kind.grub) bowl pail.u.poke)))
+    (mule |.(((get-base-code base.kind.grub) bowl pail.u.poke)))
   ?:  ?=(%& -.build)
     =.  cone  (~(put of cone) here grub(proc.kind `p.build))
     =/  from=path  [(scot %p our.bowl) /gall/grubbery]

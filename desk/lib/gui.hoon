@@ -196,17 +196,15 @@
       ::
         [%grub %make %base ~]
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
-      =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
       =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
-      (overwrite-base path stud base ~)
+      (overwrite-base path base ~)
       ::
         [%grub %make %stem ~]
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
-      =/  =stud:g     (rash (need (get-key:kv 'stud' args)) stap)
       =/  stem=^path  (rash (need (get-key:kv 'stem' args)) stap)
       =/  sour=(set ^path)
         (sy (rash (need (get-key:kv 'sour' args)) (more com stap)))
-      (overwrite-stem path stud stem sour)
+      (overwrite-stem path stem sour)
       ::
         [%grub %oust %grub ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
@@ -535,21 +533,6 @@
           ;input(type "hidden", name "path", value "{(spud path)}");
           ;div
             ;label
-              =for  "stud"
-              =class  "block text-gray-700 font-semibold mb-1"
-              ; Stud
-            ==
-            ;input
-              =type  "text"
-              =id  "stud"
-              =name  "stud"
-              =required  ""
-              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              ;
-            ==
-          ==
-          ;div
-            ;label
               =for  "base"
               =class  "block text-gray-700 font-semibold mb-1"
               ; Base
@@ -586,21 +569,6 @@
           =hx-swap  "outerHTML"
           ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
           ;input(type "hidden", name "path", value "{(spud path)}");
-          ;div
-            ;label
-              =for  "stud"
-              =class  "block text-gray-700 font-semibold mb-1"
-              ; Stud
-            ==
-            ;input
-              =type  "text"
-              =id  "stud"
-              =name  "stud"
-              =required  ""
-              =class  "w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              ;
-            ==
-          ==
           ;div
             ;label
               =for  "stem"

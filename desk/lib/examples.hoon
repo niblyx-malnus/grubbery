@@ -2,6 +2,7 @@
 ++  usergroup
   %-  crip
   """
+  :-  /group
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
@@ -14,6 +15,7 @@
 ++  group-perm
   %-  crip
   """
+  :-  /perm
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
@@ -26,6 +28,7 @@
 ++  counter-container
   %-  crip
   """
+  :-  /sig
   =,  grubberyio
   |=  [=bowl:base:g =stud:g =vase]
   =/  m  (charm:base:g ,pail:g)
@@ -36,11 +39,11 @@
     =/  is-even=path  (weld here.bowl /is-even)
     =/  parity=path   (weld here.bowl /parity)
     ;<  ~  bind:m
-      (overwrite-base counter /ud /counter `!>(10))
+      (overwrite-base counter /counter `!>(10))
     ;<  ~  bind:m
-      (overwrite-stem is-even /loob /is-even (sy ~[counter]))
+      (overwrite-stem is-even /is-even (sy ~[counter]))
     ;<  ~  bind:m
-      (overwrite-stem parity /txt /parity (sy ~[is-even]))
+      (overwrite-stem parity /parity (sy ~[is-even]))
     done
   ==
   """
@@ -49,6 +52,7 @@
   %-  crip
   """
   /-  t  /add/two
+  :-  /ud
   =,  grubberyio
   |=  [=bowl:base:g =stud:g =vase]
   =/  m  (charm:base:g ,pail:g)
@@ -67,6 +71,7 @@
 ++  is-even
   %-  crip
   """
+  :-  /loob
   =,  grubberyio
   |=  =bowl:stem:g
   :-  ~
@@ -79,6 +84,7 @@
 ++  parity
   %-  crip
   """
+  :-  /txt
   =,  grubberyio
   |=  =bowl:stem:g
   :-  ~

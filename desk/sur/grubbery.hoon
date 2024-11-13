@@ -3,8 +3,8 @@
 +$  pail  (pair stud vase)
 +$  card  card:agent:gall
 +$  make
-  $%  [%base =stud base=path data=(unit vase)]
-      [%stem =stud stem=path sour=(set path)]
+  $%  [%base base=path data=(unit vase)]
+      [%stem stem=path sour=(set path)]
   ==
 :: TODO: add a %cull action as a recursive %oust
 ::
