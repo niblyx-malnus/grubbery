@@ -419,13 +419,76 @@
   $(sour t.sour)
 ::
 ++  allowed
+  =|  prefix=(unit path)
   |=  [here=path =dart:g]
-  ^-  ?
-  ?.  (allowed:grubbery dart (~(get of sand) here))
-    %|
-  ?:  =(~ here)
-    %&
-  $(here (snip here))
+  ^-  (each (unit path) ~)
+  =/  res  (allowed:grubbery dart (~(get of sand) here))
+  ?-    -.res
+    %|  [%| ~]
+      %&
+    =?  prefix  &(?=(~ prefix) ?=(^ p.res))  p.res
+    ?:  =(~ here)
+      [%& prefix]
+    $(here (snip here))
+  ==
+::
+++  handle-base-emits
+  |=  [here=path darts=(list dart:g)]
+  ^+  this
+  ?~  darts
+    this
+  =.  this  (handle-base-emit here i.darts)
+  $(darts t.darts)
+::
+++  handle-base-emit
+  |=  [here=path =dart:g]
+  ^+  this
+  =/  res  (allowed here dart)
+  ?-    -.res
+      %|
+    ~&  >>>  "vetoing illegal dart from {(spud here)}"
+    %^    ingest
+        [(scot %p our.bowl) /gall/grubbery]
+      here
+    [~ %veto dart]
+    ::
+      %&
+    ?~  p.res                           (emit-bolt here dart)
+    ?^  (decap:grubbery u.p.res here)   (emit-bolt here dart)
+    ?.  ?=(%grub -.dart)                (emit-bolt here dart)
+    ?.  ?=(?(%poke %bump) -.load.dart)  (emit-bolt here dart)
+    ?-    -.load.dart
+        %poke
+      =/  res  (mule |.((get-stud p.pail.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %base wire.dart %poke %| %poke-stud-fail p.res]
+      =/  res  (mule |.(;;(p.res q.q.pail.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %base wire.dart %poke %| %poke-clam-fail p.res]
+      (emit-bolt here dart(q.q.pail.load p.res))
+      ::
+        %bump
+      =/  res  (mule |.((get-stud p.pail.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %base wire.dart %bump ~ leaf+"bump-stud-fail" p.res]
+      =/  res  (mule |.(;;(p.res q.q.pail.load.dart)))
+      ?:  ?=(%| -.res)
+        %^    ingest
+            [(scot %p our.bowl) /gall/grubbery]
+          here
+        [~ %base wire.dart %bump ~ leaf+"bump-clam-fail" p.res]
+      (emit-bolt here dart(q.q.pail.load p.res))
+    ==
+  ==
 ::
 ++  dirty
   |=  here=path
@@ -525,7 +588,8 @@
     %-  emit-bolts
     %+  murn  bolts
     |=  [here=path =dart:g]
-    ?.  (allowed here dart)
+    =/  res  (allowed here dart)
+    ?:  ?=(%| (allowed here dart))
       :: ~&  >>  "ignoring sandboxed dart from {(spud here)}"
       ~
     [~ here dart]
@@ -710,8 +774,6 @@
 ++  bump-base
   |=  [here=path =give:g =pail:g]
   ^+  this
-  :: TODO: clam the bump if it "crosses a boundary"
-  ::       (first prefix restriction in sand)
   =/  res=(each _this tang)
     (mule |.((ingest from.give here ~ %bump pail)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
@@ -742,8 +804,6 @@
   |=  [here=path =poke:g]
   ^+  this
   ~&  %take-poke
-  :: TODO: clam the poke if it "crosses a boundary"
-  ::       (first prefix restriction in sand)
   =/  =tack:g  (need (~(get of trac) here))
   =.  trac  (~(put of trac) here tack(line (~(put to line.tack) poke)))
   (run-next-poke here)
@@ -866,8 +926,6 @@
       ~
     [~ duct ship p]
   [now our eny wex sup from here]:[bowl .]
-:: TODO: immediately give response if a card is not allowed
-::       by sandboxing
 ::
 ++  ingest
   |=  [from=path here=path in=(unit intake:base:g)]
@@ -891,16 +949,7 @@
       %|  [[~ data.kind.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
     ==
   ::
-  =/  bolts=(list bolt:g)  (turn darts (lead here))
-  :: TODO: should actually return response to with a failure
-  =.  this
-    %-  emit-bolts
-    %+  murn  bolts
-    |=  [here=path =dart:g]
-    ?.  (allowed here dart)
-      ~&  >>  "ignoring sandboxed dart from {(spud here)}"
-      ~
-    [~ here dart]
+  =.  this  (handle-base-emits here darts)
   ::
   =/  tick=?  !=(data data.kind.grub)
   =?  this  tick  (next-tack here)

@@ -24,43 +24,69 @@
       (clean poke.perm)
       (clean peek.perm)
   ==
-  :: all subdirectories of here are converted to here
+  :: add here and keep only shortest prefixes
   ::
   ++  clean
     |=  pax=(set path)
     ^-  (set path)
-    %-  ~(gas in *(set path))
-    :-  here
-    %+  murn  ~(tap in pax)
-    |=  =path
-    ?^  (decap here path)
-      ~
-    [~ path]
+    (make:perx here ~(tap in pax))
   --
+:: prefix storage which keeps only shortest prefixes
+::
+++  perx
+  =<  perx
+  |%
+  +$  perx  (axal ~)
+  ++  make
+    |=  pax=(list path)
+    ^-  (set path)
+    (sy ~(tap px (~(gas px *perx) pax)))
+  ++  px
+    |_  fat=perx
+    ++  put
+      |=  pax=path
+      ^+  fat
+      ?~  pax  [[~ ~] ~]
+      ?^  fil.fat  [[~ ~] ~]
+      =/  kid  (~(get by dir.fat) i.pax)
+      :-  ~
+      %+  ~(put by dir.fat)
+        i.pax
+      ?^  kid
+        $(fat u.kid, pax t.pax)
+      (~(put of *perx) t.pax ~)
+    ++  gas
+      |=  pax=(list path)
+      ^+  fat
+      ?~  pax  fat
+      $(pax t.pax, fat (put i.pax))
+    ++  tap  (turn ~(tap of fat) head)
+    --
+  --
+:: assumes a list of shortest prefixes
 ::
 ++  check-pax
   |=  [dest=path pax=(list path)]
-  ^-  ?
-  ?~  pax
-    %|
+  ^-  (each (unit path) ~)
+  ?~  pax  [%| ~]
   ?^  (decap i.pax dest)
-    %&
+    [%& ~ i.pax]
   $(pax t.pax)
+:: assumes a list of shortest prefixes
 ::
 ++  check-pax-hard
   |=  [dest=path pax=(list path)]
-  ^-  ?
-  ?~  pax
-    %|
+  ^-  (each (unit path) ~)
+  ?~  pax  [%| ~]
   ?:  ?=([~ ^] (decap i.pax dest))
-    %&
+    [%& ~ i.pax]
   $(pax t.pax)
 ::
 ++  allowed
   |=  [=dart:g perm=(unit perm:g)]
-  ^-  ?
-  ?~  perm  %&
-  ?:  ?=(?(%sysc %scry) -.dart)  %|
+  ^-  (each (unit path) ~)
+  ?~  perm  [%& ~]
+  ?:  ?=(?(%sysc %scry) -.dart)  [%| ~]
   ?-    -.load.dart
       ?(%make %oust)
     (check-pax path.dart ~(tap in make.u.perm))
