@@ -719,6 +719,63 @@
     [%done ~]
   ==
 ::
+++  send-request
+  |=  =request:http
+  =/  m  (charm ,~)
+  ^-  form:m
+  (send-raw-dart %sysc %pass /request %arvo %i %request request *outbound-config:iris)
+::
+++  send-cancel-request
+  =/  m  (charm ,~)
+  ^-  form:m
+  (send-raw-dart %sysc %pass /request %arvo %i %cancel-request ~)
+::
+++  take-client-response
+  =/  m  (charm ,client-response:iris)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+    ::
+      [~ %arvo [%request ~] %iris %http-response %cancel *]
+    ::NOTE  iris does not (yet?) retry after cancel, so it means failure
+    :+  %fail
+      %http-request-cancelled
+    ['http request was cancelled by the runtime']~
+    ::
+      [~ %arvo [%request ~] %iris %http-response %finished *]
+    [%done client-response.sign.u.in]
+  ==
+::
+++  extract-body
+  |=  =client-response:iris
+  =/  m  (charm ,cord)
+  ^-  form:m
+  ?>  ?=(%finished -.client-response)
+  %-  pure:m
+  ?~  full-file.client-response  ''
+  q.data.u.full-file.client-response
+::
+++  fetch-cord
+  |=  url=tape
+  =/  m  (charm ,cord)
+  ^-  form:m
+  =/  =request:http  [%'GET' (crip url) ~ ~]
+  ;<  ~                      bind:m  (send-request request)
+  ;<  =client-response:iris  bind:m  take-client-response
+  (extract-body client-response)
+::
+++  fetch-json
+  |=  url=tape
+  =/  m  (charm ,json)
+  ^-  form:m
+  ;<  =cord  bind:m  (fetch-cord url)
+  =/  json=(unit json)  (de:json:html cord)
+  ?~  json
+    (charm-fail %json-parse-error ~)
+  (pure:m u.json)
+::
 ++  render-tang-to-wall
   |=  [wid=@u tan=tang]
   ^-  wall
