@@ -89,7 +89,7 @@
     =.  dest
       |-
       ?^  get=(~(get of cone) dest)
-        ?:  ?=(%base -.kind.u.get)
+        ?:  ?=(%base -.u.get)
           dest
         $(dest (snip dest))
       $(dest (snip dest))
@@ -331,8 +331,8 @@
   =/  =grub:g
     ~|  "{(spud base)}: base not found"
     (need (~(get of cone) (welp /bin/base base)))
-  ?>  ?=(%stem -.kind.grub)
-  ?>  tidy.kind.grub
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
   =/  res  (mule |.(!<([* b=base:g] (grab-data:io grub))))
   ?:  ?=(%& -.res)
     b.p.res
@@ -347,8 +347,8 @@
   =/  =grub:g
     ~|  "{(spud base)}: base not found"
     (need (~(get of cone) (welp /bin/base base)))
-  ?>  ?=(%stem -.kind.grub)
-  ?>  tidy.kind.grub
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
   =/  res  (mule |.(!<([=stud:g *] (grab-data:io grub))))
   ?:  ?=(%& -.res)
     stud.p.res
@@ -361,8 +361,8 @@
   =/  =grub:g  
     ~|  "{(spud stem)}: stem not found"
     (need (~(get of cone) (welp /bin/stem stem)))
-  ?>  ?=(%stem -.kind.grub)
-  ?>  tidy.kind.grub
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
   =/  res  (mule |.(!<([* s=stem:g] (grab-data:io grub))))
   ?:  ?=(%& -.res)
     s.p.res
@@ -375,8 +375,8 @@
   =/  =grub:g  
     ~|  "{(spud stem)}: stem not found"
     (need (~(get of cone) (welp /bin/stem stem)))
-  ?>  ?=(%stem -.kind.grub)
-  ?>  tidy.kind.grub
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
   =/  res  (mule |.(!<([=stud:g *] (grab-data:io grub))))
   ?:  ?=(%& -.res)
     stud.p.res
@@ -393,8 +393,8 @@
   =/  =grub:g
     ~|  "{(spud stud)}: stud not found"
     (need (~(get of cone) (welp /bin/stud stud)))
-  ?>  ?=(%stem -.kind.grub)
-  ?>  tidy.kind.grub
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
   (grab-data:io grub)
 ::
 ++  bunt-stud
@@ -414,9 +414,9 @@
     %| :: a cycle has been found
   ?~  nod=(~(get of cone) here)
     %& :: non-existent grubs aren't a cycle
-  ?:  ?=(%base -.kind.u.nod)
+  ?:  ?=(%base -.u.nod)
     %&
-  =/  sour=(list path)  ~(tap in ~(key by sour.kind.u.nod))
+  =/  sour=(list path)  ~(tap in ~(key by sour.u.nod))
   |-
   ?~  sour
     %&
@@ -439,16 +439,16 @@
   =/  sour=(list path)  ~(tap in sour)
   ?>  (no-cycles here sour)
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%stem -.kind.grub)
+  ?>  ?=(%stem -.grub)
   |-
   ?~  sour
     this(cone (~(put of cone) here grub))
-  ?.  (~(has of cone) i.sour)
-    ~|([here+here source+i.sour] !!)
+  =/  tac=(unit tack:g)  (~(get of trac) i.sour)
+  =?  this  ?=(~ tac)  (next-tack i.sour)
   =/  =tack:g  (need (~(get of trac) i.sour))
   =.  sinx.tack  (~(put in sinx.tack) here)
   =.  trac  (~(put of trac) i.sour tack)
-  =.  sour.kind.grub  (~(put by sour.kind.grub) i.sour `@da`0) :: 0 forces recompute
+  =.  sour.grub  (~(put by sour.grub) i.sour `@da`0) :: 0 forces recompute
   $(sour t.sour)
 ::
 ++  allowed
@@ -547,12 +547,12 @@
   :: ~&  >>  "dirtying {(spud here)}"
   =/  =grub:g  (need (~(get of cone) here))
   =/  =tack:g  (need (~(get of trac) here))
-  ?:  &(?=(%stem -.kind.grub) !tidy.kind.grub)
+  ?:  &(?=(%stem -.grub) !tidy.grub)
     [~ this]
-  =?  cone  ?=(%stem -.kind.grub)
-    (~(put of cone) here grub(tidy.kind |))
+  =?  cone  ?=(%stem -.grub)
+    (~(put of cone) here grub(tidy |))
   ?:  =(0 ~(wyt in sinx.tack))
-    ?:  ?=(%base -.kind.grub)
+    ?:  ?=(%base -.grub)
       [~ this]
     [(sy ~[here]) this]
   =/  sinx=(list path)  ~(tap in sinx.tack)
@@ -573,13 +573,13 @@
   ?~  grub=(~(get of cone) here)
     :: ~&  >>  "{(spud here)} has no data"
     this
-  ?:  ?=(%base -.kind.u.grub)
+  ?:  ?=(%base -.u.grub)
     :: ~&  >>  "{(spud here)} is a base and thus tidy"
     this
-  ?:  tidy.kind.u.grub
+  ?:  tidy.u.grub
     :: ~&  >>  "{(spud here)} is already tidy"
     this
-  =/  sour=(list (pair path @da))  ~(tap by sour.kind.u.grub)
+  =/  sour=(list (pair path @da))  ~(tap by sour.u.grub)
   |-
   ?~  sour
     (recompute-stem here u.grub)
@@ -608,32 +608,33 @@
 ++  recompute-stem
   |=  [here=path =grub:g]
   ^+  this
-  ?>  ?=(%stem -.kind.grub)
-  =/  new-sour=(map path @da)  (make-sour ~(key by sour.kind.grub))
-  ?:  =(new-sour sour.kind.grub)
+  :: ~&  >>  "recompute stem"
+  ?>  ?=(%stem -.grub)
+  =/  new-sour=(map path @da)  (make-sour ~(key by sour.grub))
+  ?:  =(new-sour sour.grub)
     :: ~&  >>  "{(spud here)} hasn't changed on recompute"
-    =.  grub  grub(tidy.kind %&)
+    =.  grub  grub(tidy %&)
     this(cone (~(put of cone) here grub))
   =/  res=(each [darts=(list dart:g) data=vase] tang)
     %-  mule  |.
-    =/  =stem:g  (get-stem-code stem.kind.grub)
+    =/  =stem:g  (get-stem-code stem.grub)
     =/  deps=(map path (each vase tang))
-      (make-deps here ~(key by sour.kind.grub)) :: sandboxed deps
+      (make-deps here ~(key by sour.grub)) :: sandboxed deps
     (stem [now our eny here deps]:[bowl .])
   ?-    -.res
       %|
-    :: ~&  >>  "{(spud here)} crashed on recompute"
+    :: ~&  >>>  "{(spud here)} crashed on recompute"
     =/  =tang  [leaf+"stem boom" leaf+(spud here) p.res]
-    =?  this  !=(data.kind.grub |+tang)  (next-tack here)
+    =?  this  !=(data.grub |+tang)  (next-tack here)
     :: %-  (slog tang)
-    =.  grub  grub(tidy.kind %&, data.kind |+tang)
+    =.  grub  grub(tidy %&, data |+tang)
     this(cone (~(put of cone) here grub))
     ::
       %&
-    :: ~&  >>  "{(spud here)} successfully recomputed"
-    =?  this  !=(data.kind.grub &+data.p.res)  (next-tack here)
+    :: ~&  >  "{(spud here)} successfully recomputed"
+    =?  this  !=(data.grub &+data.p.res)  (next-tack here)
     =.  grub
-      grub(data.kind &+data.p.res, sour.kind new-sour, tidy.kind %&)
+      grub(data &+data.p.res, sour new-sour, tidy %&)
     =.  cone  (~(put of cone) here grub)
     =/  bolts=(list bolt:g)  (turn darts.p.res (lead here))
     %-  emit-bolts
@@ -663,8 +664,8 @@
   ^+  this
   ~|  "deleting sources of {(spud here)} failed"
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%stem -.kind.grub)
-  =/  sour=(list path)  (turn ~(tap in sour.kind.grub) head)
+  ?>  ?=(%stem -.grub)
+  =/  sour=(list path)  (turn ~(tap in sour.grub) head)
   |-
   ?~  sour
     this
@@ -681,7 +682,7 @@
     ~&  >>  "nothing to oust at {(spud here)}"
     this
   =.  this
-    ?-  -.kind.u.grub
+    ?-  -.u.grub
       %base  (kill here)
       %stem  (del-sources here)
     ==
@@ -733,7 +734,7 @@
   ?<  (~(has of cone) here)
   =/  =stud:g  (get-base-stud base)
   =/  data=vase  (fall data (bunt-stud stud))
-  =/  =grub:g  [stud [%base data base ~]]
+  =/  =grub:g  [%base data base ~]
   =.  cone  (~(put of cone) here grub)
   =.  this  (next-tack here)
   (dirty-and-tidy here)
@@ -755,10 +756,11 @@
   |=  [here=path stem=path sour=(set path)]
   ^+  this
   ~|  "making stem {(spud here)} failed"
+  ?<  =(~ sour)
   ?<  (~(has of cone) here)
   ?<  ?=([%lib *] here) :: stems not allowed in /lib
   =/  =stud:g  (get-stem-stud stem)
-  =/  =grub:g  [stud [%stem |+[leaf+"new stem"]~ stem | ~]]
+  =/  =grub:g  [%stem |+[leaf+"new stem"]~ stem | ~]
   =.  cone     (~(put of cone) here grub)
   =.  this     (add-sources here sour)
   =.  this     (next-tack here)
@@ -795,17 +797,22 @@
   ?>  ?=(^ t.pat)
   !>(.^(mold i.pat (scot %p our.bowl) i.t.pat (scot %da now.bowl) t.t.pat))
 ::
+++  on-load-kill
+  |=  here=path
+  ^+  this
+  !!
+::
 ++  kill
   |=  here=path
   ^+  this
   ~|  "killing {(spud here)} failed"
   =/  =tack:g  (need (~(get of trac) here))
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%base -.kind.grub)
-  ?~  proc.kind.grub
+  ?>  ?=(%base -.grub)
+  ?~  proc.grub
     ~&  >>  "no processes to kill for {(spud here)}"
     this
-  =.  cone  (~(put of cone) here grub(proc.kind ~))
+  =.  cone  (~(put of cone) here grub(proc ~))
   |-
   =.  this  (give-poke-result here %| %killed [leaf+(spud here) ~])
   =^  poke  trac
@@ -888,17 +895,41 @@
     (stage-next-poke here)
   ?~  poke 
     this
-  ?>  ?=(%base -.kind.grub)
+  ?>  ?=(%base -.grub)
   =/  =bowl:base:g  [now our eny ~ ~ from.give.u.poke here]:[bowl .]
   =/  build=(each proc:base:g tang)
-    (mule |.(((get-base-code base.kind.grub) bowl pail.u.poke)))
+    (mule |.(((get-base-code base.grub) bowl pail.u.poke)))
   ?:  ?=(%& -.build)
-    =.  cone  (~(put of cone) here grub(proc.kind `p.build))
+    =.  cone  (~(put of cone) here grub(proc `p.build))
     =/  from=path  [(scot %p our.bowl) /gall/grubbery]
     (ingest from here ~) :: start
   :: %-  (slog [leaf+"build-fail" leaf+(spud here) p.build])
   =.  this  (give-poke-result here %| %build-fail p.build)
   (run-next-poke here)
+::
+++  give-poke-ack
+  |=  [here=path res=(unit tang)]
+  ^+  this
+  ~&  %giving-poke-ack
+  ~&  here+here
+  =/  =tack:g  (need (~(get of trac) here))
+  ?>  ?=(^ give.tack)
+  ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
+    ?~  res
+      this
+    ~&  >>>  %poke-nack
+    (mean u.res)
+  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
+    %^    ingest
+        [(scot %p our.bowl) /gall/grubbery]
+      t.t.t.t.from.u.give.tack
+    [~ %base wire.u.give.tack %pack res]
+  ?.  ?=([@ %gall @ ~] from.u.give.tack)  this
+  =/  =wire  (weld /poke/[i.from] wire):[u.give.tack .]
+  %-  emit-cards
+  :~  [%give %fact ~[wire] sign-base+!>([%pack res])]
+      [%give %kick ~[wire] ~]
+  ==
 ::
 ++  give-poke-result
   |=  [here=path res=(each pail:g goof)]
@@ -906,10 +937,10 @@
   ~&  %giving-poke-result
   ~&  here+here
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%base -.kind.grub)
+  ?>  ?=(%base -.grub)
   =/  =tack:g  (need (~(get of trac) here))
   ?>  ?=(^ give.tack)
-  =.  cone  (~(put of cone) here grub(proc.kind ~))
+  =.  cone  (~(put of cone) here grub(proc ~))
   =.  trac  (~(put of trac) here tack(give ~))
   =.  this  (clean here poke.last.tack)
   ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
@@ -986,8 +1017,8 @@
   ^+  this
   ~&  %ingest
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%base -.kind.grub)
-  ?.  ?=(^ proc.kind.grub)
+  ?>  ?=(%base -.grub)
+  ?.  ?=(^ proc.grub)
     ~&  >>  "process not running at {(spud here)}"
     :: TODO: Add process id (last) to the wire (in transit)
     ::       And drop inputs if that process is dead
@@ -996,25 +1027,27 @@
   =/  m  (charm:base:g ,pail:g)
   =/  =bowl:base:g  (make-bowl from here)
   =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
-    (mule |.((take:eval:m u.proc.kind.grub bowl data.kind.grub in)))
+    (mule |.((take:eval:m u.proc.grub bowl data.grub in)))
   =/  [[darts=(list dart:g) data=vase =result:eval:m] =proc:base:g]
     ?-  -.res
       %&  p.res
-      %|  [[~ data.kind.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.kind.grub]
+      %|  [[~ data.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.grub]
     ==
   ::
   =.  this  (handle-base-emits here darts)
   ::
-  =/  tick=?  !=(data data.kind.grub)
+  =/  tick=?  !=(data data.grub)
   =?  this  tick  (next-tack here)
-  =.  grub  grub(data.kind data)
+  =.  grub  grub(data data)
   =.  cone
     ?.  ?=(%next -.result)
-      (~(put of cone) here grub(data.kind data, proc.kind ~))
-    (~(put of cone) here grub(data.kind data, proc.kind `proc))
+      (~(put of cone) here grub(data data, proc ~))
+    (~(put of cone) here grub(data data, proc `proc))
   ::
   =?  this  tick  (dirty-and-tidy here)
   ::
+  =?  this  ?=(~ in)
+    (give-poke-ack here ?.(?=(%fail -.result) ~ [~ err.result]))
   ?:  ?=(%next -.result)
     this
   =.  this

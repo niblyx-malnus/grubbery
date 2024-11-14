@@ -1,5 +1,5 @@
 /-  g=grubbery
-/+  grubberyio, server, html-utils, fi=feather-icons
+/+  grubberyio, server, html-utils, fi=feather-icons, x=examples
 |%
 ++  mx  mx:html-utils
 ++  kv  kv:html-utils
@@ -173,6 +173,10 @@
       ;<  =manx  bind:m  (grub-view-cone t.t.t.site)
       (give-manx-response manx)
       ::
+        [%grub %view %sour *]
+      ;<  =manx  bind:m  (grub-view-sour t.t.t.site)
+      (give-manx-response manx)
+      ::
         [%grub %code *]
       ;<  =manx  bind:m  (grub-code t.t.site)
       (give-manx-response manx)
@@ -197,6 +201,9 @@
         [%grub %make %base ~]
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
       =/  base=^path  (rash (need (get-key:kv 'base' args)) stap)
+      ;<  grub=(unit grub:g)  bind:m  (peek-root-soft %lib %base base)
+      ;<  ~  bind:m
+        ?^(grub (pure:(charm ,~)) (overwrite-base-lib base base-template:x))
       (overwrite-base path base ~)
       ::
         [%grub %make %stem ~]
@@ -204,15 +211,31 @@
       =/  stem=^path  (rash (need (get-key:kv 'stem' args)) stap)
       =/  sour=(set ^path)
         (sy (rash (need (get-key:kv 'sour' args)) (more com stap)))
+      ;<  grub=(unit grub:g)  bind:m  (peek-root-soft %lib %stem stem)
+      ;<  ~  bind:m
+        ?^(grub (pure:(charm ,~)) (overwrite-stem-lib stem stem-template:x))
       (overwrite-stem path stem sour)
       ::
-        [%grub %oust %grub ~]
+        [%grub %kill %base ~]
+      (kill-base (rash (need (get-key:kv 'path' args)) stap))
+      ::
+        [%grub %init %base ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
-      (oust-grub path)
+      (throw path /init !>(~))
+      ::
+        [%grub %load %base ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      (throw path /load !>(~))
+      ::
+        [%grub %sig %base ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      (throw path /sig !>(~))
+      ::
+        [%grub %oust %grub ~]
+      (oust-grub (rash (need (get-key:kv 'path' args)) stap))
       ::
         [%grub %sand %sysc ~]
-      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
-      (edit-perm path ~)
+      (edit-perm (rash (need (get-key:kv 'path' args)) stap) ~)
       ::
         [%grub %sand %grub ~]
       =/  =path       (rash (need (get-key:kv 'path' args)) stap)
@@ -237,8 +260,8 @@
         [%grub %poke *]
       ~&  >>>  %receiving-poke-post
       ;<  =grub:g  bind:m  (peek-root t.t.site)
-      ?>  ?=(%base -.kind.grub)
-      ;<  p=grub:g  bind:m  (peek-root (weld /bin/gui/con/poke base.kind.grub))
+      ?>  ?=(%base -.grub)
+      ;<  p=grub:g  bind:m  (peek-root (weld /bin/gui/con/poke base.grub))
       =/  =pail:g
         (!<($-(key-value-list:kv pail) (grab-data p)) args)
       ;<  *  bind:m  (poke t.t.site pail)
@@ -246,8 +269,8 @@
       ::
         [%grub %bump *]
       ;<  =grub:g  bind:m  (peek-root t.t.site)
-      ?>  ?=(%base -.kind.grub)
-      ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.kind.grub))
+      ?>  ?=(%base -.grub)
+      ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.grub))
       =/  =pail:g
         (!<($-(key-value-list:kv pail) (grab-data b)) args)
       (bump t.t.site pail)
@@ -626,12 +649,78 @@
     ^-  manx
     ;div(id (make-id path), class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
       ;div.flex.flex-row.items-center.justify-center.text-white.font-mono.font-bold
+        ;*  ?.  ?=(%base -.u.grub)  ~
+            ;=
+              ;form
+                =hx-post  "/grub/init/base"
+                =hx-trigger  "submit"
+                =hx-swap  "outerHTML"
+                =hx-target  "#{(make-id path)}"
+                =hx-confirm  "Are you sure you want to init base grub {(spud path)}?"
+                ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+                ;input(type "hidden", name "path", value "{(spud path)}");
+                ;button
+                  =type   "submit"
+                  =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-200"
+                  ; init
+                ==
+              ==
+              ;form
+                =hx-post  "/grub/load/base"
+                =hx-trigger  "submit"
+                =hx-swap  "outerHTML"
+                =hx-target  "#{(make-id path)}"
+                =hx-confirm  "Are you sure you want to load base grub {(spud path)}?"
+                ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+                ;input(type "hidden", name "path", value "{(spud path)}");
+                ;button
+                  =type   "submit"
+                  =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-200"
+                  ; load
+                ==
+              ==
+              ;form
+                =hx-post  "/grub/sig/base"
+                =hx-trigger  "submit"
+                =hx-swap  "outerHTML"
+                =hx-target  "#{(make-id path)}"
+                =hx-confirm  "Are you sure you want to poke base grub {(spud path)} with a /sig?"
+                ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+                ;input(type "hidden", name "path", value "{(spud path)}");
+                ;button
+                  =type   "submit"
+                  =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-green-500 hover:bg-green-200"
+                  ; sig
+                ==
+              ==
+              ;form
+                =hx-post  "/grub/kill/base"
+                =hx-trigger  "submit"
+                =hx-swap  "outerHTML"
+                =hx-target  "#{(make-id path)}"
+                =hx-confirm  "Are you sure you want to kill base grub {(spud path)}?"
+                ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
+                ;input(type "hidden", name "path", value "{(spud path)}");
+                ;+  ?~  proc.u.grub
+                      ;button
+                        =type   "submit"
+                        =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-gray-500"
+                        =disabled  ""
+                        ; kill
+                      ==
+                    ;button
+                      =type   "submit"
+                      =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-red-500 hover:bg-red-200"
+                      ; kill
+                    ==
+              ==
+            ==
         ;form
           =hx-post  "/grub/oust/grub"
           =hx-trigger  "submit"
           =hx-swap  "outerHTML"
           =hx-target  "#{(make-id path)}"
-          =hx-confirm  "Are you sure you want to oust {?:(?=(%base -.kind.u.grub) "base" "stem")} grub {(spud path)}?"
+          =hx-confirm  "Are you sure you want to oust {?:(?=(%base -.u.grub) "base" "stem")} grub {(spud path)}?"
           ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
           ;input(type "hidden", name "path", value "{(spud path)}");
           ;button
@@ -645,7 +734,7 @@
           =hx-trigger  "submit"
           =hx-swap  "outerHTML"
           =hx-target  "#{(make-id path)}"
-          =hx-confirm  "Are you sure you want to cull {?:(?=(%base -.kind.u.grub) "base" "stem")} grub {(spud path)}?"
+          =hx-confirm  "Are you sure you want to cull {?:(?=(%base -.u.grub) "base" "stem")} grub {(spud path)}?"
           ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
           ;input(type "hidden", name "path", value "{(spud path)}");
           ;button
@@ -810,41 +899,42 @@
     ^-  form:m
     ;<  =cone:g  bind:m  (peek path)
     =/  =grub:g  (need (~(get of cone) /))
+    ;<  =stud:g  bind:m  (get-grub-stud path)
     %-  pure:m
     ^-  manx
-    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
+    ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col overflow-auto")
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
-          =id  "viewTab"
+          =id  "codeTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
-          =onclick  "$('#stud-path').show(); $('#grub-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/tree/lib/stud{(spud stud.grub)}"
+          =onclick  "$('#grub-path').show(); $('#stud-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/tree/lib/{?:(?=(%base -.grub) "base{(spud base.grub)}" "stem{(spud stem.grub)}")}"
           =hx-target  "#code-display"
           =hx-swap  "innerHTML"
           =hx-trigger  "click, load"
-          ; Stud
-        ==
-        ;button
-          =id  "codeTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$('#grub-path').show(); $('#stud-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/tree/lib/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
-          =hx-target  "#code-display"
-          =hx-swap  "innerHTML"
           ;+  ;/
-          ?:  ?=(%base -.kind.grub)
+          ?:  ?=(%base -.grub)
             "Base"
           "Stem"
         ==
+        ;button
+          =id  "viewTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$('#stud-path').show(); $('#grub-path').hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/tree/lib/stud{(spud stud)}"
+          =hx-target  "#code-display"
+          =hx-swap  "innerHTML"
+          ; Stud
+        ==
       ==
-      ;div#stud-path.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
-        ; {(spud stud.grub)}
+      ;div#stud-path.hidden.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+        ; {(spud stud)}
       ==
-      ;div#grub-path.hidden.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
+      ;div#grub-path.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
         ;+  ;/
-        ?:  ?=(%base -.kind.grub)
-          (spud base.kind.grub)
-        (spud stem.kind.grub)
+        ?:  ?=(%base -.grub)
+          (spud base.grub)
+        (spud stem.grub)
       ==
       ;div#code-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
@@ -855,37 +945,38 @@
     ^-  form:m
     ;<  =cone:g  bind:m  (peek path)
     =/  =grub:g  (need (~(get of cone) /))
+    ;<  =stud:g  bind:m  (get-grub-stud path)
     %-  pure:m
     ^-  manx
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
         ;button
-          =id  "viewTab"
+          =id  "codeTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
-          =onclick  "$('#stud-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/tree/lib/gui/con/stud{(spud stud.grub)}"
+          =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/tree/lib/gui/con/{?:(?=(%base -.grub) "base{(spud base.grub)}" "stem{(spud stem.grub)}")}"
           =hx-target  "#gui-con-display"
           =hx-swap  "innerHTML"
           =hx-trigger  "click, load"
-          ; Stud
-        ==
-        ;button
-          =id  "codeTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/tree/lib/gui/con/{?:(?=(%base -.kind.grub) "base{(spud base.kind.grub)}" "stem{(spud stem.kind.grub)}")}"
-          =hx-target  "#gui-con-display"
-          =hx-swap  "innerHTML"
           ; Cone
         ==
-        ;*  ?.  ?=(%base -.kind.grub)
+        ;button
+          =id  "viewTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$('#stud-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/tree/lib/gui/con/stud{(spud stud)}"
+          =hx-target  "#gui-con-display"
+          =hx-swap  "innerHTML"
+          ; Stud
+        ==
+        ;*  ?.  ?=(%base -.grub)
               ~
             ;=
               ;button
                 =id  "codeTab"
                 =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
                 =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-                =hx-get  "/grub/tree/lib/gui/con/poke{(spud base.kind.grub)}"
+                =hx-get  "/grub/tree/lib/gui/con/poke{(spud base.grub)}"
                 =hx-target  "#gui-con-display"
                 =hx-swap  "innerHTML"
                 ; Poke
@@ -894,7 +985,7 @@
                 =id  "codeTab"
                 =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
                 =onclick  "$('#cone-path').show().siblings().hide(); $(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-                =hx-get  "/grub/tree/lib/gui/con/bump{(spud base.kind.grub)}"
+                =hx-get  "/grub/tree/lib/gui/con/bump{(spud base.grub)}"
                 =hx-target  "#gui-con-display"
                 =hx-swap  "innerHTML"
                 ; Bump
@@ -902,12 +993,12 @@
             ==
       ==
       ;div.flex.flex-col.w-full.p-1.bg-gray-100.rounded-lg.shadow-md.text-center.text-gray-700.text-lg.font-semibold
-        ;div#stud-path: {(spud stud.grub)}
-        ;div#cone-path.hidden
+        ;div#stud-path.hidden: {(spud stud)}
+        ;div#cone-path
           ;+  ;/
-          ?:  ?=(%base -.kind.grub)
-            (spud base.kind.grub)
-          (spud stem.kind.grub)
+          ?:  ?=(%base -.grub)
+            (spud base.grub)
+          (spud stem.grub)
         ==
       ==
       ;div#gui-con-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
@@ -919,11 +1010,17 @@
     ^-  form:m
     ;<  =cone:g  bind:m  (peek path)
     =/  =grub:g  (need (~(get of cone) /))
+    ;<  =stud:g  bind:m  (get-grub-stud path)
     ;<  s=(unit grub:g)  bind:m
-      (peek-root-soft (weld /bin/gui/con/stud stud.grub))
+      (peek-root-soft (weld /bin/gui/con/stud stud))
     %-  pure:m
     ?~  s
-      (vase-to-manx (grab-data grub))
+      =/  res  (grab-data-soft grub)
+      ?:  ?=(%& -.res)
+        (vase-to-manx p.res)
+      ;div(class "bg-red-100 p-1 rounded-lg w-full h-full overflow-y-auto")
+        ;code:"*{(render-tang-to-marl 80 p.res)}"
+      ==
     =/  res
       %-  mule  |.
       %.  (grab-data grub)
@@ -941,14 +1038,19 @@
     ;<  =cone:g  bind:m  (peek path)
     =/  =grub:g  (need (~(get of cone) /))
     =/  con-path=^path
-      ?-  -.kind.grub
-        %base  (weld /bin/gui/con/base base.kind.grub)
-        %stem  (weld /bin/gui/con/stem stem.kind.grub)
+      ?-  -.grub
+        %base  (weld /bin/gui/con/base base.grub)
+        %stem  (weld /bin/gui/con/stem stem.grub)
       ==
     ;<  c=(unit grub:g)  bind:m  (peek-root-soft con-path)
     %-  pure:m
     ?~  c
-      (vase-to-manx (grab-data grub))
+      =/  res  (grab-data-soft grub)
+      ?:  ?=(%& -.res)
+        (vase-to-manx p.res)
+      ;div(class "bg-red-100 p-1 rounded-lg w-full h-full overflow-y-auto")
+        ;code:"*{(render-tang-to-marl 80 p.res)}"
+      ==
     =/  res
       %-  mule  |.
       %.  [path cone]
@@ -958,24 +1060,28 @@
     ;div(class "bg-red-100 p-1 rounded-lg w-full h-full overflow-y-auto")
       ;code:"*{(render-tang-to-marl 80 p.res)}"
     ==
-
+  ::
+  ++  grub-view-sour
+    |=  =path
+    =/  m  (charm ,manx)
+    ^-  form:m
+    ;<  =grub:g  bind:m  (peek-root path)
+    ?>  ?=(%stem -.grub)
+    %-  pure:m
+    ;div.flex-grow.flex.flex-col.items-center.justify-center
+      ;*  %+  turn  ~(tap in sour.grub)
+          |=  [=^path *]
+          ;div: {(spud path)}
+    ==
   ::
   ++  grub-view-both
     |=  =path
     =/  m  (charm ,manx)
     ^-  form:m
+    ;<  =grub:g  bind:m  (peek-root path)
     %-  pure:m
     ;div(class "w-full h-full mx-auto bg-white shadow-lg rounded-lg flex flex-col")
       ;div(class "flex justify-center p-1 border-b border-gray-300 bg-gray-50")
-        ;button
-          =id  "studTab"
-          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
-          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
-          =hx-get  "/grub/view/stud{(spud path)}"
-          =hx-target  "#view-display"
-          =hx-swap  "innerHTML"
-          ; Stud
-        ==
         ;button
           =id  "coneTab"
           =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300 border-b-2 border-blue-500 text-blue-500"
@@ -986,6 +1092,27 @@
           =hx-trigger  "click, load"
           ; Cone
         ==
+        ;button
+          =id  "studTab"
+          =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+          =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+          =hx-get  "/grub/view/stud{(spud path)}"
+          =hx-target  "#view-display"
+          =hx-swap  "innerHTML"
+          ; Stud
+        ==
+        ;*  ?.  ?=(%stem -.grub)  ~
+            ;=
+              ;button
+                =id  "studTab"
+                =class  "tab-button px-4 py-2 text-gray-700 font-semibold focus:outline-none transition duration-300"
+                =onclick  "$(this).addClass('border-b-2 border-blue-500 text-blue-500').siblings().removeClass('border-b-2 border-blue-500 text-blue-500');"
+                =hx-get  "/grub/view/sour{(spud path)}"
+                =hx-target  "#view-display"
+                =hx-swap  "innerHTML"
+                ; Sources
+              ==
+            ==
       ==
       ;div#view-display.h-full.w-full.flex.flex-col.bg-gray-100.items-center.justify-center.overflow-auto;
     ==
@@ -1018,6 +1145,16 @@
   ++  no-lib
     |=  =path
     ^-  manx
+    =/  template=tape
+    ?+  path  ""
+      [%base *]  (trip base-template:x)
+      [%stem *]  (trip stem-template:x)
+      [%gui %con %base *]  (trip gui-con-base-template:x)
+      [%gui %con %stem *]  (trip gui-con-stem-template:x)
+      [%gui %con %stud *]  (trip gui-con-stud-template:x)
+      [%gui %con %poke *]  (trip gui-con-poke-template:x)
+      [%gui %con %bump *]  (trip gui-con-bump-template:x)
+    ==
     ;div(id (make-id %lib path))
       ;form
         =hx-post  "/grub/make/lib"
@@ -1026,7 +1163,7 @@
         =hx-target  "#{(make-id %lib path)}"
         ;input(type "hidden", name "get", value "/grub/tree/lib{(spud path)}");
         ;input(type "hidden", name "path", value "{(spud path)}");
-        ;input(type "hidden", name "code", value "");
+        ;input(type "hidden", name "code", value "{template}");
         ;button
           =type   "submit"
           =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-200"
@@ -1043,7 +1180,7 @@
       ?~  grub
         |+~[leaf+"no bin; bad dependency"]
       (grab-data-soft u.grub)
-    ;div.h-full.w-full.flex-grow.flex.flex-col.overflow-auto
+    ;div.w-full.flex-grow.flex.flex-col.overflow-auto
       =id  (make-id [%lib path])
       ;div.flex.flex-row.items-center.justify-center.text-white.font-mono.font-bold
         ;form

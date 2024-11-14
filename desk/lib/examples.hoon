@@ -102,4 +102,79 @@
   ++  two  |=(a=@ud (add 2 a))
   --
   """
+::
+++  base-template
+  %-  crip
+  """
+  :-  /noun
+  =,  grubberyio
+  ^-  base:g
+  |=  [=bowl:base:g =stud:g =vase]
+  =/  m  (charm:base:g ,pail:g)
+  ^-  form:m
+  done
+  """
+::
+++  stem-template
+  %-  crip
+  """
+  :-  /noun
+  =,  grubberyio
+  |=  =bowl:stem:g
+  :-  ~
+  =/  deps  ~(tap in ~(key by deps.bowl))
+  ?>  ?=(^ deps)
+  (nead (~(got by deps.bowl) i.deps))
+  """
+::
+++  gui-con-base-template
+  %-  crip
+  """
+  =,  grubberyio
+  |=  [here=path =cone:g]
+  ^-  manx
+  =/  data=vase  (grab-data (need (~(get of cone) /)))
+  ;div.flex.flex-col
+    ;div: \{(spud here)}
+    ;code.flex-grow:"*\{(render-tang-to-marl 80 (sell data) ~)}"
+  ==
+  """
+::
+++  gui-con-stem-template
+  %-  crip
+  """
+  =,  grubberyio
+  |=  [here=path =cone:g]
+  ^-  manx
+  =/  data=vase  (grab-data (need (~(get of cone) /)))
+  ;div.flex.flex-col
+    ;div: \{(spud here)}
+    ;code.flex-grow:"*\{(render-tang-to-marl 80 (sell data) ~)}"
+  ==
+  """
+::
+++  gui-con-stud-template
+  %-  crip
+  """
+  =,  grubberyio
+  |=  =vase
+  ^-  manx
+  ;code.flex-grow:"*\{(render-tang-to-marl 80 (sell vase) ~)}"
+  """
+::
+++  gui-con-poke-template
+  %-  crip
+  """
+  |=  args=(list (pair @t @t))
+  ^-  pail:g
+  [/sig !>(~)]
+  """
+::
+++  gui-con-bump-template
+  %-  crip
+  """
+  |=  args=(list (pair @t @t))
+  ^-  pail:g
+  [/sig !>(~)]
+  """
 --

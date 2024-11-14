@@ -39,12 +39,11 @@
       [%peek ~]
   ==
 ::
-+$  kind
++$  grub
   $%  [%base data=vase base=path proc=(unit proc:base)]
       [%stem data=(each vase tang) stem=path tidy=? sour=(map path @da)]
   ==
 ::
-+$  grub  [=stud =kind]
 +$  cone  (axal grub)
 +$  give  [from=path =wire]
 +$  poke  [=give =pail]
@@ -95,6 +94,7 @@
   ::
   +$  sign
     $%  [%poke p=(each pail goof)]
+        [%pack p=(unit tang)]
         [%bump p=(unit tang)]
     ==
   ::

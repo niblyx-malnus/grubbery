@@ -53,9 +53,9 @@
 ++  grab-data-soft
   |=  =grub
   ^-  (each vase tang)
-  ?-  -.kind.grub
-    %base  &+data.kind.grub
-    %stem  data.kind.grub
+  ?-  -.grub
+    %base  &+data.grub
+    %stem  data.grub
   ==
 ::
 ++  grab-data
@@ -77,6 +77,44 @@
   ?:  ?=(%& -.a)
     p.a
   (mean p.a)
+::
+++  get-base-stud
+  |=  base=path
+  =/  m  (charm ,stud)
+  ^-  form:m
+  ?:  ?=([%boot ~] base)  (pure:m /sig)
+  ?:  ?=([%lib ~] base)  (pure:m /lib)
+  ?:  ?=([%bin ~] base)  (pure:m /bin)
+  ;<  =grub  bind:m  (peek-root [%bin %base base])
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
+  =/  res  (mule |.(!<([=stud *] (grab-data grub))))
+  ?:  ?=(%& -.res)
+    (pure:m stud.p.res)
+  ~|("base {(spud base)} failed to compile" !!)
+::
+++  get-stem-stud
+  |=  stem=path
+  =/  m  (charm ,stud)
+  ^-  form:m
+  ?:  ?=([%bin ~] stem)  (pure:m /bin)
+  ;<  =grub  bind:m  (peek-root [%bin %stem stem])
+  ?>  ?=(%stem -.grub)
+  ?>  tidy.grub
+  =/  res  (mule |.(!<([=stud *] (grab-data grub))))
+  ?:  ?=(%& -.res)
+    (pure:m stud.p.res)
+  ~|("stem {(spud stem)} failed to compile" !!)
+::
+++  get-grub-stud
+  |=  =path
+  =/  m  (charm ,stud)
+  ^-  form:m
+  ;<  =grub  bind:m  (peek-root path)
+  ?-  -.grub
+    %base  (get-base-stud base.grub)
+    %stem  (get-stem-stud stem.grub)
+  ==
 ::
 ++  send-raw-darts
   |=  darts=(list =dart)
@@ -147,14 +185,32 @@
 ++  poke
   |=  [=path =pail]
   =/  m  (charm ,^pail)
-  =/  =dart  [%grub /poke path %poke pail]
-  ;<  ~  bind:m  (send-raw-dart dart)
+  ^-  form:m
+  ;<  ~  bind:m  (send-raw-dart %grub /poke path %poke pail)
   (take-poke-sign /poke)
+::
+++  take-poke-ack
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %base * %pack *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  p.sign.u.in
+      [%done ~]
+    [%fail %poke-nack u.p.sign.u.in]
+  ==
 ::
 ++  throw
   |=  [=path =pail]
-  =/  m  (charm ,^pail)
-  (send-raw-dart %grub / path %poke pail)
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  ~  bind:m  (send-raw-dart %grub /throw path %poke pail)
+  (take-poke-ack /throw)
 ::
 ++  take-bump-sign
   |=  =wire
@@ -169,12 +225,13 @@
       [%skip ~]
     ?~  p.sign.u.in
       [%done ~]
-    [%fail %poke-fail u.p.sign.u.in]
+    [%fail %bump-nack u.p.sign.u.in]
   ==
 ::
 ++  bump
   |=  [=path =pail]
   =/  m  (charm ,~)
+  ^-  form:m
   =/  =dart  [%grub /bump path %bump pail]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-bump-sign /poke)
@@ -198,6 +255,7 @@
 ++  bump-soft
   |=  [=path =pail]
   =/  m  (charm ,(unit tang))
+  ^-  form:m
   =/  =dart  [%grub /bump path %bump pail]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-bump-sign-soft /poke)
@@ -219,6 +277,7 @@
 ++  ls
   |=  =path
   =/  m  (charm ,(list @ta))
+  ^-  form:m
   ;<  =cone  bind:m  (peek path)
   (pure:m ~(tap in ~(key by dir.cone)))
 
@@ -227,6 +286,7 @@
 ++  kids
   |=  =path
   =/  m  (charm ,(list ^path))
+  ^-  form:m
   ;<  =cone  bind:m  (peek path)
   =.  cone  (~(del of cone) /)
   =|  sub-path=^path
@@ -251,6 +311,7 @@
 ++  tree
   |=  =path
   =/  m  (charm ,(axal ~))
+  ^-  form:m
   ;<  =cone  bind:m  (peek path)
   %-  pure:m
   %-  ~(gas of *(axal ~))
@@ -259,6 +320,7 @@
 ++  get-perm
   |=  =path
   =/  m  (charm ,(unit perm))
+  ^-  form:m
   =/  =dart  [%grub /get-perm path %peek ~]
   ;<  ~  bind:m  (send-raw-dart dart)
   ;<  [* =sand]  bind:m  (take-peek /get-perm)
@@ -267,6 +329,7 @@
 ++  peek
   |=  =path
   =/  m  (charm ,cone)
+  ^-  form:m
   =/  =dart  [%grub /peek path %peek ~]
   ;<  ~  bind:m  (send-raw-dart dart)
   ;<  [=cone *]  bind:m  (take-peek /peek)
@@ -275,6 +338,7 @@
 ++  peek-root
   |=  =path
   =/  m  (charm ,grub)
+  ^-  form:m
   ;<  =cone  bind:m  (peek path)
   ?~  grub=(~(get of cone) /)
     (charm-fail %no-root-grub leaf+(spud path) ~)
@@ -283,18 +347,21 @@
 ++  peek-root-soft
   |=  =path
   =/  m  (charm ,(unit grub))
+  ^-  form:m
   ;<  =cone  bind:m  (peek path)
   (pure:m (~(get of cone) /))
 ::
 ++  peek-root-as
   |*  [a=mold =path]
   =/  m  (charm ,a)
+  ^-  form:m
   ;<  =grub  bind:m  (peek-root path)
   (pure:m !<(a (grab-data grub)))
 ::
 ++  peek-root-as-soft
   |*  [a=mold =path]
   =/  m  (charm ,(unit a))
+  ^-  form:m
   ;<  grub=(unit grub)  bind:m  (peek-root-soft path)
   ?~  grub
     (pure:m ~)
@@ -304,18 +371,21 @@
 ++  grab
   |=  =path
   =/  m  (charm ,cone)
+  ^-  form:m
   ;<  here=^path  bind:m  get-here
   (peek (weld here path))
 ::
 ++  grab-root
   |=  =path
   =/  m  (charm ,grub)
+  ^-  form:m
   ;<  here=^path  bind:m  get-here
   (peek-root (weld here path))
 ::
 ++  grab-root-as
   |*  [a=mold =path]
   =/  m  (charm ,a)
+  ^-  form:m
   ;<  here=^path  bind:m  get-here
   (peek-root-as (weld here path))
 ::
@@ -336,6 +406,7 @@
 ++  scry
   |*  [=mold =path]
   =/  m  (charm ,mold)
+  ^-  form:m
   =/  =dart  [%scry /scry mold path]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-scry mold /scry)
@@ -343,18 +414,45 @@
 ++  eyre-connect
   |=  [url=(list @t) dest=path]
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  our=@p     bind:m  get-our
   (gall-poke [our %grubbery] connect+!>([url dest]))
 ::
 ++  eyre-disconnect
   |=  url=(list @t)
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  our=@p     bind:m  get-our
   (gall-poke [our %grubbery] disconnect+!>(url))
+::
+++  kill-base
+  |=  =path
+  =/  m  (charm ,~)
+  ^-  form:m
+  =/  =dart  [%grub /kill-base path %kill ~]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-dead /kill-base)
+::
+++  take-dead
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %dead *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  err.u.in
+      [%done ~]
+    [%fail %kill-fail u.err.u.in]
+  ==
 ::
 ++  oust-grub
   |=  =path
   =/  m  (charm ,~)
+  ^-  form:m
   =/  =dart  [%grub /oust-grub path %oust ~]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-gone /oust-grub)
@@ -378,6 +476,7 @@
 ++  edit-perm
   |=  [=path perm=(unit perm)]
   =/  m  (charm ,~)
+  ^-  form:m
   =/  =dart  [%grub /edit-perm path %sand perm]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-sand /edit-perm)
@@ -401,6 +500,7 @@
 ++  make-stem
   |=  [=path stem=path sour=(set path)]
   =/  m  (charm ,~)
+  ^-  form:m
   =/  =dart  [%grub /make-stem path %make %stem stem sour]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-stem)
@@ -408,12 +508,14 @@
 ++  overwrite-stem
   |=  [=path base=path sour=(set path)]
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  ~  bind:m  (oust-grub path)
   (make-stem path base sour)
 ::
 ++  make-base
   |=  [=path base=path data=(unit vase)]
   =/  m  (charm ,~)
+  ^-  form:m
   =/  =dart  [%grub /make-base path %make %base base data]
   ;<  ~  bind:m  (send-raw-dart dart)
   (take-made /make-base)
@@ -421,24 +523,28 @@
 ++  overwrite-base
   |=  [=path base=path data=(unit vase)]
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  ~  bind:m  (oust-grub path)
   (make-base path base data)
 ::
 ++  make-and-poke
   |=  [=path base=path data=(unit vase) poke=pail]
   =/  m  (charm ,pail)
+  ^-  form:m
   ;<  ~  bind:m  (make-base path base data)
   (^poke path poke)
 ::
 ++  overwrite-and-poke
   |=  [=path base=path data=(unit vase) poke=pail]
   =/  m  (charm ,pail)
+  ^-  form:m
   ;<  ~  bind:m  (overwrite-base path base data)
   (^poke path poke)
 ::
 ++  make-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  *  bind:m 
     %:  make-and-poke
       [%lib path]
@@ -450,6 +556,7 @@
 ++  overwrite-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   ;<  ~  bind:m  (edit-perm [%lib path] ~)
   ;<  ~  bind:m  (oust-grub [%lib path])
   (make-lib path code)
@@ -457,31 +564,37 @@
 ++  make-stud-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (make-lib [%stud path] code)
 ::
 ++  overwrite-stud-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (overwrite-lib [%stud path] code)
 ::
 ++  make-base-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (make-lib [%base path] code)
 ::
 ++  overwrite-base-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (overwrite-lib [%base path] code)
 ::
 ++  make-stem-lib 
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (make-lib [%stem path] code)
 ::
 ++  overwrite-stem-lib
   |=  [=path code=@t]
   =/  m  (charm ,~)
+  ^-  form:m
   (overwrite-lib [%stem path] code)
 ::
 ++  take-made
@@ -606,12 +719,14 @@
 ::
 ++  done
   =/  m  (charm ,pail)
+  ^-  form:m
   (pure:m /sig !>(~))
 :: replace with value and give a sig
 ::
 ++  pour
   |=  new=vase
   =/  m  (charm ,pail)
+  ^-  form:m
   ;<  ~  bind:m  (replace new)
   done
 ::
@@ -621,7 +736,7 @@
   ^-  form:m
   =/  =dart  [%sysc %pass /poke %agent dock %poke cage]
   ;<  ~  bind:m  (send-raw-dart dart)
-  (take-poke-ack /poke)
+  (take-gall-poke-ack /poke)
 ::
 ++  gall-poke-our
   |=  [=dude:gall =cage]
@@ -645,7 +760,7 @@
   ;<  ~  bind:m  (handle-http-response eyre-id pay)
   done
 ::
-++  take-poke-ack
+++  take-gall-poke-ack
   |=  =wire
   =/  m  (charm ,~)
   ^-  form:m

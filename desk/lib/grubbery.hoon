@@ -101,6 +101,17 @@
 ::  /grp/who (set ship)
 ::  /grp/how perm
 ::  /grp/pub perm
+++  file
+  %-  crip
+  """
+  :-  /noun
+  =,  grubberyio
+  ^-  base:g
+  |=  [=bowl:base:g =stud:g =vase]
+  =/  m  (charm:base:g ,pail:g)
+  ^-  form:m
+  (pour vase)
+  """
 ::
 ++  bin
   |%
@@ -130,7 +141,7 @@
       ~[/bin/grubbery [%lib t.here.bowl]]
     ?>  =(deps ~(key by deps.bowl))
     =;  vax=(list vase)
-      [~ (slip (reel (snoc vax grubbery) slop) hoon.p.res)]
+      [~ !:((slip (reel (snoc vax grubbery) slop) hoon.p.res))]
     %+  turn  deps.p.res
     |=  [fac=term dep=path]
     =/  =vase  (nead (~(got by deps.bowl) dep))
@@ -186,13 +197,20 @@
     ;<  ~  bind:m  (overwrite-base /bin/zuse /bin `!>(zuse-core))
     ;<  ~  bind:m  (overwrite-base /bin/grubbery /bin `!>(grubbery-lib))
     ;<  ~  bind:m  (overwrite-lib /add/two add-two)
+    ;<  ~  bind:m  (overwrite-stud-lib /noun 'noun')
     ;<  ~  bind:m  (overwrite-stud-lib /ud '@ud')
     ;<  ~  bind:m  (overwrite-stud-lib /loob '?')
     ;<  ~  bind:m  (overwrite-stud-lib /txt '@t')
+    ;<  ~  bind:m  (overwrite-stud-lib /wain 'wain')
+    ;<  ~  bind:m  (overwrite-stud-lib /wall 'wall')
     ;<  ~  bind:m  (overwrite-stud-lib /dr '@dr')
     ;<  ~  bind:m  (overwrite-stud-lib /manx 'manx')
     ;<  ~  bind:m  (overwrite-stud-lib /sig ',~')
     ;<  ~  bind:m  (overwrite-stud-lib /init ',~')
+    ;<  ~  bind:m  (overwrite-stud-lib /load ',~')
+    :: "file"
+    ::
+    ;<  ~  bind:m  (overwrite-base-lib /file file)
     :: user groups
     ::
     ;<  ~  bind:m  (overwrite-stud-lib /group '(set @p)')
