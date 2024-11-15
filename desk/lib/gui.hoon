@@ -403,11 +403,11 @@
         ;*  ?:  =(~ dir.cone)
               ~
             ;=
-              ;button.chevron-right.hidden
+              ;button.chevron-right
                 =onclick  "$(this).addClass('hidden').siblings('.chevron-down').removeClass('hidden').parent().next().removeClass('hidden');"
                 ;+  (make:fi %chevron-right)
               ==
-              ;button.chevron-down
+              ;button.chevron-down.hidden
                 =onclick  "$(this).addClass('hidden').siblings('.chevron-right').removeClass('hidden').parent().next().addClass('hidden');"
                 ;+  (make:fi %chevron-down)
               ==
@@ -421,7 +421,7 @@
           ; {?~(path "/" (trip (rear path)))}
         ==
       ==
-      ;div.children.flex.flex-col
+      ;div.children.flex.flex-col.hidden
         ;*  %+  turn  ~(tap by dir.cone)
             |=  [name=@ta =cone:g]
             (cone-navigator (weld path /[name]) cone)

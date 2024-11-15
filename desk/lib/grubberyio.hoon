@@ -666,6 +666,13 @@
     %base  (overwrite-base to base.grub ~ data.grub)
     %stem  (overwrite-stem to stem.grub ~(key by sour.grub))
   ==
+:: mostly useful for recomputing a stem when you edit its stem code
+::
+++  re-make
+  |=  here=path
+  =/  m  (charm ,~)
+  ^-  form:m
+  (copy-grub here here)
 ::
 ++  move-grub
   |=  [from=path to=path]
