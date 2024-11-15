@@ -88,7 +88,7 @@
   ?~  perm  [%& ~]
   ?:  ?=(?(%sysc %scry) -.dart)  [%| ~]
   ?-    -.load.dart
-      ?(%make %oust)
+      ?(%make %oust %cull)
     (check-pax path.dart ~(tap in make.u.perm))
       %sand
     (check-pax-hard path.dart ~(tap in make.u.perm))

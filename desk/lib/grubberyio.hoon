@@ -129,6 +129,26 @@
   ^-  form:m
   (send-raw-darts dart ~)
 ::
+++  take-watch
+  =/  m  (charm ,path)
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %watch *]
+    [%done path.u.in]
+  ==
+::
+++  take-leave
+  =/  m  (charm ,path)
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %leave *]
+    [%done path.u.in]
+  ==
+::
 ++  send-wait
   |=  until=@da
   =/  m  (charm ,~)
@@ -473,6 +493,30 @@
     [%fail %oust-fail u.err.u.in]
   ==
 ::
+++  cull-cone
+  |=  =path
+  =/  m  (charm ,~)
+  ^-  form:m
+  =/  =dart  [%grub /cull-cone path %cull ~]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-cull /cull-cone)
+::
+++  take-cull
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %cull *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  err.u.in
+      [%done ~]
+    [%fail %cull-fail u.err.u.in]
+  ==
+::
 ++  edit-perm
   |=  [=path perm=(unit perm)]
   =/  m  (charm ,~)
@@ -506,11 +550,11 @@
   (take-made /make-stem)
 ::
 ++  overwrite-stem
-  |=  [=path base=path sour=(set path)]
+  |=  [=path stem=path sour=(set path)]
   =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (oust-grub path)
-  (make-stem path base sour)
+  (make-stem path stem sour)
 ::
 ++  make-base
   |=  [=path base=path data=(unit vase)]
@@ -613,6 +657,50 @@
     [%fail %make-fail u.err.u.in]
   ==
 ::
+++  copy-grub
+  |=  [from=path to=path]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  =grub  bind:m  (peek-root from)
+  ?-    -.grub
+    %base  (overwrite-base to base.grub ~ data.grub)
+    %stem  (overwrite-stem to stem.grub ~(key by sour.grub))
+  ==
+::
+++  move-grub
+  |=  [from=path to=path]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  ~  bind:m  (copy-grub from to)
+  (oust-grub from)
+::
+++  copy-cone
+  |=  [from=path to=path]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  =cone  bind:m  (peek from)
+  =/  grubs=(list path)  (turn ~(tap of cone) head)
+  |-
+  ?~  grubs
+    (pure:m ~)
+  ;<  ~  bind:m  (copy-grub (weld from i.grubs) (weld to i.grubs))
+  $(grubs t.grubs)
+::
+++  move-cone
+  |=  [from=path to=path]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  ~  bind:m  (copy-cone from to)
+  (cull-cone from)
+::
+++  re-source
+  |=  [here=path sour=(set path)]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  =grub  bind:m  (peek-root here)
+  ?>  ?=(%stem -.grub)
+  (overwrite-stem here stem.grub sour)
+::
 ++  ignore
   |=  input
   [~ state %fail %ignore ~]
@@ -677,13 +765,20 @@
     %&  [~ state %done p.res]
     %|  [~ state %done (gut p.res)]
   ==
+::  Convert skips to %ignore failures.
 ::
-:: ++  get-state-as
-::   |*  a=mold
-::   =/  m  (charm ,a)
-::   ^-  form:m
-::   |=  input
-::   [~ state %done !<(a state)]
+::    This tells the main loop to try the next handler.
+::
+++  handle
+  |*  a=mold
+  =/  m  (charm ,a)
+  |=  =form:m
+  ^-  form:m
+  |=  =input
+  =/  res  (form input)
+  =?  next.res  ?=(%skip -.next.res)
+    [%fail %ignore ~]
+  res
 ::
 ++  charm-fail
   |=  err=(pair term tang)
@@ -745,21 +840,6 @@
   ;<  our=@p  bind:m  get-our
   (gall-poke [our dude] cage)
 ::
-++  handle-http-response
-  |=  [eyre-id=@ta pay=simple-payload:http]
-  =/  m  (charm ,~)
-  ^-  form:m
-  %+  gall-poke-our
-    %grubbery
-  handle-http-response+!>([eyre-id pay])
-::
-++  final-http-response
-  |=  [eyre-id=@ta pay=simple-payload:http]
-  =/  m  (charm ,pail)
-  ^-  form:m
-  ;<  ~  bind:m  (handle-http-response eyre-id pay)
-  done
-::
 ++  take-gall-poke-ack
   |=  =wire
   =/  m  (charm ,~)
@@ -776,6 +856,52 @@
     [%fail %poke-fail u.p.sign.u.in]
   ==
 ::
+++  gall-poke-soft
+  |=  [=dock =cage]
+  =/  m  (charm ,(unit tang))
+  ^-  form:m
+  =/  =dart  [%sysc %pass /poke %agent dock %poke cage]
+  ;<  ~  bind:m  (send-raw-dart dart)
+  (take-gall-poke-ack-soft /poke)
+::
+++  gall-poke-our-soft
+  |=  [=dude:gall =cage]
+  =/  m  (charm ,(unit tang))
+  ^-  form:m
+  ;<  our=@p  bind:m  get-our
+  (gall-poke-soft [our dude] cage)
+::
+++  take-gall-poke-ack-soft
+  |=  =wire
+  =/  m  (charm ,(unit tang))
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %agent * %poke-ack *]
+    ?.  =(wire wire.u.in)
+      [%skip ~]
+    ?~  p.sign.u.in
+      [%done ~]
+    [%done ~ u.p.sign.u.in]
+  ==
+::
+++  handle-http-response
+  |=  [eyre-id=@ta pay=simple-payload:http]
+  =/  m  (charm ,~)
+  ^-  form:m
+  %+  gall-poke-our
+    %grubbery
+  handle-http-response+!>([eyre-id pay])
+::
+++  final-http-response
+  |=  [eyre-id=@ta pay=simple-payload:http]
+  =/  m  (charm ,pail)
+  ^-  form:m
+  ;<  ~  bind:m  (handle-http-response eyre-id pay)
+  done
+::
 ++  watch
   |=  [=wire =dock =path]
   =/  m  (charm ,~)
@@ -784,11 +910,34 @@
     (send-raw-dart %sysc %pass watch+wire %agent dock %watch path)
   (take-watch-ack wire)
 ::
+++  watch-one
+  |=  [=wire =dock =path]
+  =/  m  (charm ,cage)
+  ^-  form:m
+  ;<  ~      bind:m  (watch wire dock path)
+  ;<  =cage  bind:m  (take-fact wire)
+  ;<  ~      bind:m  (take-kick wire)
+  (pure:m cage)
+::
+++  watch-our
+  |=  [=wire =term =path]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  our=@p  bind:m  get-our
+  (watch wire [our term] path)
+::
 ++  leave
   |=  [=wire =dock]
   =/  m  (charm ,~)
   ^-  form:m
   (send-raw-dart %sysc %pass watch+wire %agent dock %leave ~)
+::
+++  leave-our
+  |=  [=wire =term]
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  our=@p  bind:m  get-our
+  (leave wire [our term])
 ::
 ++  take-watch-ack
   |=  =wire
@@ -862,6 +1011,33 @@
       [~ %arvo [%request ~] %iris %http-response %finished *]
     [%done client-response.sign.u.in]
   ==
+::  Wait until we get an HTTP response or cancelation and unset contract
+::
+++  take-maybe-sigh
+  =/  m  (charm ,(unit httr:eyre))
+  ^-  form:m
+  ;<  rep=(unit client-response:iris)  bind:m
+    take-maybe-response
+  ?~  rep
+    (pure:m ~)
+  ::  XX s/b impossible
+  ::
+  ?.  ?=(%finished -.u.rep)
+    (pure:m ~)
+  (pure:m (some (to-httr:iris +.u.rep)))
+::
+++  take-maybe-response
+  =/  m  (charm ,(unit client-response:iris))
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%skip ~]
+      ~  [%wait ~]
+      [~ %arvo [%request ~] %iris %http-response %cancel *]
+    [%done ~]
+      [~ %arvo [%request ~] %iris %http-response %finished *]
+    [%done `client-response.sign.u.in]
+  ==
 ::
 ++  extract-body
   |=  =client-response:iris
@@ -890,6 +1066,13 @@
   ?~  json
     (charm-fail %json-parse-error ~)
   (pure:m u.json)
+::
+++  hiss-request
+  |=  =hiss:eyre
+  =/  m  (charm ,(unit httr:eyre))
+  ^-  form:m
+  ;<  ~  bind:m  (send-request (hiss-to-request:html hiss))
+  take-maybe-sigh
 ::
 ++  render-tang-to-wall
   |=  [wid=@u tan=tang]

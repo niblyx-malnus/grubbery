@@ -234,6 +234,9 @@
         [%grub %oust %grub ~]
       (oust-grub (rash (need (get-key:kv 'path' args)) stap))
       ::
+        [%grub %cull %cone ~]
+      (cull-cone (rash (need (get-key:kv 'path' args)) stap))
+      ::
         [%grub %sand %sysc ~]
       (edit-perm (rash (need (get-key:kv 'path' args)) stap) ~)
       ::
@@ -256,6 +259,11 @@
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
       ;<  ~  bind:m  (oust-grub [%lib path])
       (oust-grub [%bin path])
+      ::
+        [%grub %cull %lib ~]
+      =/  =path  (rash (need (get-key:kv 'path' args)) stap)
+      ;<  ~  bind:m  (cull-cone [%lib path])
+      (cull-cone [%bin path])
       ::
         [%grub %poke *]
       ~&  >>>  %receiving-poke-post
@@ -730,7 +738,7 @@
           ==
         ==
         ;form
-          =hx-post  "/grub/cull/grub"
+          =hx-post  "/grub/cull/cone"
           =hx-trigger  "submit"
           =hx-swap  "outerHTML"
           =hx-target  "#{(make-id path)}"
@@ -1347,12 +1355,12 @@
       ;*  ?:  ?=(%| -.data)
             ;=
               ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
-                ;code:"*{(render-tang-to-marl 80 p.data)}"
+                ;code:"*{(scag 100 (render-tang-to-marl 80 p.data))}"
               ==
             ==
           ;=
             ;div(class "bg-{color}-100 p-4 rounded-lg w-full h-full overflow-y-auto")
-              ;code:"*{(render-tang-to-marl 80 (sell p.data) ~)}"
+              ;code:"*{(scag 100 (render-tang-to-marl 80 (sell p.data) ~))}"
             ==
           ==
     ==

@@ -116,6 +116,14 @@
       abet:(oust-grub:hc give here)
     [cards this]
     ::
+      %cull-cone
+    =+  !<(here=path vase)
+    ~&  here+here
+    =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
+    =^  cards  state
+      abet:(cull-cone:hc give here)
+    [cards this]
+    ::
       %make-base
     =+  !<([here=path base=path data=(unit ^vase)] vase)
     ~&  here+here
@@ -273,6 +281,9 @@
       ::
         %oust
       $(this (oust-grub [from wire] path):[dart .])
+      ::
+        %cull
+      $(this (cull-cone [from wire] path):[dart .])
       ::
         %sand
       $(this (edit-perm [from wire] path perm.load):[dart .])
@@ -679,18 +690,28 @@
   |=  here=path
   ^+  this
   ?~  grub=(~(get of cone) here)
-    ~&  >>  "nothing to oust at {(spud here)}"
     this
   =.  this
     ?-  -.u.grub
       %base  (kill here)
       %stem  (del-sources here)
     ==
-  =.  cone
-    ?:  ?=([* ~] (~(dip of cone) here)) :: if no descendants
-      (~(lop of cone) here)
-    (~(del of cone) here)
+  =.  cone  (~(del of cone) here)
   (next-tack here)
+::
+++  do-cull
+  |=  here=path
+  ^+  this
+  =/  hone=cone:g  (~(dip of cone) here)
+  ?:  =(~ dir.hone)
+    =.  this  (do-oust here)
+    this(cone (~(lop of cone) here))
+  =/  next=(list @ta)  ~(tap in ~(key by dir.hone))
+  |-
+  ?~  next
+    this
+  =.  this  (do-cull (snoc here i.next))
+  $(next t.next)
 ::
 ++  oust-grub
   |=  [=give:g here=path]
@@ -704,6 +725,19 @@
       [(scot %p our.bowl) /gall/grubbery]
     t.t.t.t.from.give
   [~ %gone wire.give err]
+::
+++  cull-cone
+  |=  [=give:g here=path]
+  ^+  this
+  =/  res=(each _this tang)  (mule |.((do-cull here)))
+  =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
+  =?  this  ?=(%& -.res)  p.res
+  ?.  ?=([@ %gall %grubbery %$ ^] from.give)
+    ?:(?=(%& -.res) this (mean p.res))
+  %^    ingest
+      [(scot %p our.bowl) /gall/grubbery]
+    t.t.t.t.from.give
+  [~ %cull wire.give err]
 ::
 ++  put-sand
   |=  [here=path perm=(unit perm:g)]
@@ -1034,7 +1068,7 @@
       %|  [[~ data.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.grub]
     ==
   ::
-  =.  this  (handle-base-emits here darts)
+  =?  this  !?=(%fail -.result)  (handle-base-emits here darts)
   ::
   =/  tick=?  !=(data data.grub)
   =?  this  tick  (next-tack here)

@@ -8,7 +8,7 @@
   ==
 :: TODO: add a %cull action as a recursive %oust
 ::
-+$  deed  ?(%make %oust %sand %poke %bump %kill %peek)
++$  deed  ?(%make %oust %cull %sand %poke %bump %kill %peek)
 ::
 +$  perm
   $:  make=(set path) :: %make or %oust (%sand ?)
@@ -32,6 +32,7 @@
 +$  load
   $%  [%make =make]
       [%oust ~]
+      [%cull ~]
       [%sand perm=(unit perm)]
       [%poke =pail]
       [%bump =pail]
@@ -103,6 +104,7 @@
         [%peek =wire =path =cone =sand] :: local read
         [%made =wire err=(unit tang)] :: response to make
         [%gone =wire err=(unit tang)] :: response to oust
+        [%cull =wire err=(unit tang)] :: response to cull
         [%dead =wire err=(unit tang)] :: response to kill
         [%sand =wire err=(unit tang)] :: response to sand
         [%base =wire =sign] :: response from poke or bump
