@@ -6,7 +6,6 @@
   $%  [%base base=path data=(unit vase)]
       [%stem stem=path sour=(set path)]
   ==
-:: TODO: add a %cull action as a recursive %oust
 ::
 +$  deed  ?(%make %oust %cull %sand %poke %bump %kill %peek)
 ::
@@ -22,6 +21,13 @@
 ::
 +$  dart
   $%  [%grub =wire =path =load]
+      :: intermediate poke response;
+      :: like a bump, but automatically goes to poker
+      :: and is not sandboxed
+      :: can also think of a poke like a subscription
+      :: which can return perks and a final pail
+      :: 
+      [%perk =wire =pail] :: TODO: replace poke response with perk?
       [%sysc =card:agent:gall]
       [%scry =wire =mold =path]
   ==
@@ -39,6 +45,10 @@
       [%kill ~]
       [%peek ~]
   ==
+:: TODO: don't queue processes, they should all be going
+::       simultaneously
+:: TODO: each base should be able to publish data to
+::       subscription paths
 ::
 +$  grub
   $%  [%base data=vase base=path proc=(unit proc:base)]
@@ -94,13 +104,14 @@
     ==
   ::
   +$  sign
-    $%  [%poke p=(each pail goof)]
-        [%pack p=(unit tang)]
-        [%bump p=(unit tang)]
+    $%  [%poke err=(unit tang)]
+        [%perk err=(unit tang)]
+        [%bump err=(unit tang)]
     ==
   ::
   +$  intake
     $%  [%bump =pail]
+        [%perk =wire =pail]
         [%peek =wire =path =cone =sand] :: local read
         [%made =wire err=(unit tang)] :: response to make
         [%gone =wire err=(unit tang)] :: response to oust
@@ -114,8 +125,8 @@
         [%scry =wire =path =vase]
         [%arvo =wire sign=sign-arvo]
         [%agent =wire =sign:agent:gall]
-        [%watch =path]
-        [%leave =path]
+        [%watch =path] :: disallow process subs
+        [%leave =path] :: disallow process subs
     ==
   ::
   +$  input  [=bowl state=vase in=(unit intake)]
@@ -127,9 +138,8 @@
         state=vase
         $=  next
         $%  [%wait ~]
-            [%skip ~]
             [%cont self=(form-raw value)]
-            [%fail err=(pair term tang)]
+            [%fail err=tang]
             [%done =value]
         ==
     ==
@@ -138,7 +148,7 @@
     |*  value=mold
     $-(input (output-raw value))
   ::
-  +$  proc  _*form:(charm ,pail)
+  +$  proc  _*form:(charm ,~)
   +$  base  $-([bowl pail] proc)
   +$  give  (each @ta [from=path =wire])
   +$  poke  [=give =pail]
@@ -168,7 +178,6 @@
       :-  state.b-res
       ?-    -.next.b-res
         %wait  [%wait ~]
-        %skip  [%skip ~]
         %cont  [%cont ..$(m-b self.next.b-res)]
         %fail  [%fail err.next.b-res]
         %done  [%cont (fun value.next.b-res)]
@@ -178,7 +187,7 @@
       |%
       +$  result
         $%  [%next ~]
-            [%fail err=(pair term tang)]
+            [%fail err=tang]
             [%done =value]
         ==
       ::
@@ -198,7 +207,6 @@
         :-  state.output
         ?-  -.next.output
             %wait  [%next ~]
-            %skip  [%next ~]
             %fail  [%fail err.next.output]
             %done  [%done value.next.output]
         ==

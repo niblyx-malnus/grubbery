@@ -133,7 +133,7 @@
   =/  m  (charm ,path)
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %watch *]
     [%done path.u.in]
@@ -143,7 +143,7 @@
   =/  m  (charm ,path)
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %leave *]
     [%done path.u.in]
@@ -162,11 +162,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %arvo [%wait @ ~] %behn %wake *]
     ?.  |(?=(~ until) =(`u.until (slaw %da i.t.wire.u.in)))
-      [%skip ~]
+      [%wait ~]
     ?~  error.sign.u.in
       [%done ~]
     [%fail %timer-error u.error.sign.u.in]
@@ -188,49 +188,26 @@
 ::
 ++  take-poke-sign
   |=  =wire
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %base * %poke *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
-    ?:  ?=(%& -.p.sign.u.in)
-      [%done p.p.sign.u.in]
-    [%fail %poke-fail tang.p.p.sign.u.in]
+      [%wait ~]
+    ?~  err.sign.u.in
+      [%done ~]
+    [%fail %poke-fail u.err.sign.u.in]
   ==
 ::
 ++  poke
   |=  [=path =pail]
-  =/  m  (charm ,^pail)
+  =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (send-raw-dart %grub /poke path %poke pail)
   (take-poke-sign /poke)
-::
-++  take-poke-ack
-  |=  =wire
-  =/  m  (charm ,~)
-  ^-  form:m
-  |=  input
-  :+  ~  state
-  ?+  in  [%skip ~]
-      ~  [%wait ~]
-      [~ %base * %pack *]
-    ?.  =(wire wire.u.in)
-      [%skip ~]
-    ?~  p.sign.u.in
-      [%done ~]
-    [%fail %poke-nack u.p.sign.u.in]
-  ==
-::
-++  throw
-  |=  [=path =pail]
-  =/  m  (charm ,~)
-  ^-  form:m
-  ;<  ~  bind:m  (send-raw-dart %grub /throw path %poke pail)
-  (take-poke-ack /throw)
 ::
 ++  take-bump-sign
   |=  =wire
@@ -238,14 +215,14 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %base * %bump *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
-    ?~  p.sign.u.in
+      [%wait ~]
+    ?~  err.sign.u.in
       [%done ~]
-    [%fail %bump-nack u.p.sign.u.in]
+    [%fail %bump-nack u.err.sign.u.in]
   ==
 ::
 ++  bump
@@ -254,7 +231,7 @@
   ^-  form:m
   =/  =dart  [%grub /bump path %bump pail]
   ;<  ~  bind:m  (send-raw-dart dart)
-  (take-bump-sign /poke)
+  (take-bump-sign /bump)
 ::
 ++  take-bump-sign-soft
   |=  =wire
@@ -262,14 +239,14 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %base * %bump *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
-    ?~  p.sign.u.in
+      [%wait ~]
+    ?~  err.sign.u.in
       [%done ~]
-    [%done ~ u.p.sign.u.in]
+    [%done ~ u.err.sign.u.in]
   ==
 ::
 ++  bump-soft
@@ -286,11 +263,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %peek *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     [%done [cone sand]:u.in]
   ==
 ::
@@ -415,11 +392,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %scry *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     [%done !<(mold vase.u.in)]
   ==
 ::
@@ -459,11 +436,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %dead *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  err.u.in
       [%done ~]
     [%fail %kill-fail u.err.u.in]
@@ -483,11 +460,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %gone *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  err.u.in
       [%done ~]
     [%fail %oust-fail u.err.u.in]
@@ -507,11 +484,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %cull *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  err.u.in
       [%done ~]
     [%fail %cull-fail u.err.u.in]
@@ -531,11 +508,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %sand *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  err.u.in
       [%done ~]
     [%fail %sand-fail u.err.u.in]
@@ -573,14 +550,14 @@
 ::
 ++  make-and-poke
   |=  [=path base=path data=(unit vase) poke=pail]
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (make-base path base data)
   (^poke path poke)
 ::
 ++  overwrite-and-poke
   |=  [=path base=path data=(unit vase) poke=pail]
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (overwrite-base path base data)
   (^poke path poke)
@@ -647,11 +624,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %made *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  err.u.in
       [%done ~]
     [%fail %make-fail u.err.u.in]
@@ -707,10 +684,6 @@
   ;<  =grub  bind:m  (peek-root here)
   ?>  ?=(%stem -.grub)
   (overwrite-stem here stem.grub sour)
-::
-++  ignore
-  |=  input
-  [~ state %fail %ignore ~]
 ::
 ++  get-bowl
   =/  m  (charm ,bowl)
@@ -772,25 +745,11 @@
     %&  [~ state %done p.res]
     %|  [~ state %done (gut p.res)]
   ==
-::  Convert skips to %ignore failures.
-::
-::    This tells the main loop to try the next handler.
-::
-++  handle
-  |*  a=mold
-  =/  m  (charm ,a)
-  |=  =form:m
-  ^-  form:m
-  |=  =input
-  =/  res  (form input)
-  =?  next.res  ?=(%skip -.next.res)
-    [%fail %ignore ~]
-  res
 ::
 ++  charm-fail
   |=  err=(pair term tang)
   |=  input
-  [~ state %fail err]
+  [~ state %fail leaf+(trip p.err) q.err]
 ::
 ++  transform
   |=  transform=$-(vase vase)
@@ -820,17 +779,40 @@
 :: do nothing and give a sig
 ::
 ++  done
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
-  (pure:m /sig !>(~))
+  (pure:m ~)
 :: replace with value and give a sig
 ::
 ++  pour
   |=  new=vase
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (replace new)
   done
+::
+++  perk
+  |=  =pail
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  ~  bind:m  (send-raw-dart %perk /perk pail)
+  (take-perk-sign /perk)
+::
+++  take-perk-sign
+  |=  =wire
+  =/  m  (charm ,~)
+  ^-  form:m
+  |=  input
+  :+  ~  state
+  ?+  in  [%wait ~]
+      ~  [%wait ~]
+      [~ %base * %perk *]
+    ?.  =(wire wire.u.in)
+      [%wait ~]
+    ?~  err.sign.u.in
+      [%done ~]
+    [%fail %perk-nack u.err.sign.u.in]
+  ==
 ::
 ++  gall-poke
   |=  [=dock =cage]
@@ -853,11 +835,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %agent * %poke-ack *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  p.sign.u.in
       [%done ~]
     [%fail %poke-fail u.p.sign.u.in]
@@ -884,11 +866,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %agent * %poke-ack *]
     ?.  =(wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  p.sign.u.in
       [%done ~]
     [%done ~ u.p.sign.u.in]
@@ -904,7 +886,7 @@
 ::
 ++  final-http-response
   |=  [eyre-id=@ta pay=simple-payload:http]
-  =/  m  (charm ,pail)
+  =/  m  (charm ,~)
   ^-  form:m
   ;<  ~  bind:m  (handle-http-response eyre-id pay)
   done
@@ -952,11 +934,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %agent * %watch-ack *]
     ?.  =(watch+wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     ?~  p.sign.u.in
       [%done ~]
     [%fail %watch-ack-fail u.p.sign.u.in]
@@ -968,11 +950,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %agent * %fact *]
     ?.  =(watch+wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     [%done cage.sign.u.in]
   ==
 ::
@@ -982,11 +964,11 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %agent * %kick *]
     ?.  =(watch+wire wire.u.in)
-      [%skip ~]
+      [%wait ~]
     [%done ~]
   ==
 ::
@@ -1006,7 +988,7 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
     ::
       [~ %arvo [%request ~] %iris %http-response %cancel *]
@@ -1038,7 +1020,7 @@
   ^-  form:m
   |=  input
   :+  ~  state
-  ?+  in  [%skip ~]
+  ?+  in  [%wait ~]
       ~  [%wait ~]
       [~ %arvo [%request ~] %iris %http-response %cancel *]
     [%done ~]
@@ -1081,6 +1063,117 @@
   ;<  ~  bind:m  (send-request (hiss-to-request:html hiss))
   take-maybe-sigh
 ::
+++  give-response-header
+  |=  =response-header:http
+  =/  m  (charm ,~)
+  ^-  form:m
+  (perk /http-response-header !>(response-header))
+::
+++  give-response-data
+  |=  data=(unit octs)
+  =/  m  (charm ,~)
+  ^-  form:m
+  (perk /http-response-data !>(data))
+::
+++  give-simple-payload
+  |=  simple-payload:http
+  =/  m  (charm ,~)
+  ^-  form:m
+  ;<  ~  bind:m  (give-response-header response-header)
+  ;<  ~  bind:m  (give-response-data data)
+  done
+::
+++  is-sse-request
+  |=  req=inbound-request:eyre
+  ^-  ?
+  ?&  ?=(%'GET' method.request.req)
+      .=  [~ 'text/event-stream']
+      (get-header:http 'accept' header-list.request.req)
+  ==
+::
+++  sse-last-id
+  |=  req=inbound-request:eyre
+  ^-  (unit @t)
+  (get-header:http 'last-event-id' header-list.request.req)
+::
+++  sse-header
+  ^-  response-header:http
+  :-  200
+  :~  ['content-type' 'text/event-stream']
+      ['cache-control' 'no-cache']
+      ['connection' 'keep-alive']
+  ==
+::
+++  give-sse-header
+  =/  m  (charm ,~)
+  ^-  form:m
+  (give-response-header sse-header)
+::
+++  numb :: adapted from numb:enjs:format
+  |=  a=@u
+  ^-  tape
+  ?:  =(0 a)  "0"
+  %-  flop
+  |-  ^-  tape
+  ?:(=(0 a) ~ [(add '0' (mod a 10)) $(a (div a 10))])
+::
++$  sse-event
+  $:  id=(unit @t)
+      event=(unit @t)
+      data=wain
+  ==
+::
+++  sse-events
+  =|  comments=wain
+  =|  retry=(unit @ud)
+  |=  events=(list sse-event)
+  ^-  octs
+  =|  response=wain
+  =?  response  ?=(^ retry)
+    (snoc response (cat 3 'retry: ' (crip (numb u.retry))))
+  =.  response
+    |-
+    ?~  events
+      (snoc response '')
+    =?  response  ?=(^ id.i.events)
+      (snoc response (cat 3 'id: ' u.id.i.events))
+    =?  response  ?=(^ event.i.events)
+      (snoc response (cat 3 'event: ' u.event.i.events))
+    =.  response
+      %+  weld  response
+      %+  turn  data.i.events
+      |=(=@t (cat 3 'data: ' t))
+    $(events t.events)
+  =.  response
+    |-
+    ?~  comments
+      (snoc response '')
+    =.  response  (snoc response (cat 3 ': ' i.comments))
+    $(comments t.comments)
+  (as-octs:mimes:html (of-wain:format response))
+::
+++  give-sse-manx
+  |=  [id=(unit @t) event=(unit @t) =manx]
+  =/  m  (charm ,~)
+  ^-  form:m
+  =/  =sse-event  [id event [(crip (en-xml:html manx))]~]
+  =/  data=octs  (sse-events ~[sse-event])
+  (give-response-data `data)
+::
+++  give-sse-json
+  |=  [id=(unit @t) event=(unit @t) =json]
+  =/  m  (charm ,~)
+  ^-  form:m
+  =/  =sse-event  [id event [(en:json:html json)]~]
+  =/  data=octs  (sse-events ~[sse-event])
+  (give-response-data `data)
+::
+++  give-manx-response
+  |=  =manx
+  =/  m  (charm ,~)
+  ^-  form:m
+  (give-simple-payload (manx-response:gen:server manx))
+::
 ++  render-tang-to-wall
   |=  [wid=@u tan=tang]
   ^-  wall
@@ -1094,6 +1187,9 @@
   |-  ^-  marl
   ?~  raw  ~
   [;/(i.raw) ;br; $(raw t.raw)]
+::
+++  two-oh-four
+  [[204 ['content-type' 'application/json']~] ~]
 ::
 ++  internal-server-error
   |=  [authorized=? msg=tape t=tang]
@@ -1130,15 +1226,4 @@
       ;h1:"Method Not Allowed: {(trip method)}"
     ==
   ==
-::
-++  two-oh-four
-  ^-  simple-payload:http
-  [[204 ['content-type' 'application/json']~] ~]
-::
-++  give-manx-response
-  |=  =manx
-  =/  m  (charm ,pail)
-  ^-  form:m
-  %+  pure:m  /simple-payload  !>
-  (manx-response:gen:server manx)
 --

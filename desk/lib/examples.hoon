@@ -6,7 +6,7 @@
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   ?>  ?=([%sig ~] stud)
   (pour !>(!<((set @p) vase)))
@@ -19,7 +19,7 @@
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   ?>  ?=([%sig ~] stud)
   (pour !>(!<(perm vase)))
@@ -31,7 +31,7 @@
   :-  /sig
   =,  grubberyio
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
@@ -55,7 +55,7 @@
   :-  /ud
   =,  grubberyio
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   ?+    stud  !!
       [%inc ~]
@@ -110,7 +110,7 @@
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   done
   """

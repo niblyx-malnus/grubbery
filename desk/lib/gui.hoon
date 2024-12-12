@@ -6,107 +6,12 @@
 ::
 ++  make-id  |=(p=path (trip (rap 3 (join '_' `path`[%grub p]))))
 ::
-++  refresher
-  =,  grubberyio
-  ^-  base:g
-  =<
-  |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
-  ^-  form:m
-  ?+    stud  !!
-      [%interval ~]
-    (pour !>(!<(@dr vase)))
-    ::
-      [%handle-http-request ~]
-    =+  !<([request-line:server req=inbound-request:eyre] vase)
-    ?+    method.request.req
-      %+  pure:m  /simple-payload
-      !>((method-not-allowed method.request.req))
-      ::
-        %'GET'
-      =/  since=@da  (slav %da (need (get-key:kv 'since' args)))
-      ;<  now=@da  bind:m  get-time
-      ;<  interval=@dr  bind:m  (peek-root-as @dr here.bowl)
-      =/  until=@da  (add now interval)
-      ;<  ~  bind:m  (send-wait until)
-      ;<  ~  bind:m  take-wake-or-fast-refresh
-      (send-refresh-list since)
-    ==
-  ==
-  ::
-  |%
-  ++  take-wake-or-fast-refresh
-    =/  m  (charm ,~)
-    ^-  form:m
-    |=  input
-    :+  ~  state
-    ?+    in  [%skip ~]
-      ~  [%wait ~]
-      ::
-        [~ %arvo [%wait @ ~] %behn %wake *]
-      ?~  error.sign.u.in
-        [%done ~]
-      [%fail %timer-error u.error.sign.u.in]
-      ::
-        [~ %bump *]
-      ?.  =(p.pail.u.in /fast-refresh)
-        [%skip ~]
-      [%done ~]
-    ==
-  ::
-  ++  send-refresh-list
-    |=  since=@da
-    =/  m  (charm ,pail)
-    ^-  form:m
-    ;<  history=(list (pair @da path))  bind:m
-      %+  scry
-        (list (pair @da path))
-      /gx/grubbery/history/(scot %da since)/noun
-    ~&  >  history+history
-    ;<  now=@da  bind:m  get-time
-    =/  new-since=@da  ?~(history now p.i.history)
-    %+  pure:m  /simple-payload  !>
-    %-  manx-response:gen:server 
-    (refresher-component new-since (turn history tail))
-  --
-::
-++  refresher-component
-  |=  [since=@da refresh=(list path)]
-  ^-  manx
-  =.  refresh
-    %+  murn  refresh
-    |=  =path
-    ?.  ?=([%gui %dom *] path)
-      ~
-    `path
-  :: if it's here in our dom folder, update it
-  ;div#refresher
-    =style  "display: none;"
-    =hx-target         "this"
-    =hx-get            "/grub/refresher?since={(scow %da since)}"
-    =hx-trigger        "load"
-    =hx-swap           "outerHTML"
-    ;*  =|  id=@
-        |-
-        ?~  refresh
-           ~
-        :_  $(refresh t.refresh)
-        ;div
-          =id            "refresh-fetcher-{(scow %ud id)}"
-          =style         "display: none;"
-          =hx-target     "#{(make-id i.refresh)}"
-          =hx-get        "{(spud i.refresh)}"
-          =hx-indicator  "#{(make-id i.refresh)} .loader"
-          =hx-swap       "outerHTML"
-          =hx-trigger    "click";
-  ==
-::
 ++  base
   =,  grubberyio
   ^-  base:g
   =<
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm ,~)
   ^-  form:m
   ?+    stud  !!
       [%gui %init ~]
@@ -115,10 +20,15 @@
     ::
       [%handle-http-request ~]
     =+  !<([request-line:server req=inbound-request:eyre] vase)
+    ~&  >>  accept+(get-header:http 'accept' header-list.request.req)
+    ~&  >>  connection+(get-header:http 'connection' header-list.request.req)
+    ~&  >>  last-event-id+(get-header:http 'last-event-id' header-list.request.req)
     ~&  >  "received {(trip method.request.req)} request for {(spud site)}!"
+    ?:  (is-sse-request req)
+      (do-sse (sse-last-id req) [ext site] args)
     ?+    method.request.req
-      %+  pure:m  /simple-payload
-      !>((method-not-allowed method.request.req))
+      %-  give-simple-payload
+      (method-not-allowed method.request.req)
       ::
       %'GET'  (do-get [ext site] args)
       ::
@@ -128,29 +38,44 @@
       ~&  >>  get+get
       ;<  ~  bind:m  (do-post site (delete-key:kv 'get' args))
       ?~  get
-        (pure:m /simple-payload !>(two-oh-four))
+        (give-simple-payload two-oh-four)
       (do-get (parse-request-line:server u.get))
     ==
   ==
   ::
   |%
+  ++  do-sse
+    |=  [last-id=(unit @t) request-line:server]
+    =/  m  (charm ,~)
+    ^-  form:m
+    ?>  ?=([%grub %events ~] site)
+    ~&  >  "HELLO WORLD!"
+    ;<  ~  bind:m  give-sse-header
+    =|  a=@ud
+    |-
+    ?:  =(5 a)
+      ;<  ~  bind:m  (give-sse-manx ~ `'close' *manx)
+      done
+    =/  =manx
+      ;div: {(scow %ud a)}
+    ;<  ~  bind:m  (give-sse-manx `(scot %ud a) ~ manx)
+    ;<  ~  bind:m  (sleep ~s1)
+    $(a +(a))
+  ::
   ++  do-get
     |=  request-line:server
-    =/  m  (charm ,pail)
+    =/  m  (charm ,~)
     ^-  form:m
     ?+    site
       ;<  =cone:g   bind:m  (peek /)
-      %+  pure:m  /simple-payload
-      !>((manx-response:gen:server (main-page cone)))
+      (give-manx-response (main-page cone))
       ::
         [%grub %main ~]
       ;<  =cone:g  bind:m  (peek /)
-      %+  pure:m  /simple-payload
-      !>((manx-response:gen:server (wrap-manx (main cone))))
+      (give-manx-response (wrap-manx (main cone)))
       ::
         [%grub %search-bar *]
-      %+  pure:m  /simple-payload
-      !>((manx-response:gen:server (search-bar t.t.site)))
+      (give-manx-response (search-bar t.t.site))
       ::
         [%grub %tree %lib *]
       ;<  g=(unit grub:g)  bind:m  (peek-root-soft t.t.site)
@@ -187,8 +112,7 @@
       ::
         [%grub %dom *]
       ;<  =manx   bind:m  (get-dom-manx t.t.site)
-      %+  pure:m  /simple-payload  !>
-      (manx-response:gen:server manx)
+      (give-manx-response manx)
     ==
   ::
   ++  do-post
@@ -221,15 +145,18 @@
       ::
         [%grub %init %base ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
-      (throw path /init !>(~))
+      :: TODO: rewrite +throw
+      (poke path /init !>(~))
       ::
         [%grub %load %base ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
-      (throw path /load !>(~))
+      :: TODO: rewrite +throw
+      (poke path /load !>(~))
       ::
         [%grub %sig %base ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
-      (throw path /sig !>(~))
+      :: TODO: rewrite +throw
+      (poke path /sig !>(~))
       ::
         [%grub %oust %grub ~]
       (oust-grub (rash (need (get-key:kv 'path' args)) stap))
@@ -298,10 +225,18 @@
         ;meta(name "viewport", content "width=device-width, initial-scale=1.0");
         ;title: Grubbery
         ;script(src "https://cdn.tailwindcss.com");
-        ;script(src "https://unpkg.com/htmx.org@1.9.4");
+        ;script(src "https://unpkg.com/htmx.org@2.0.3");
+        ;script(src "https://unpkg.com/htmx-ext-sse@2.2.2/sse.js");
         ;script(src "https://code.jquery.com/jquery-3.6.0.min.js");
       ==
       ;body
+        ;div
+          =hx-ext  "sse"
+          =sse-connect  "/grub/events"
+          =sse-close  "close"
+          =sse-swap  "message"
+          Waiting for message...
+        ==
         ;+  manx
       ==
     ==
@@ -1425,7 +1360,6 @@
         ;script(src "https://unpkg.com/htmx.org@1.9.4");
       ==
       ;body.p-4.flex.flex-col.justify-center.items-center.min-h-screen.bg-gray-100
-        ;+  (refresher-component now ~)
         ;+  counter
         ;+  is-even
         ;+  parity

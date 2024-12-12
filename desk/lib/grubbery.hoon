@@ -86,6 +86,7 @@
   |=  [=dart:g perm=(unit perm:g)]
   ^-  (each (unit path) ~)
   ?~  perm  [%& ~]
+  ?:  ?=(%perk -.dart)  [%& ~]
   ?:  ?=(?(%sysc %scry) -.dart)  [%| ~]
   ?-    -.load.dart
       ?(%make %oust %cull)
@@ -108,7 +109,7 @@
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   (pour vase)
   """
@@ -121,7 +122,7 @@
     =,  grubberyio
     ^-  base:g
     |=  [=bowl:base:g =stud:g =vase]
-    =/  m  (charm:base:g ,pail:g)
+    =/  m  (charm:base:g ,~)
     ^-  form:m
     done
     ::
@@ -154,7 +155,7 @@
     =,  grubberyio
     ^-  base:g
     |=  [=bowl:base:g =stud:g =vase]
-    =/  m  (charm:base:g ,pail:g)
+    =/  m  (charm:base:g ,~)
     ^-  form:m
     ?+    stud  !!
         [%sig ~]
@@ -190,7 +191,7 @@
   =,  grubberyio
   ^-  base:g
   |=  [=bowl:base:g =stud:g =vase]
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   ^-  form:m
   ?+    stud  !!
       [%sig ~]
@@ -237,4 +238,21 @@
     ~&  >  "Grubbery booted!"
     done
   ==
+::
+++  dom
+  |%
+  ++  base
+    =,  grubberyio
+    ^-  base:g
+    |=  [=bowl:base:g =stud:g =vase]
+    =/  m  (charm:base:g ,~)
+    ^-  form:m
+    ?+    stud  !!
+        [%put-base-manx ~]
+      done
+      ::
+        [%put-stem-manx ~]
+      done
+    ==
+  --
 --

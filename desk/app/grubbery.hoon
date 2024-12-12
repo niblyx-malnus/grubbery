@@ -190,7 +190,6 @@
     :: ~&  >  "eyre subscribing to http-response"
     :: ~&  src+src.bowl
     :: ~&  sap+sap.bowl
-    :: ?>  =(src our):bowl :: ?
     [~ this]
   ==
 ::
@@ -260,6 +259,9 @@
     ::
       %scry
     $(this (take-scry here [wire mold path]:dart))
+    ::
+      %perk
+    $(this (give-perk here [wire pail]:dart))
     ::
       %grub
     ?-    -.load.dart
@@ -508,13 +510,13 @@
         %^    ingest
             [(scot %p our.bowl) /gall/grubbery]
           here
-        [~ %base wire.dart %poke %| %poke-stud-fail p.res]
+        [~ %base wire.dart %poke ~ %poke-stud-fail p.res]
       =/  res  (mule |.((slam p.res q.pail.load.dart)))
       ?:  ?=(%| -.res)
         %^    ingest
             [(scot %p our.bowl) /gall/grubbery]
           here
-        [~ %base wire.dart %poke %| %poke-clam-fail p.res]
+        [~ %base wire.dart %poke ~ %poke-clam-fail p.res]
       (emit-bolt here dart(q.pail.load p.res))
       ::
         %bump
@@ -848,7 +850,7 @@
     this
   =.  cone  (~(put of cone) here grub(proc ~))
   |-
-  =.  this  (give-poke-result here %| %killed [leaf+(spud here) ~])
+  =.  this  (give-poke-ack here ~ %killed [leaf+(spud here) ~])
   =^  poke  trac
     (stage-next-poke here)
   ?^(poke $ this) :: repeat until no poke staged
@@ -938,37 +940,55 @@
     =/  from=path  [(scot %p our.bowl) /gall/grubbery]
     (ingest from here ~) :: start
   :: %-  (slog [leaf+"build-fail" leaf+(spud here) p.build])
-  =.  this  (give-poke-result here %| %build-fail p.build)
+  =.  this  (give-poke-ack here ~ %build-fail p.build)
   (run-next-poke here)
+::
+++  give-perk
+  |=  [here=path back=wire =pail:g]
+  ^+  this
+  ~&  %giving-perk
+  ~&  here+here
+  =/  =grub:g  (need (~(get of cone) here))
+  ?>  ?=(%base -.grub)
+  =/  =tack:g  (need (~(get of trac) here))
+  ?>  ?=(^ give.tack)
+  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
+    =/  res=(each _this tang)
+      %-  mule  |.
+      %^    ingest
+          [(scot %p our.bowl) /gall/grubbery]
+        t.t.t.t.from.u.give.tack
+      [~ %perk wire.u.give.tack pail]
+    =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
+    =?  this  ?=(%& -.res)  p.res
+    %^    ingest
+        [(scot %p our.bowl) /gall/grubbery]
+      here
+    [~ %base back %perk err]
+  ?:  ?=([@ %gall @ ~] from.u.give.tack)
+    :: TODO: figure out remote poke/bump/perk etc
+    !!
+  ?>  ?=([@ %eyre @ @ ~] from.u.give.tack)
+  =/  src=@p       (slav %p i.t.t.from.u.give.tack)
+  =/  eyre-id=@ta  i.t.t.t.from.u.give.tack
+  =/  =wire  /http-response/[eyre-id]
+  =/  =cage  
+    ?+    p.pail  !!
+        [%http-response-data ~]
+      http-response-data+q.pail
+        [%http-response-header ~]
+      http-response-header+q.pail
+    ==
+  =.  this  (emit-card %give %fact ~[wire] cage)
+  %^    ingest
+      [(scot %p our.bowl) /gall/grubbery]
+    here
+  [~ %base back %perk ~]
 ::
 ++  give-poke-ack
   |=  [here=path res=(unit tang)]
   ^+  this
   ~&  %giving-poke-ack
-  ~&  here+here
-  =/  =tack:g  (need (~(get of trac) here))
-  ?>  ?=(^ give.tack)
-  ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
-    ?~  res
-      this
-    ~&  >>>  %poke-nack
-    (mean u.res)
-  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
-    %^    ingest
-        [(scot %p our.bowl) /gall/grubbery]
-      t.t.t.t.from.u.give.tack
-    [~ %base wire.u.give.tack %pack res]
-  ?.  ?=([@ %gall @ ~] from.u.give.tack)  this
-  =/  =wire  (weld /poke/[i.from] wire):[u.give.tack .]
-  %-  emit-cards
-  :~  [%give %fact ~[wire] sign-base+!>([%pack res])]
-      [%give %kick ~[wire] ~]
-  ==
-::
-++  give-poke-result
-  |=  [here=path res=(each pail:g goof)]
-  ^+  this
-  ~&  %giving-poke-result
   ~&  here+here
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%base -.grub)
@@ -978,10 +998,7 @@
   =.  trac  (~(put of trac) here tack(give ~))
   =.  this  (clean here poke.last.tack)
   ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
-    ?:  ?=(%& -.res)
-      this
-    ~&  >>>  mote.p.res
-    (mean tang.p.res)
+    ?~(res this (mean u.res))
   ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
     %^    ingest
         [(scot %p our.bowl) /gall/grubbery]
@@ -996,29 +1013,7 @@
   ?>  ?=([@ %eyre @ @ ~] from.u.give.tack)
   =/  src=@p       (slav %p i.t.t.from.u.give.tack)
   =/  eyre-id=@ta  i.t.t.t.from.u.give.tack
-  %-  emit-cards
-  %+  give-simple-payload:app:server
-    eyre-id
-  ?:  ?=(%| -.res)
-    ~&  >>>  mote.p.res
-    %-  (slog tang.p.res)
-    %^    internal-server-error:io
-        =(src our.bowl)
-      "Base Grub Crashed"
-    [leaf+(trip mote.p.res) tang.p.res]
-  ?.  ?=([%simple-payload ~] p.p.res)
-    %^    internal-server-error:io
-        =(src our.bowl)
-      "Bad Grub Response"
-    [leaf+"bad grub response" leaf+(spud p.p.res) ~]
-  =/  pay=(each simple-payload:http tang)
-    (mule |.(!<(simple-payload:http q.p.res)))
-  ?:  ?=(%& -.pay)
-    p.pay
-  %^    internal-server-error:io
-      =(src our.bowl)
-    "Bad Grub Response"
-  p.pay
+  (emit-card %give %kick ~[/http-response/[eyre-id]] ~)
 ::
 ++  make-bowl
   |=  [from=path here=path]
@@ -1050,6 +1045,7 @@
   |=  [from=path here=path in=(unit intake:base:g)]
   ^+  this
   ~&  %ingest
+  ~&  here+here
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%base -.grub)
   ?.  ?=(^ proc.grub)
@@ -1058,14 +1054,14 @@
     ::       And drop inputs if that process is dead
     ::
     this
-  =/  m  (charm:base:g ,pail:g)
+  =/  m  (charm:base:g ,~)
   =/  =bowl:base:g  (make-bowl from here)
   =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
     (mule |.((take:eval:m u.proc.grub bowl data.grub in)))
   =/  [[darts=(list dart:g) data=vase =result:eval:m] =proc:base:g]
     ?-  -.res
       %&  p.res
-      %|  [[~ data.grub [%fail %crash [leaf+(spud here) p.res]]] u.proc.grub]
+      %|  [[~ data.grub [%fail leaf+"crash" [leaf+(spud here) p.res]]] u.proc.grub]
     ==
   ::
   =?  this  !?=(%fail -.result)  (handle-base-emits here darts)
@@ -1080,16 +1076,14 @@
   ::
   =?  this  tick  (dirty-and-tidy here)
   ::
-  =?  this  ?=(~ in)
-    (give-poke-ack here ?.(?=(%fail -.result) ~ [~ err.result]))
   ?:  ?=(%next -.result)
     this
   =.  this
-    %+  give-poke-result
+    %+  give-poke-ack
       here
     ?-  -.result
-      %fail  [%| err.result]
-      %done  [%& value.result]
+      %done  ~
+      %fail  [~ err.result]
     ==
   (run-next-poke here)
 ::
