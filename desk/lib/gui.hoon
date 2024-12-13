@@ -230,12 +230,16 @@
         ;script(src "https://code.jquery.com/jquery-3.6.0.min.js");
       ==
       ;body
+        =hx-ext  "sse"
+        =sse-connect  "/grub/events"
+        =sse-close  "close"
         ;div
-          =hx-ext  "sse"
-          =sse-connect  "/grub/events"
-          =sse-close  "close"
-          =sse-swap  "message"
-          Waiting for message...
+          ;div
+            ;div
+              =sse-swap  "message"
+              Waiting for message...
+            ==
+          ==
         ==
         ;+  manx
       ==
