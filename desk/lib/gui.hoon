@@ -58,6 +58,7 @@
       done
     =/  =manx
       ;div: {(scow %ud a)}
+    ~&  >  "giving sse {(scow %ud a)}"
     ;<  ~  bind:m  (give-sse-manx `(scot %ud a) ~ manx)
     ;<  ~  bind:m  (sleep ~s1)
     $(a +(a))
@@ -141,7 +142,8 @@
       (overwrite-stem path stem sour)
       ::
         [%grub %kill %base ~]
-      (kill-base (rash (need (get-key:kv 'path' args)) stap))
+      !!
+      :: (kill-base (rash (need (get-key:kv 'path' args)) stap))
       ::
         [%grub %init %base ~]
       =/  =path  (rash (need (get-key:kv 'path' args)) stap)
@@ -201,14 +203,6 @@
         (!<($-(key-value-list:kv pail) (grab-data p)) args)
       ;<  *  bind:m  (poke t.t.site pail)
       (pure:m ~)
-      ::
-        [%grub %bump *]
-      ;<  =grub:g  bind:m  (peek-root t.t.site)
-      ?>  ?=(%base -.grub)
-      ;<  b=grub:g  bind:m  (peek-root (weld /bin/gui/con/bump base.grub))
-      =/  =pail:g
-        (!<($-(key-value-list:kv pail) (grab-data b)) args)
-      (bump t.t.site pail)
     ==
     
   ++  vase-to-manx
@@ -648,7 +642,7 @@
                 =hx-confirm  "Are you sure you want to kill base grub {(spud path)}?"
                 ;input(type "hidden", name "get", value "/grub/tree{(spud path)}");
                 ;input(type "hidden", name "path", value "{(spud path)}");
-                ;+  ?~  proc.u.grub
+                ;+  ?:  %&
                       ;button
                         =type   "submit"
                         =class  "mx-1 my-2 px-4 py-2 rounded-lg bg-gray-500"

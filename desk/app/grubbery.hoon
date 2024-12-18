@@ -149,19 +149,19 @@
     [cards this]
     ::
       %bump-base
-    =+  !<([here=path =pail:g] vase)
+    =+  !<([here=path pid=@ta =pail:g] vase)
     ~&  here+here
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(bump-base:hc here give pail)
+      abet:(bump-base:hc here pid give pail)
     [cards this]
     ::
       %kill-base
-    =+  !<(here=path vase)
+    =+  !<([here=path pid=@ta] vase)
     ~&  here+here
     =/  =give:g  [[(scot %p src.bowl) sap.bowl] /]
     =^  cards  state
-      abet:(kill-base:hc give here)
+      abet:(kill-base:hc give here pid)
     [cards this]
     ::
       %edit-perm
@@ -214,6 +214,7 @@
 ++  on-arvo
   |=  [=wire sign=sign-arvo]
   ^-  (quip card _this)
+  ~&  >  wire+wire
   ?+    wire  (on-arvo:def wire sign)
       [%base @ *]
     =^  cards  state
@@ -239,29 +240,28 @@
 ++  emit-card   |=(=card this(cards [card cards]))
 ++  emit-cards  |=(cadz=(list card) this(cards (welp (flop cadz) cards)))
 ++  emit-bolt   |=(=bolt:g this(bolts [bolt bolts]))
-++  emit-bolts  |=(botz=(list bolt:g) this(bolts (welp botz bolts)))
 :: handle all bolts and return effects and state
 ::
 ++  abet
   |-
   ?~  =(~ bolts)
     [(flop cards) state]
-  =/  [here=path =dart:g]  ?~(bolts !! i.bolts)
+  =/  [here=path pid=@ta =dart:g]  ?~(bolts !! i.bolts)
   =.  bolts  ?~(bolts !! t.bolts)
-  =/  from=path  (weld /(scot %p our.bowl)/gall/[dap.bowl]/$ here)
+  =/  from=path  :(weld /(scot %p our.bowl)/gall/[dap.bowl]/$ here /[pid])
   ?-    -.dart
       %sysc
     :: TODO: keep track of scrying with %keen so you can
     ::       so you can cancel with %yawn when you kill
     ::       a process or when it crashes
     ::
-    $(this (handle-sysc-card here card.dart))
+    $(this (handle-sysc-card here pid card.dart))
     ::
       %scry
-    $(this (take-scry here [wire mold path]:dart))
+    $(this (take-scry here pid [wire mold path]:dart))
     ::
       %perk
-    $(this (give-perk here [wire pail]:dart))
+    $(this (give-perk here pid [wire pail]:dart))
     ::
       %grub
     ?-    -.load.dart
@@ -269,10 +269,10 @@
       $(this (poke-base path [from wire] pail.load):[dart .])
       ::
         %bump
-      $(this (bump-base path [from wire] pail.load):[dart .])
+      $(this (bump-base path pid.load [from wire] pail.load):[dart .])
       ::
         %peek
-      $(this (take-peek here [wire path]:dart))
+      $(this (take-peek here pid [wire path]:dart))
       ::
         %make
       =/  =give:g  [from wire.dart]
@@ -291,7 +291,7 @@
       $(this (edit-perm [from wire] path perm.load):[dart .])
       ::
         %kill
-      $(this (kill-base [from wire] path):[dart .])
+      $(this (kill-base [from wire] path pid.load):[dart .])
     ==
   ==
 ::
@@ -479,78 +479,86 @@
   ==
 ::
 ++  handle-base-emits
-  |=  [here=path darts=(list dart:g)]
+  |=  [here=path pid=@ta darts=(list dart:g)]
   ^+  this
   ?~  darts
     this
-  =.  this  (handle-base-emit here i.darts)
+  =/  =tack:g  (need (~(get of trac) here))
+  =.  this  (handle-base-emit here pid i.darts)
   $(darts t.darts)
 ::
 ++  handle-base-emit
-  |=  [here=path =dart:g]
+  |=  [here=path pid=@ta =dart:g]
   ^+  this
   =/  res  (allowed here dart)
   ?-    -.res
       %|
     ~&  >>>  "vetoing illegal dart from {(spud here)}"
-    %^    ingest
-        [[(scot %p our.bowl) /gall/grubbery] /]
-      here
+    %^    stage-intake
+        here
+      pid
+    :-  [[(scot %p our.bowl) /gall/grubbery] /]
     [~ %veto dart]
     ::
       %&
-    ?~  p.res                                 (emit-bolt here dart)
-    ?^  (decap:grubbery u.p.res here)         (emit-bolt here dart)
-    ?.  ?=(%grub -.dart)                      (emit-bolt here dart)
-    ?.  ?=(?(%poke %bump %make) -.load.dart)  (emit-bolt here dart)
+    ?~  p.res                                 (emit-bolt here pid dart)
+    ?^  (decap:grubbery u.p.res here)         (emit-bolt here pid dart)
+    ?.  ?=(%grub -.dart)                      (emit-bolt here pid dart)
+    ?.  ?=(?(%poke %bump %make) -.load.dart)  (emit-bolt here pid dart)
     ?-    -.load.dart
         %poke
       =/  res  (mule |.((get-stud p.pail.load.dart)))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %base wire.dart %poke ~ %poke-stud-fail p.res]
       =/  res  (mule |.((slam p.res q.pail.load.dart)))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %base wire.dart %poke ~ %poke-clam-fail p.res]
-      (emit-bolt here dart(q.pail.load p.res))
+      (emit-bolt here pid dart(q.pail.load p.res))
       ::
         %bump
       =/  res  (mule |.((get-stud p.pail.load.dart)))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %base wire.dart %bump ~ leaf+"bump-stud-fail" p.res]
       =/  res  (mule |.((slam p.res q.pail.load.dart)))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %base wire.dart %bump ~ leaf+"bump-clam-fail" p.res]
-      (emit-bolt here dart(q.pail.load p.res))
+      (emit-bolt here pid dart(q.pail.load p.res))
       ::
         %make
-      ?:  ?=(%stem -.make.load.dart)  (emit-bolt here dart)
-      ?~  data.make.load.dart         (emit-bolt here dart)
+      ?:  ?=(%stem -.make.load.dart)  (emit-bolt here pid dart)
+      ?~  data.make.load.dart         (emit-bolt here pid dart)
       =/  res
         (mule |.((get-stud (get-base-stud base.make.load.dart))))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %made wire.dart ~ %make-stud-fail p.res]
       =/  res  (mule |.((slam p.res u.data.make.load.dart)))
       ?:  ?=(%| -.res)
-        %^    ingest
-            [[(scot %p our.bowl) /gall/grubbery] /]
-          here
+        %^    stage-intake
+            here
+          pid
+        :-  [[(scot %p our.bowl) /gall/grubbery] /]
         [~ %made wire.dart ~ %make-clam-fail p.res]
-      (emit-bolt here dart(data.make.load [~ p.res]))
+      (emit-bolt here pid dart(data.make.load [~ p.res]))
     ==
   ==
 ::
@@ -628,7 +636,7 @@
     :: ~&  >>  "{(spud here)} hasn't changed on recompute"
     =.  grub  grub(tidy %&)
     this(cone (~(put of cone) here grub))
-  =/  res=(each [darts=(list dart:g) data=vase] tang)
+  =/  res=(each vase tang)
     %-  mule  |.
     =/  =stem:g  (get-stem-code stem.grub)
     =/  deps=(map path (each vase tang))
@@ -645,19 +653,10 @@
     ::
       %&
     :: ~&  >  "{(spud here)} successfully recomputed"
-    =?  this  !=(data.grub &+data.p.res)  (next-tack here)
+    =?  this  !=(data.grub &+p.res)  (next-tack here)
     =.  grub
-      grub(data &+data.p.res, sour new-sour, tidy %&)
-    =.  cone  (~(put of cone) here grub)
-    =/  bolts=(list bolt:g)  (turn darts.p.res (lead here))
-    %-  emit-bolts
-    %+  murn  bolts
-    |=  [here=path =dart:g]
-    =/  res  (allowed here dart)
-    ?:  ?=(%| (allowed here dart))
-      :: ~&  >>  "ignoring sandboxed dart from {(spud here)}"
-      ~
-    [~ here dart]
+      grub(data &+p.res, sour new-sour, tidy %&)
+    this(cone (~(put of cone) here grub))
   ==
 ::
 ++  dirty-and-tidy
@@ -695,7 +694,7 @@
     this
   =.  this
     ?-  -.u.grub
-      %base  (kill here)
+      %base  (kill-all here)
       %stem  (del-sources here)
     ==
   =.  cone  (~(del of cone) here)
@@ -723,9 +722,10 @@
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%& -.res) this (mean p.res))
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %gone wire.give err]
 ::
 ++  cull-cone
@@ -736,9 +736,10 @@
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%& -.res) this (mean p.res))
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %cull wire.give err]
 ::
 ++  put-sand
@@ -758,9 +759,10 @@
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%& -.res) this (mean p.res))
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %sand wire.give err]
 ::
 ++  new-base
@@ -770,7 +772,7 @@
   ?<  (~(has of cone) here)
   =/  =stud:g  (get-base-stud base)
   =/  data=vase  (fall data (bunt-stud stud))
-  =/  =grub:g  [%base data base ~]
+  =/  =grub:g  [%base data base]
   =.  cone  (~(put of cone) here grub)
   =.  this  (next-tack here)
   (dirty-and-tidy here)
@@ -783,9 +785,10 @@
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%& -.res) this (mean p.res))
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %made wire.give err]
 ::
 ++  new-stem
@@ -812,70 +815,73 @@
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%& -.res) this (mean p.res))
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %made wire.give err]
 ::
 ++  take-peek
-  |=  [here=path =wire pat=path]
+  |=  [here=path pid=@ta =wire pat=path]
   ^+  this
   =/  from=path  [(scot %p our.bowl) /gall/grubbery]
-  (ingest [from /] here ~ %peek wire pat (~(dip of cone) pat) (~(dip of sand) pat))
+  (stage-intake here pid [from /] ~ %peek wire pat (~(dip of cone) pat) (~(dip of sand) pat))
 ::
 ++  take-scry
-  |=  [here=path =wire =mold pat=path]
+  |=  [here=path pid=@ta =wire =mold pat=path]
   ^+  this
   =/  from=path  [(scot %p our.bowl) /gall/grubbery]
   =;  =vase
-    (ingest [from /] here ~ %scry wire pat vase)
+    (stage-intake here pid [from /] ~ %scry wire pat vase)
   ?>  ?=(^ pat)
   ?>  ?=(^ t.pat)
   !>(.^(mold i.pat (scot %p our.bowl) i.t.pat (scot %da now.bowl) t.t.pat))
 ::
-++  on-load-kill
-  |=  here=path
-  ^+  this
-  !!
-::
 ++  kill
-  |=  here=path
+  |=  [here=path pid=@ta]
   ^+  this
   ~|  "killing {(spud here)} failed"
   =/  =tack:g  (need (~(get of trac) here))
   =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%base -.grub)
-  ?~  proc.grub
-    ~&  >>  "no processes to kill for {(spud here)}"
+  ?.  (~(has by proc.tack) pid)
+    ~&  >>  "no process {(trip pid)} to kill at {(spud here)}"
     this
-  =.  cone  (~(put of cone) here grub(proc ~))
-  |-
-  =.  this  (give-poke-ack here ~ %killed [leaf+(spud here) ~])
-  =^  poke  trac
-    (stage-next-poke here)
-  ?^(poke $ this) :: repeat until no poke staged
+  =.  proc.tack  (~(del by proc.tack) pid)
+  =?  muxt.tack  =([~ pid] muxt.tack)  ~
+  =.  trac  (~(put of trac) here tack)
+  (give-poke-ack here pid ~ %killed [leaf+(spud here) ~])
+::
+++  kill-all
+  |=  here=path
+  ^+  this
+  =/  =tack:g  (need (~(get of trac) here))
+  ?~  lit=~(tap in ~(key by proc.tack))
+    this
+  =.  this  (kill here i.lit)
+  (kill-all here)
 ::
 ++  kill-base
-  |=  [=give:g here=path]
+  |=  [=give:g here=path pid=@ta]
   ^+  this
-  =/  res=(each _this tang)  (mule |.((kill here)))
+  =/  res=(each _this tang)  (mule |.((kill here pid)))
   =/  err=(unit tang)  ?-(-.res %& ~, %| `p.res)
   =?  this  ?=(%& -.res)  p.res
   ?.  ?=([@ %gall %grubbery %$ ^] from.give)
     ?:(?=(%| -.res) !! this)
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    t.t.t.t.from.give
+  %^    stage-intake
+      (snip `path`t.t.t.t.from.give)
+    (rear t.t.t.t.from.give)
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %dead wire.give err]
 ::
 ++  bump-base
-  |=  [here=path =give:g =pail:g]
+  |=  [here=path pid=@ta =give:g =pail:g]
   ^+  this
-  (ingest give here ~ %bump pail)
+  (stage-intake here pid give ~ %bump pail)
 :: TODO: handle outgoing keens
 ::
 ++  clean
-  |=  [here=path last=@da]
+  |=  [here=path pid=@ta]
   ^+  this
   %-  emit-cards
   %+  murn  ~(tap by wex.bowl)
@@ -883,79 +889,224 @@
   ^-  (unit card)
   ?.  ?=([%base @ *] wire)
     ~
-  =/  [h=path l=@da *]  (unwrap-wire wire)
-  ?.  &(=(h here) =(l last))
+  =/  [h=path p=@ta *]  (unwrap-wire wire)
+  ?.  &(=(h here) =(p pid))
     ~
   [~ %pass wire %agent [ship term] %leave ~]
+::
+++  make-pid
+  |=  here=path
+  ^-  @ta
+  =/  =tack:g  (need (~(get of trac) here))
+  =/  last=@da  poke.last.tack
+  =/  next=@da  ?:((lth last now.bowl) now.bowl +(last))
+  |-
+  ?:  (~(has by proc.tack) (scot %da next))
+    $(next +(next))
+  (scot %da next)
 ::
 ++  poke-base
   |=  [here=path =poke:g]
   ^+  this
   ~&  %take-poke
-  =/  =tack:g  (need (~(get of trac) here))
-  =.  trac  (~(put of trac) here tack(line (~(put to line.tack) poke)))
-  ?.  =(~ give.tack)
-    this
-  (run-next-poke here)
-::
-++  stage-next-poke
-  |=  here=path
-  ^-  [(unit poke:g) trac:g]
-  =/  =tack:g  (need (~(get of trac) here))
-  ?>  =(~ give.tack)
-  ?:  =(~ line.tack)
-    [~ trac] :: no more pokes to run
-  =/  [=poke:g line=(qeu poke:g)]  ~(get to line.tack)
-  =.  tack
-    %=  tack
-      line       line
-      give       [~ give.poke]
-      poke.last  (new-last now.bowl poke.last.tack)
-    ==
-  [`poke (~(put of trac) here tack)]
-::
-++  run-next-poke
-  |=  here=path
-  ^+  this
-  ~&  %run-next-poke
-  ~&  here+here
   =/  =grub:g  (need (~(get of cone) here))
-  =^  poke  trac
-    (stage-next-poke here)
-  ?~  poke 
-    this
   ?>  ?=(%base -.grub)
-  =/  =bowl:base:g  [now our eny ~ ~ from.give.u.poke here]:[bowl .]
+  =/  pid=@ta  (make-pid here)
+  =/  =bowl:base:g  (make-bowl from.give.poke here pid)
   =/  build=(each proc:base:g tang)
-    (mule |.(((get-base-code base.grub) bowl pail.u.poke)))
-  ?:  ?=(%& -.build)
-    =.  cone  (~(put of cone) here grub(proc `[p.build ~ ~]))
-    =/  from=path  [(scot %p our.bowl) /gall/grubbery]
-    (ingest [from /] here ~) :: start
-  :: %-  (slog [leaf+"build-fail" leaf+(spud here) p.build])
-  =.  this  (give-poke-ack here ~ %build-fail p.build)
-  (run-next-poke here)
+    (mule |.(((get-base-code base.grub) bowl pail.poke)))
+  ?:  ?=(%| -.build)
+    ?.  ?=([@ %gall %grubbery %$ ^] from.give.poke)
+      :: TODO: figure out remote poke/bump/perk etc
+      this
+    %^    stage-intake
+        (snip `path`t.t.t.t.from.give.poke)
+      (rear t.t.t.t.from.give.poke)
+    :-  [[(scot %p our.bowl) /gall/grubbery] /]
+    [~ %base wire.give.poke %pack %| %build-error ~]
+  =.  this
+    ?.  ?=([@ %gall %grubbery %$ ^] from.give.poke)
+      :: TODO: figure out remote poke/bump/perk etc
+      this
+    %^    stage-intake
+        (snip `path`t.t.t.t.from.give.poke)
+      (rear t.t.t.t.from.give.poke)
+    :-  [[(scot %p our.bowl) /gall/grubbery] /]
+    [~ %base wire.give.poke %pack %& pid]
+  =/  =tack:g  (need (~(get of trac) here))
+  =.  proc.tack
+    (~(put by proc.tack) pid [p.build give.poke ~ ~])
+  =.  trac  (~(put of trac) here tack)
+  %^    stage-intake
+      here
+    pid
+  [[[(scot %p our.bowl) /gall/grubbery] /] ~]
+::
+++  make-bowl
+  |=  [from=path here=path pid=@ta]
+  ^-  bowl:base:g
+  =.  wex.bowl
+    %-  ~(gas by *boat:gall)
+    %+  murn  ~(tap by wex.bowl)
+    |=  [[=wire =ship =term] acked=? pat=path]
+    ?.  ?=([%base @ *] wire)
+      ~
+    =/  [h=path p=@ta w=path]  (unwrap-wire wire)
+    ?.  &(=(h here) =(p pid))
+      ~
+    [~ [w ship term] acked pat]
+  =.  sup.bowl
+    %-  ~(gas by *bitt:gall)
+    %+  murn  ~(tap by sup.bowl)
+    |=  [=duct =ship pat=path]
+    ?.  ?=([%base @ *] pat)
+      ~
+    =/  [h=path p=@ta w=path]  (unwrap-wire pat)
+    ?.  &(=(h here) =(p pid))
+      ~
+    [~ duct ship w]
+  [now our eny wex sup from here pid]:[bowl .]
+:: ack for perk or bump
+::
+++  give-poke-sign
+  |=  [=give:g in=(unit intake:base:g) err=(unit tang)]
+  ^+  this
+  =/  giv=give:g  [[(scot %p our.bowl) /gall/grubbery] /]
+  =/  here=path  (snip `path`from.give)
+  =/  pid=@ta  (rear from.give)
+  ?+  in  this
+    [~ %bump *]  (stage-intake here pid giv ~ %base wire.give %bump err)
+    [~ %perk *]  (stage-intake here pid giv ~ %base wire.give %perk err)
+  ==
+::
+++  stage-intake
+  |=  [here=path pid=@ta =give:g in=(unit intake:base:g)]
+  ^+  this
+  ~&  >>  %staging-intake
+  ~&  >>  [here pid]
+  =/  =tack:g  (need (~(get of trac) here))
+  ?.  (~(has by proc.tack) pid)
+    ~&  >>  "discarding message for old base process"
+    ~&  >>  in
+    this
+  =/  =proc:g  (~(got by proc.tack) pid)
+  =.  next.proc  (~(put to next.proc) give in)
+  =.  proc.tack  (~(put by proc.tack) pid proc)
+  =.  trac  (~(put of trac) here tack)
+  (run-process here pid)
+::
+++  run-process
+  |=  [here=path pid=@ta]
+  ^+  this
+  =/  =grub:g  (need (~(get of cone) here))
+  =/  =tack:g  (need (~(get of trac) here))
+  ?.  |(=(~ muxt.tack) =([~ pid] muxt.tack))
+    ~&  >>  "muxt is claimed"
+    this
+  =/  =proc:g  (~(got by proc.tack) pid)
+  ?:  =(~ next.proc)
+    ~&  >>  "no input for process {(trip pid)} at {(spud here)}"
+    this
+  =/  =take:base:g  (need ~(top to next.proc))
+  =.  next.proc  ~(nap to next.proc)
+  ?>  ?=(%base -.grub)
+  =/  m  (charm:base:g ,~)
+  =/  =bowl:base:g  (make-bowl from.give.take here pid)
+  =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
+    (mule |.((take:eval:m proc.proc bowl data.grub in.take)))
+  =/  [[darts=(list dart:g) data=vase =result:eval:m] new=proc:base:g]
+    ?-  -.res
+      %&  p.res
+      %|  [[~ data.grub [%fail leaf+"crash" [leaf+(spud here) p.res]]] proc.proc]
+    ==
+  ::
+  =/  tick=?  !=(data data.grub)
+  =?  this  tick  (next-tack here)
+  =.  cone  (~(put of cone) here grub(data data))
+  =.  proc.proc  new
+  =?  next.proc  ?=(%cont -.result)
+    (~(gas to next.proc) ~(tap to skip.proc))
+  =?  skip.proc  ?=(?(%cont %next) -.result)
+    ?:  ?=(%cont -.result)
+      ~ :: clear skipped
+    ?~  in.take
+      skip.proc :: don't skip a ~ input
+    (~(put to skip.proc) take)
+  ::
+  =.  proc.tack  (~(put by proc.tack) pid proc)
+  =.  trac  (~(put of trac) here tack)
+  ::
+  =?  this  tick  (dirty-and-tidy here)
+  ::
+  =.  this  (give-poke-sign give.take in.take ?-(-.res %& ~, %| `p.res))
+  =.  this  (handle-base-emits here pid darts)
+  ::
+  =/  =tack:g  (need (~(get of trac) here))
+  =/  =proc:g  (~(got by proc.tack) pid)
+  ?:  ?=(%next -.result)
+    ?:  =(~ next.proc)
+      this
+    =/  =take:base:g  (need ~(top to next.proc))
+    =.  next.proc  ~(nap to next.proc)
+    =.  proc.tack  (~(put by proc.tack) pid proc)
+    =.  trac  (~(put of trac) here tack)
+    (run-process here pid)
+  ?:  ?=(%cont -.result)
+    =.  next.proc
+      %-  ~(put to next.proc)
+      [[[(scot %p our.bowl) /gall/grubbery] /] ~]
+    =.  proc.tack  (~(put by proc.tack) pid proc)
+    =.  trac  (~(put of trac) here tack)
+    (run-process here pid)
+  ?>  ?=(?(%fail %done) -.result)
+  ::  handle give poke sign for trailing skipped intakes 
+  ::
+  =/  rest=(qeu take:base:g)
+    (~(gas to next.proc) ~(tap to skip.proc))
+  =.  this
+    |-
+    ?:  =(~ rest)
+      this
+     =/  =take:base:g  (need ~(top to rest))
+     =.  this
+       %^    give-poke-sign
+           give.take
+         in.take
+       ?-  -.result
+         %fail  `[%poke-failed ~]
+         %done  `[%poke-finished ~]
+       ==
+     $(rest ~(nap to rest))
+  ::
+  %^    give-poke-ack
+      here
+    pid
+  ?-  -.result
+    %done  ~
+    %fail  [~ err.result]
+  ==
 ::
 ++  give-perk
-  |=  [here=path back=wire =pail:g]
+  |=  [here=path pid=@ta back=wire =pail:g]
   ^+  this
   ~&  %giving-perk
-  ~&  here+here
+  ~&  [here+here pid+pid]
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%base -.grub)
   =/  =tack:g  (need (~(get of trac) here))
-  ?>  ?=(^ give.tack)
-  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
-    %^    ingest
-        [[(scot %p our.bowl) /gall/grubbery] back]
-      t.t.t.t.from.u.give.tack
-    [~ %perk wire.u.give.tack pail]
-  ?:  ?=([@ %gall @ ~] from.u.give.tack)
+  =/  =proc:g  (~(got by proc.tack) pid)
+  ?:  ?=([@ %gall %grubbery %$ ^] from.give.proc)
+    %^    stage-intake
+        (snip `path`t.t.t.t.from.give.proc)
+      (rear t.t.t.t.from.give.proc)
+    :-  [from.give.proc back]
+    [~ %perk wire.give.proc pail]
+  ?:  ?=([@ %gall @ ~] from.give.proc)
     :: TODO: figure out remote poke/bump/perk etc
     !!
-  ?>  ?=([@ %eyre @ @ ~] from.u.give.tack)
-  =/  src=@p       (slav %p i.t.t.from.u.give.tack)
-  =/  eyre-id=@ta  i.t.t.t.from.u.give.tack
+  ?>  ?=([@ %eyre @ @ ~] from.give.proc)
+  =/  src=@p       (slav %p i.t.t.from.give.proc)
+  =/  eyre-id=@ta  i.t.t.t.from.give.proc
   =/  =wire  /http-response/[eyre-id]
   =/  =cage  
     ?+    p.pail  !!
@@ -965,220 +1116,98 @@
       http-response-header+q.pail
     ==
   =.  this  (emit-card %give %fact ~[wire] cage)
-  %^    ingest
-      [[(scot %p our.bowl) /gall/grubbery] /]
-    here
+  %^    stage-intake
+      here
+    pid
+  :-  [[(scot %p our.bowl) /gall/grubbery] /]
   [~ %base back %perk ~]
 ::
 ++  give-poke-ack
-  |=  [here=path res=(unit tang)]
+  |=  [here=path pid=@ta res=(unit tang)]
   ^+  this
   ~&  %giving-poke-ack
   ~&  here+here
   =/  =grub:g  (need (~(get of cone) here))
   ?>  ?=(%base -.grub)
   =/  =tack:g  (need (~(get of trac) here))
-  ?>  ?=(^ give.tack)
-  =.  cone  (~(put of cone) here grub(proc ~))
-  =.  trac  (~(put of trac) here tack(give ~))
-  =.  this  (clean here poke.last.tack)
-  ?:  ?=([@ %clay ~] from.u.give.tack) :: +on-load
+  =/  =proc:g  (~(got by proc.tack) pid)
+  =.  proc.tack  (~(del by proc.tack) pid)
+  =?  muxt.tack  =([~ pid] muxt.tack)  ~
+  =.  trac  (~(put of trac) here tack)
+  =.  this  (clean here pid)
+  ?:  ?=([@ %clay ~] from.give.proc) :: +on-load
     ?~(res this (mean u.res))
-  ?:  ?=([@ %gall %grubbery %$ ^] from.u.give.tack)
-    %^    ingest
-        [[(scot %p our.bowl) /gall/grubbery] /]
-      t.t.t.t.from.u.give.tack
-    [~ %base wire.u.give.tack %poke res]
-  ?:  ?=([@ %gall @ ~] from.u.give.tack)
-    =/  =wire  (weld /poke/[i.from] wire):[u.give.tack .]
+  ?:  ?=([@ %gall %grubbery %$ ^] from.give.proc)
+    %^    stage-intake
+        (snip `path`t.t.t.t.from.give.proc)
+      (rear t.t.t.t.from.give.proc)
+    :-  [[(scot %p our.bowl) /gall/grubbery] /]
+    [~ %base wire.give.proc %poke res]
+  ?:  ?=([@ %gall @ ~] from.give.proc)
+    =/  =wire  (weld /poke/[i.from] wire):[give.proc .]
     %-  emit-cards
     :~  [%give %fact ~[wire] sign-base+!>([%poke res])]
         [%give %kick ~[wire] ~]
     ==
-  ?>  ?=([@ %eyre @ @ ~] from.u.give.tack)
-  =/  src=@p       (slav %p i.t.t.from.u.give.tack)
-  =/  eyre-id=@ta  i.t.t.t.from.u.give.tack
+  ?>  ?=([@ %eyre @ @ ~] from.give.proc)
+  =/  src=@p       (slav %p i.t.t.from.give.proc)
+  =/  eyre-id=@ta  i.t.t.t.from.give.proc
   (emit-card %give %kick ~[/http-response/[eyre-id]] ~)
 ::
-++  make-bowl
-  |=  [from=path here=path]
-  ^-  bowl:base:g
-  =/  last=@da  poke.last:(need (~(get of trac) here))
-  =.  wex.bowl
-    %-  ~(gas by *boat:gall)
-    %+  murn  ~(tap by wex.bowl)
-    |=  [[=wire =ship =term] acked=? pat=path]
-    ?.  ?=([%base @ *] wire)
-      ~
-    =/  [h=path l=@da w=path]  (unwrap-wire wire)
-    ?.  &(=(h here) =(l last))
-      ~
-    [~ [w ship term] acked pat]
-  =.  sup.bowl
-    %-  ~(gas by *bitt:gall)
-    %+  murn  ~(tap by sup.bowl)
-    |=  [=duct =ship pat=path]
-    ?.  ?=([%base @ *] pat)
-      ~
-    =/  [h=path l=@da p=path]  (unwrap-wire pat)
-    ?.  &(=(h here) =(l last))
-      ~
-    [~ duct ship p]
-  [now our eny wex sup from here]:[bowl .]
-:: ack for perk or bump
-::
-++  give-poke-sign
-  |=  [=give:g in=(unit intake:base:g) err=(unit tang)]
-  ^+  this
-  =/  giv=give:g  [[(scot %p our.bowl) /gall/grubbery] /]
-  =/  here=path  from.give
-  ?+  in  this
-    [~ %bump *]  (ingest giv from.give ~ %base wire.give %bump err)
-    [~ %perk *]  (ingest giv from.give ~ %base wire.give %perk err)
-  ==
-::
-++  ingest
-  |=  [=give:g here=path in=(unit intake:base:g)]
-  ^+  this
-  =/  =grub:g  (need (~(get of cone) here))
-  ?>  ?=(%base -.grub)
-  ?.  ?=(^ proc.grub)
-    ~&  >>  "process not running at {(spud here)}"
-    :: TODO: Add process id (last) to the wire (in transit)
-    ::       And drop inputs if that process is dead
-    ::
-    this
-  =/  m  (charm:base:g ,~)
-  =/  =bowl:base:g  (make-bowl from.give here)
-  =/  res=(each [[(list dart:g) vase result:eval:m] proc:base:g] tang)
-    (mule |.((take:eval:m proc.u.proc.grub bowl data.grub in)))
-  =/  [[darts=(list dart:g) data=vase =result:eval:m] =proc:base:g]
-    ?-  -.res
-      %&  p.res
-      %|  [[~ data.grub [%fail leaf+"crash" [leaf+(spud here) p.res]]] proc.u.proc.grub]
-    ==
-  ::
-  =/  tick=?  !=(data data.grub)
-  =?  this  tick  (next-tack here)
-  =.  data.grub  data
-  =.  cone
-    ?:  ?=(%wait -.result)
-      %+  ~(put of cone)  here
-      grub(proc [~ proc [next skip]:u.proc.grub])
-    ?:  ?=(%skip -.result)
-      %+  ~(put of cone)  here
-      =/  skip  (~(put to skip.u.proc.grub) [give in])
-      grub(proc [~ proc next.u.proc.grub skip])
-    ?:  ?=(?(%fail %done) -.result)
-      (~(put of cone) here grub(proc ~))
-    ?>  ?=(%cont -.result)
-    %+  ~(put of cone)  here
-    =/  next  
-      %-  ~(gas to next.u.proc.grub)
-      ~(tap to skip.u.proc.grub)
-    grub(proc [~ proc next ~])
-  ::
-  =?  this  tick  (dirty-and-tidy here)
-  ::
-  =.  this  (give-poke-sign give in ?-(-.res %& ~, %| `p.res))
-  =.  this  (handle-base-emits here darts)
-  ::
-  ?:  ?=(?(%wait %skip) -.result)
-    ?:  =(~ next.u.proc.grub)
-      this
-    =/  =take:base:g  (need ~(top to next.u.proc.grub))
-    =/  =grub:g  (need (~(get of cone) here))
-    ?>  ?=(%base -.grub)
-    ?>  ?=(^ proc.grub)
-    =.  cone
-      %+  ~(put of cone)  here
-      =/  next  ~(nap to next.u.proc.grub)
-      grub(proc [~ proc next skip.u.proc.grub])
-    (ingest give.take here in.take)
-  ?:  ?=(%cont -.result)
-    =/  from=path  [(scot %p our.bowl) /gall/grubbery]
-    (ingest [from /] here ~) :: continue
-  ?>  ?=(?(%fail %done) -.result)
-  =.  this
-    %+  give-poke-ack
-      here
-    ?-  -.result
-      %done  ~
-      %fail  [~ err.result]
-    ==
-  (run-next-poke here)
-::
 ++  wrap-wire
-  |=  [here=path last=@da =wire]
+  |=  [here=path pid=@ta =wire]
   ^+  wire
   ;:  weld
     /base/(scot %ud (lent here))
-    here  /(scot %da last)  wire
+    here  /[pid]  wire
   ==
 ::
 ++  unwrap-wire
   |=  =wire
-  ^-  [path @da ^wire]
+  ^-  [path @ta ^wire]
   ?>  ?=([%base @ *] wire)
   =/  len=@ud  (slav %ud i.t.wire)
   :+  (scag len t.t.wire)
-    (slav %da (snag len t.t.wire))
+    (snag len t.t.wire)
   (slag +(len) t.t.wire)
 ::
 ++  handle-sysc-card
-  |=  [here=path =card:agent:gall]
+  |=  [here=path pid=@ta =card:agent:gall]
   ^+  this
-  =/  last=@da  poke.last:(need (~(get of trac) here))
   ?+    card  (emit-card card)
       [%give ?(%fact %kick) *]
     =-  (emit-card card(paths.p -))
-    (turn paths.p.card |=(p=path (wrap-wire here last p)))
+    (turn paths.p.card |=(p=path (wrap-wire here pid p)))
     ::
       [%pass * *]
-    (emit-card [%pass (wrap-wire here last p.card) q.card])
+    (emit-card [%pass (wrap-wire here pid p.card) q.card])
   ==
 ::
 ++  take-arvo
   |=  [wir=wire sign=sign-arvo]
   ^+  this
-  =/  [here=path last=@da =wire]  (unwrap-wire wir)
-  =/  curr=@da  poke.last:(need (~(get of trac) here))
-  ?.  =(last curr)
-    ~&  >>  "discarding message for old base process"
-    this
+  =/  [here=path pid=@ta =wire]  (unwrap-wire wir)
   =/  from=path  [(scot %p our.bowl) sap.bowl]
-  (ingest [from /] here ~ %arvo wire sign)
+  (stage-intake here pid [from /] ~ %arvo wire sign)
 ::
 ++  take-agent
   |=  [wir=wire =sign:agent:gall]
   ^+  this
-  =/  [here=path last=@da =wire]  (unwrap-wire wir)
-  =/  curr=@da  poke.last:(need (~(get of trac) here))
-  ?.  =(last curr)
-    ~&  >>  "discarding message for old base process"
-    this
+  =/  [here=path pid=@ta =wire]  (unwrap-wire wir)
   =/  from=path  [(scot %p our.bowl) sap.bowl]
-  (ingest [from /] here ~ %agent wire sign)
+  (stage-intake here pid [from /] ~ %agent wire sign)
 ::
 ++  take-watch
   |=  pat=path
   ^+  this
-  =/  [here=path last=@da pan=path]  (unwrap-wire pat)
-  =/  curr=@da  poke.last:(need (~(get of trac) here))
-  ?.  =(last curr)
-    ~&  >>  "discarding message for old base process"
-    this
+  =/  [here=path pid=@ta =wire]  (unwrap-wire pat)
   =/  from=path  [(scot %p our.bowl) sap.bowl]
-  (ingest [from /] here ~ %watch pan)
+  (stage-intake here pid [from /] ~ %watch wire)
 ::
 ++  take-leave
   |=  pat=path
   ^+  this
-  =/  [here=path last=@da pan=path]  (unwrap-wire pat)
+  =/  [here=path pid=@ta =wire]  (unwrap-wire pat)
   =/  from=path  [(scot %p our.bowl) sap.bowl]
-  =/  curr=@da  poke.last:(need (~(get of trac) here))
-  ?.  =(last curr)
-    ~&  >>  "discarding message for old base process"
-    this
-  (ingest [from /] here ~ %leave pan)
+  (stage-intake here pid [from /] ~ %leave wire)
 --

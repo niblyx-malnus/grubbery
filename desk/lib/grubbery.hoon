@@ -130,7 +130,7 @@
     =,  grubberyio
     ^-  stem:g
     |=  =bowl:stem:g
-    ^-  (quip dart:g vase)
+    ^-  vase
     ?>  ?=([%bin *] here.bowl)
     =/  grubbery=vase  (nead (~(got by deps.bowl) /bin/grubbery))
     =/  file=vase  (nead (~(got by deps.bowl) [%lib t.here.bowl]))
@@ -142,7 +142,7 @@
       ~[/bin/grubbery [%lib t.here.bowl]]
     ?>  =(deps ~(key by deps.bowl))
     =;  vax=(list vase)
-      [~ !:((slip (reel (snoc vax grubbery) slop) hoon.p.res))]
+      !:((slip (reel (snoc vax grubbery) slop) hoon.p.res))
     %+  turn  deps.p.res
     |=  [fac=term dep=path]
     =/  =vase  (nead (~(got by deps.bowl) dep))

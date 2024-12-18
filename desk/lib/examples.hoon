@@ -74,7 +74,7 @@
   :-  /loob
   =,  grubberyio
   |=  =bowl:stem:g
-  :-  ~
+  ^-  vase
   =/  deps  ~(tap in ~(key by deps.bowl))
   ?>  ?=(^ deps)
   =+  !<(=@ud (nead (~(got by deps.bowl) i.deps)))
@@ -87,7 +87,7 @@
   :-  /txt
   =,  grubberyio
   |=  =bowl:stem:g
-  :-  ~
+  ^-  vase
   =/  deps  ~(tap in ~(key by deps.bowl))
   ?>  ?=(^ deps)
   ?:  !<(? (nead (~(got by deps.bowl) i.deps)))
@@ -121,7 +121,7 @@
   :-  /noun
   =,  grubberyio
   |=  =bowl:stem:g
-  :-  ~
+  ^-  vase
   =/  deps  ~(tap in ~(key by deps.bowl))
   ?>  ?=(^ deps)
   (nead (~(got by deps.bowl) i.deps))

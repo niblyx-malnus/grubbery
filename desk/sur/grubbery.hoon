@@ -27,7 +27,7 @@
   ==
 :: pair of source grub (here) and emitted dart
 ::
-+$  bolt  (pair path dart)
++$  bolt  [here=path pid=@ta =dart]
 :: dart payload
 ::
 +$  load
@@ -36,8 +36,8 @@
       [%cull ~]
       [%sand perm=(unit perm)]
       [%poke =pail]
-      [%bump =pail]
-      [%kill ~]
+      [%bump pid=@ta =pail]
+      [%kill pid=@ta]
       [%peek ~]
   ==
 :: TODO: don't queue processes, they should all be going
@@ -46,12 +46,13 @@
 :: proc=(map @ta proc:base)
 :: muxt=(unit @ta)
 +$  grub
-  $%  [%base data=vase base=path proc=(unit proc)]
+  $%  [%base data=vase base=path]
       [%stem data=(each vase tang) stem=path tidy=? sour=(map path @da)]
   ==
 ::
 +$  proc
   $:  =proc:base
+      =give
       next=(qeu take:base)
       skip=(qeu take:base)
   ==
@@ -62,8 +63,8 @@
 +$  tack
   $:  last=[step=@da poke=@da]
       sinx=(set path)
-      give=(unit give)
-      line=(qeu poke)
+      muxt=(unit @ta)
+      proc=(map @ta proc)
   ==
 +$  trac  (axal tack)
 :: NOTE: the distinction between cone and trac exists because
@@ -81,7 +82,7 @@
 ++  stem
   =<  stem
   |%
-  +$  stem  $-(bowl (quip dart vase))
+  +$  stem  $-(bowl vase)
   +$  bowl
     $:  now=@da                          :: time
         our=@p                           :: host
@@ -102,12 +103,14 @@
         sup=bitt:gall :: incoming gall subs
         from=path     :: provenance
         here=path     :: our address
+        pid=@ta       :: our process id
     ==
   ::
   +$  sign
     $%  [%poke err=(unit tang)]
         [%perk err=(unit tang)]
         [%bump err=(unit tang)]
+        [%pack p=(each @ta tang)]
     ==
   ::
   +$  intake
@@ -126,8 +129,8 @@
         [%scry =wire =path =vase]
         [%arvo =wire sign=sign-arvo]
         [%agent =wire =sign:agent:gall]
-        [%watch =path] :: disallow process subs
-        [%leave =path] :: disallow process subs
+        [%watch =path]
+        [%leave =path]
     ==
   ::
   +$  input  [=bowl state=vase in=(unit intake)]
@@ -140,8 +143,7 @@
     $:  darts=(list dart)
         state=vase
         $=  next
-        $%  [%wait ~]
-            [%skip ~]
+        $%  [%next ~]
             [%cont self=(form-raw value)]
             [%fail err=tang]
             [%done =value]
@@ -179,8 +181,7 @@
       :-  darts.b-res
       :-  state.b-res
       ?-    -.next.b-res
-        %wait  [%wait ~]
-        %skip  [%skip ~]
+        %next  [%next ~]
         %cont  [%cont ..$(m-b self.next.b-res)]
         %fail  [%fail err.next.b-res]
         %done  [%cont (fun value.next.b-res)]
@@ -189,8 +190,7 @@
     ++  eval
       |%
       +$  result
-        $%  [%wait ~]
-            [%skip ~]
+        $%  [%next ~]
             [%cont ~]
             [%fail err=tang]
             [%done =value]
@@ -208,8 +208,7 @@
         :-  darts
         :-  state.output
         ?-  -.next.output
-            %wait  [%wait ~]
-            %skip  [%skip ~]
+            %next  [%next ~]
             %cont  [%cont ~]
             %fail  [%fail err.next.output]
             %done  [%done value.next.output]
